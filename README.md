@@ -2,7 +2,7 @@
 
 **El "Datacrédito" de las rentadoras de vehículos**
 
-**RentCheck** es una plataforma centralizada diseñada para que las rentadoras de vehículos puedan gestionar sus rentas y, lo más importante, consultar el **historial de comportamiento y score** de los clientes. Si un cliente es "mala paga" o maltrata los carros, aquí se sabe de una.
+**RentCheck** es una plataforma B2B para empresas de alquiler de vehículos que centraliza el historial crediticio y de comportamiento de sus clientes. Permite a las rentadoras consultar el score reputacional de un cliente antes de entregarle un vehículo, basado en feedbacks de otras empresas de la red, y verificar su identidad mediante biometría. El objetivo es reducir el fraude, los impagos y la suplantación de identidad en el sector.
 
 ## 🏗️ Estructura del Proyecto
 
