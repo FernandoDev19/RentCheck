@@ -15,6 +15,7 @@ import { Branch } from '../../branches/entities/branch.entity';
 import { User } from '../../users/entities/user.entity';
 import { Rental } from '../../rentals/entities/rental.entity';
 import { BiometryRequest } from '../../biometry-requests/entities/biometry-request.entity';
+import { RenterStatus } from '../enums/renter-status.enum';
 
 @Entity('renters')
 export class Renter {
@@ -65,8 +66,8 @@ export class Renter {
   @Column({ name: 'low_balance_alert_enabled', default: true })
   lowBalanceAlertEnabled: boolean;
 
-  @Column({ default: 'active', enum: ['active', 'suspended'] })
-  status: 'active' | 'suspended';
+  @Column({ default: RenterStatus.ACTIVE, enum: RenterStatus })
+  status: RenterStatus;
 
   @OneToMany(() => Branch, (branch) => branch.renter)
   branches: Branch[];

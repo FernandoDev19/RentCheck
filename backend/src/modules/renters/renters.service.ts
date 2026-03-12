@@ -8,7 +8,7 @@ import { CreateRenterDto } from './dto/create-renter.dto';
 import { UpdateRenterDto } from './dto/update-renter.dto';
 import { InjectRepository } from '@nestjs/typeorm';
 import { Renter } from './entities/renter.entity';
-import { ILike, Like, Repository } from 'typeorm';
+import { ILike, Repository } from 'typeorm';
 import { UsersService } from '../users/users.service';
 import { RolesService } from '../roles/roles.service';
 import { RolesEnum } from '../../core/enums/roles.enum';

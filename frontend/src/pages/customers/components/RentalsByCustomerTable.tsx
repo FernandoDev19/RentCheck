@@ -1,8 +1,8 @@
 import { useEffect, useState } from "react";
-import type { Column } from "../../../common/components/DataTable";
+import type { Column } from "../../../common/components/datatable/types/column.type";
 import type { Rental } from "../../../models/rental.model";
 import { rentalService } from "../../../services/rental.service";
-import DataTable from "../../../common/components/DataTable";
+import DataTable from "../../../common/components/datatable/DataTable";
 import withReactContent from "sweetalert2-react-content";
 import Swal from "sweetalert2";
 import type { Renter } from "../../../models/renter.model";

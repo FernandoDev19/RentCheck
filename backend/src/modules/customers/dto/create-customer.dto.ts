@@ -10,7 +10,7 @@ import {
   IsNumber,
 } from 'class-validator';
 import { IdentityTypeEnum } from '../../../core/enums/identity-type.enum';
-import { CustomerStatusEnum } from '../../../core/enums/customer-status.enum';
+import { CustomerStatusEnum } from '../enums/customer-status.enum';
 
 export class CreateCustomerDto {
   @IsOptional()

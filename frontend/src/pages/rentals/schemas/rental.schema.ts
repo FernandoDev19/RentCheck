@@ -1,0 +1,18 @@
+import z from "zod";
+import { IDENTITY_TYPE } from "../../../common/types/identity-type.type";
+
+export const createRentalSchema = z.object({
+  // Cliente
+  identityType: z.optional(z.enum(IDENTITY_TYPE)),
+  identityNumber: z.string().nonempty().min(5).max(20),
+  name: z.string().nonempty().min(2).max(100),
+  lastName: z.string().nonempty().min(2).max(100),
+  email: z.optional(z.string().email()),
+  phone: z.optional(z.string()),
+  // Renta
+  startDate: z.string().nonempty(),
+  expectedReturnDate: z.string().nonempty(),
+  rentalStatus: z
+    .optional(z.enum(["active", "returned", "late", "cancelled"]))
+    .default("active"),
+});

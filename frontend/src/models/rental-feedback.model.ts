@@ -1,3 +1,5 @@
+import type { Employee } from "./employee.model";
+
 export interface Score {
   damageToCar: number;
   unpaidFines: number;
@@ -14,12 +16,13 @@ export interface CriticalFlags {
 export interface RentalFeedback {
   id: string;
   rentalId: string;
-  renterId: string;
-  branchId: string;
-  employeeId: string;
+  renterId?: string;
+  branchId?: string;
+  employeeId?: string;
+  employee?: Employee;
   score: Score;
   criticalFlags: CriticalFlags;
-  comments: string;
+  comments?: string;
   createdAt: Date;
   updatedAt: Date;
 }

@@ -9,6 +9,8 @@ import { Repository } from 'typeorm';
 import { UserActiveInterface } from '../auth/interfaces/active-user.interface';
 import { RolesEnum } from '../../core/enums/roles.enum';
 import { ListResponse } from '../../core/interfaces/list-response';
+import { StatusBiometryRequest } from './enums/status-biometry-request.enum';
+import { ResultBecomeEnum } from './enums/result-become.enum';
 
 @Injectable()
 export class BiometryRequestsService {
@@ -55,7 +57,11 @@ export class BiometryRequestsService {
     user: UserActiveInterface,
   ): Promise<BiometryRequest> {
     const existing = await this.biometryRequestRepository.findOne({
-      where: { customerId, renterId: user.renterId, status: 'pending' },
+      where: {
+        customerId,
+        renterId: user.renterId,
+        status: StatusBiometryRequest.PENDING,
+      },
       relations: ['employee'],
     });
 
@@ -71,7 +77,7 @@ export class BiometryRequestsService {
       branchId: user.branchId || null,
       employeeId: user.employeeId || null,
       providerReference: `SIM-${Date.now()}`, // simulado
-      status: 'pending',
+      status: StatusBiometryRequest.PENDING,
     });
 
     return await this.biometryRequestRepository.save(biometryRequest);
@@ -80,18 +86,18 @@ export class BiometryRequestsService {
   // Simular resultado (página pública con el token)
   async simulateResult(
     token: string,
-    result: 'approved' | 'rejected',
+    result: ResultBecomeEnum,
   ): Promise<BiometryRequest> {
     const biometryRequest = await this.biometryRequestRepository.findOne({
       where: { token },
     });
 
     if (!biometryRequest) throw new NotFoundException('Token inválido');
-    if (biometryRequest.status !== 'pending') {
+    if (biometryRequest.status !== StatusBiometryRequest.PENDING) {
       throw new ConflictException('Esta solicitud ya fue procesada');
     }
 
-    biometryRequest.status = 'completed';
+    biometryRequest.status = StatusBiometryRequest.COMPLETED;
     biometryRequest.result = result;
 
     return await this.biometryRequestRepository.save(biometryRequest);

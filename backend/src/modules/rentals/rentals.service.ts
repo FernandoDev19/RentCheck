@@ -241,7 +241,7 @@ export class RentalsService {
   async findAllPendingFeedback(
     page: number = 1,
     limit: number = 10,
-    orderBy: string = 'expectedReturnDate',
+    orderBy: string = 'createdAt',
     orderDir: string = 'ASC',
     search: string = '',
     user: UserActiveInterface,

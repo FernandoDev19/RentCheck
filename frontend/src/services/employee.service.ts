@@ -1,7 +1,16 @@
 import type { ListResponse } from "../common/interfaces/list-response.interface";
+import type { IdentityType } from "../common/types/identity-type.type";
 import api from "../config/api";
 import type { Employee } from "../models/employee.model";
-import type { CreateEmployeeInterface } from "../pages/employees/interfaces/create-employee.interface";
+
+export interface CreateEmployeeInterface {
+    name: string;
+    email: string;
+    password: string;
+    branchId?: string;
+    identityType?: IdentityType;
+    identityNumber: string;
+}
 
 export const employeeService = {
   getAll: async (params?: {

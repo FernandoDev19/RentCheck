@@ -11,10 +11,7 @@ import {
 import { Rental } from '../../rentals/entities/rental.entity';
 import { BiometryRequest } from '../../biometry-requests/entities/biometry-request.entity';
 import { IdentityTypeEnum } from '../../../core/enums/identity-type.enum';
-import { CustomerStatusEnum } from '../../../core/enums/customer-status.enum';
-import { Renter } from '../../renters/entities/renter.entity';
-import { Employee } from '../../employees/entities/employee.entity';
-import { Branch } from '../../branches/entities/branch.entity';
+import { CustomerStatusEnum } from '../enums/customer-status.enum';
 import { User } from '../../users/entities/user.entity';
 
 @Entity('customers')
@@ -53,7 +50,9 @@ export class Customer {
   @Column({ name: 'registered_by_user_id', nullable: true })
   registeredByUserId: string;
 
-  @ManyToOne(() => User, (user) => user.customers)
+  @ManyToOne(() => User, (user) => user.customers, {
+    nullable: true,
+  })
   @JoinColumn({ name: 'registered_by_user_id' })
   registeredByUser: User;
 

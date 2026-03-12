@@ -23,6 +23,7 @@ import { Employee } from '../employees/entities/employee.entity';
 import { RegisterEmployeeDto } from './dto/register-employee.dto';
 import { Renter } from '../renters/entities/renter.entity';
 import { RegisterRenterDto } from './dto/register-renter.dto';
+import { RenterStatus } from '../renters/enums/renter-status.enum';
 
 @Injectable()
 export class AuthService {
@@ -73,7 +74,7 @@ export class AuthService {
         });
         renterId = userExist.renterId;
 
-        if (renter?.status === 'suspended')
+        if (renter?.status === RenterStatus.SUSPENDED)
           throw new UnauthorizedException('Renter is suspended');
         break;
       }
@@ -95,7 +96,7 @@ export class AuthService {
         });
         renterId = branch.renterId;
 
-        if (renter?.status === 'suspended') {
+        if (renter?.status === RenterStatus.SUSPENDED) {
           throw new UnauthorizedException('La rentadora está suspendida');
         }
         break;
@@ -114,7 +115,7 @@ export class AuthService {
         // por si el User no lo tiene pero el Employee sí.
         userExist.branchId = employee.branch.id;
 
-        if (employee.branch.renter.status === 'suspended')
+        if (employee.branch.renter.status === RenterStatus.SUSPENDED)
           throw new UnauthorizedException('Renter is suspended');
         break;
       }
@@ -165,7 +166,7 @@ export class AuthService {
 
     const renter = this.renterRepository.create({
       ...createRenterDto,
-      status: 'suspended',
+      status: RenterStatus.SUSPENDED,
     });
     const savedRenter = await this.renterRepository.save(renter);
 
@@ -207,7 +208,7 @@ export class AuthService {
       throw new NotFoundException('Renter not found');
     }
 
-    if (userExist.renter.status === 'suspended') {
+    if (userExist.renter.status === RenterStatus.SUSPENDED) {
       throw new ForbiddenException('Your account is suspended');
     }
 
@@ -291,7 +292,7 @@ export class AuthService {
         'No se encontró una rentadora asociada a tu usuario',
       );
 
-    if (renter.status === 'suspended')
+    if (renter.status === RenterStatus.SUSPENDED)
       throw new ForbiddenException('This renter is suspended');
 
     if (!plan) throw new ForbiddenException('No se pudo verificar el plan');

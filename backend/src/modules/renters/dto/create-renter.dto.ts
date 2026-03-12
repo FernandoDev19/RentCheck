@@ -12,6 +12,7 @@ import {
   Min,
   MinLength,
 } from 'class-validator';
+import { RenterStatus } from '../enums/renter-status.enum';
 
 export class CreateRenterDto {
   @IsString()
@@ -88,6 +89,6 @@ export class CreateRenterDto {
 
   @IsOptional()
   @IsString()
-  @IsEnum(['active', 'suspended'])
-  status?: 'active' | 'suspended';
+  @IsEnum(RenterStatus)
+  status?: RenterStatus;
 }

@@ -15,6 +15,7 @@ import { Employee } from '../../employees/entities/employee.entity';
 import { Role } from '../../roles/entities/role.entity';
 import { Branch } from '../../branches/entities/branch.entity';
 import { Customer } from '../../customers/entities/customer.entity';
+import { UserStatus } from '../enums/user-status.enum';
 
 @Entity('users')
 export class User {
@@ -61,8 +62,8 @@ export class User {
   @OneToMany(() => Customer, (customer) => customer.registeredByUser)
   customers: Customer[];
 
-  @Column({ default: 'active' })
-  status: 'active' | 'inactive' | 'suspended';
+  @Column({ default: UserStatus.ACTIVE, enum: UserStatus })
+  status: UserStatus;
 
   @DeleteDateColumn({ name: 'deleted_at' })
   deletedAt: Date;

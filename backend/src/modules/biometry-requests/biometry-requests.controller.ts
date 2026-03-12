@@ -5,17 +5,14 @@ import {
   Body,
   Patch,
   Param,
-  Delete,
   Query,
 } from '@nestjs/common';
 import { BiometryRequestsService } from './biometry-requests.service';
-import { CreateBiometryRequestDto } from './dto/create-biometry-request.dto';
-import { UpdateBiometryRequestDto } from './dto/update-biometry-request.dto';
 import { Auth } from '../auth/decorators/auth.decorator';
 import { RolesEnum } from '../../core/enums/roles.enum';
-import { Roles } from '../auth/decorators/roles.decorator';
 import { ActiveUser } from '../auth/decorators/active-user.decorator';
 import { UserActiveInterface } from '../auth/interfaces/active-user.interface';
+import { ResultBecomeEnum } from './enums/result-become.enum';
 
 @Controller('biometry-requests')
 export class BiometryRequestsController {
@@ -42,7 +39,7 @@ export class BiometryRequestsController {
   @Patch('simulate/:token')
   simulateResult(
     @Param('token') token: string,
-    @Body('result') result: 'approved' | 'rejected',
+    @Body('result') result: ResultBecomeEnum,
   ) {
     return this.biometryRequestsService.simulateResult(token, result);
   }

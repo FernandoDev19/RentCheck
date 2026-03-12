@@ -11,6 +11,8 @@ import { Customer } from '../../customers/entities/customer.entity';
 import { Employee } from '../../employees/entities/employee.entity';
 import { Renter } from '../../renters/entities/renter.entity';
 import { Branch } from '../../branches/entities/branch.entity';
+import { StatusBiometryRequest } from '../enums/status-biometry-request.enum';
+import { ResultBecomeEnum } from '../enums/result-become.enum';
 
 @Entity('biometry_requests')
 export class BiometryRequest {
@@ -54,18 +56,18 @@ export class BiometryRequest {
 
   @Column({
     type: 'enum',
-    enum: ['pending', 'completed', 'expired'],
-    default: 'pending',
+    enum: StatusBiometryRequest,
+    default: StatusBiometryRequest.PENDING,
   })
-  status: 'pending' | 'completed' | 'expired';
+  status: StatusBiometryRequest;
 
   @Column({
     type: 'enum',
-    enum: ['approved', 'rejected'],
+    enum: ResultBecomeEnum,
     nullable: true,
     default: null,
   })
-  result: 'approved' | 'rejected' | null;
+  result: ResultBecomeEnum | null;
 
   @Column({ name: 'provider_reference', unique: true })
   providerReference: string;

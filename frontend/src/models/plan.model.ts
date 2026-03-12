@@ -1,3 +1,5 @@
+import type { Renter } from "./renter.model";
+
 export interface Plan {
   id: number;
   name: string;
@@ -10,4 +12,6 @@ export interface Plan {
   advanced_reports_enabled: boolean;
   email_alerts_enabled: boolean;
   priority_support: boolean;
+
+  renters?: Renter[];
 }

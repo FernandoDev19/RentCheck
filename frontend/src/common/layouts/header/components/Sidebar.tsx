@@ -7,8 +7,8 @@ import {
   HousePlus,
   MessageCircle,
 } from "lucide-react";
-import LogoutButton from "../../../components/LogoutButton";
 import { ROLES, type RolesType } from "../../../types/roles.type";
+import LogoutButton from "../../../components/ui/LogoutButton";
 
 type Props = {
   isMobileMenuOpen: boolean;
@@ -109,7 +109,7 @@ export default function Sidebar({
 
             {/* Sidebar Footer */}
             <div className="p-4 border-t border-primary-foreground/20">
-              <LogoutButton />
+              <LogoutButton className="w-full" />
             </div>
           </div>
         </div>

@@ -13,7 +13,7 @@ import { RentalFeedback } from '../rental-feedbacks/entities/rental-feedback.ent
 import { ListResponse } from '../../core/interfaces/list-response';
 import { UserActiveInterface } from '../auth/interfaces/active-user.interface';
 import { RolesEnum } from '../../core/enums/roles.enum';
-import { CustomerStatusEnum } from '../../core/enums/customer-status.enum';
+import { CustomerStatusEnum } from './enums/customer-status.enum';
 
 @Injectable()
 export class CustomersService {
@@ -147,9 +147,7 @@ export class CustomersService {
     const customer = await qb.getOne();
 
     if (!customer)
-      throw new NotFoundException(
-        'Cliente sin historial en RentCheck, cuadro.',
-      );
+      throw new NotFoundException('Cliente sin historial en RentCheck.');
 
     return customer;
   }

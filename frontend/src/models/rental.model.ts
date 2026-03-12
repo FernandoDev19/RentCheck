@@ -1,3 +1,4 @@
+import type { RentalStatus } from "../common/types/rental-status.type";
 import type { Branch } from "./branch.model";
 import type { Customer } from "./customer.model";
 import type { Employee } from "./employee.model";
@@ -7,23 +8,32 @@ import type { User } from "./user.model";
 
 export interface Rental {
   id: string;
+
   renterId: string;
   renter: Renter;
-  branchId: string;
-  branch: Branch;
-  employeeId: string;
-  employee: Employee;
+
+  branchId?: string;
+  branch?: Branch;
+
+  employeeId?: string;
+  employee?: Employee;
+
   customerId: string;
   customer: Customer;
+
   startDate: Date;
   expectedReturnDate: Date;
   actualReturnDate: Date;
-  rentalStatus: 'active' | 'returned' | 'late' | 'cancelled';
+
+  rentalStatus: RentalStatus;
   rentalFeedback?: RentalFeedback;
+
   receivedByUserId?: string;
   receivedByUser?: User;
+
   cancelledByUserId?: string;
   cancelledByUser?: User;
+
   createdAt: Date;
   updatedAt: Date;
 }

@@ -1,34 +1,8 @@
 import { useState, useMemo } from "react";
-
-// ─── Types ───────────────────────────────────────────────────────────────────
-
-export interface Column<T> {
-  key: string;
-  label: string;
-  sortable?: boolean;
-  render?: (value: T[keyof T], row: T) => React.ReactNode;
-}
-
-interface DataTableProps<T> {
-  data: T[];
-  columns: Column<T>[];
-  pageSize?: number;
-  searchable?: boolean;
-  searchPlaceholder?: string;
-  emptyMessage?: string;
-  totalPages?: number;
-  currentPage?: number;
-  onPageChange?: (page: number) => void;
-  serverSidePagination?: boolean;
-  totalItems?: number;
-  serverSideSearch?: boolean;
-  onSearchChange?: (term: string) => void;
-  serverSideSort?: boolean;
-  createButton?: boolean;
-  onSortChange?: (key: string, direction: "asc" | "desc" | null) => void;
-  actions?: (row: T) => React.ReactNode;
-  onCreateClick?: () => void;
-}
+import type { DataTableProps } from "./props/data-table.props";
+import SearchBar from "./components/SearchBar";
+import TableFooter from "./components/TableFooter";
+import ButtonCallUp from "../ui/ButtonCallUp";
 
 type SortDirection = "asc" | "desc" | null;
 
@@ -54,40 +28,6 @@ const SortIcon = ({ direction }: { direction: SortDirection }) => (
     </svg>
   </span>
 );
-
-const SearchIcon = () => (
-  <svg
-    className="w-4 h-4 text-slate-400"
-    fill="none"
-    viewBox="0 0 24 24"
-    stroke="currentColor"
-    strokeWidth={2}
-  >
-    <path
-      strokeLinecap="round"
-      strokeLinejoin="round"
-      d="M21 21l-4.35-4.35M17 11A6 6 0 1 1 5 11a6 6 0 0 1 12 0z"
-    />
-  </svg>
-);
-
-const ChevronIcon = ({ dir }: { dir: "left" | "right" }) => (
-  <svg
-    className="w-4 h-4"
-    fill="none"
-    viewBox="0 0 24 24"
-    stroke="currentColor"
-    strokeWidth={2.5}
-  >
-    <path
-      strokeLinecap="round"
-      strokeLinejoin="round"
-      d={dir === "left" ? "M15 19l-7-7 7-7" : "M9 5l7 7-7 7"}
-    />
-  </svg>
-);
-
-// ─── Component ───────────────────────────────────────────────────────────────
 
 export default function DataTable<T extends Record<string, any>>({
   data,
@@ -163,7 +103,7 @@ export default function DataTable<T extends Record<string, any>>({
   };
 
   const handleSort = (key: keyof T) => {
-    console.log(key)
+    console.log(key);
     let nextKey: keyof T | null = sortKey;
     let nextDir: SortDirection = sortDir;
 
@@ -215,33 +155,25 @@ export default function DataTable<T extends Record<string, any>>({
 
   return (
     <div className="w-full font-sans">
-      <div className="flex gap-5">
+      <div className="flex items-center justify-between gap-5">
         {/* Search bar */}
         {searchable && (
-          <div className="mb-4 relative max-w-sm">
-            <span className="absolute left-3 top-1/2 -translate-y-1/2">
-              <SearchIcon />
-            </span>
-            <input
-              type="text"
-              value={search}
-              onChange={handleSearch}
-              placeholder={searchPlaceholder}
-              className="w-full pl-9 pr-4 py-2 text-sm rounded-lg border border-slate-200 bg-white shadow-sm
-              focus:outline-none focus:ring-2 focus:ring-indigo-400 focus:border-transparent
-              placeholder:text-slate-400 text-slate-700 transition"
-            />
-          </div>
+          <SearchBar
+            search={search}
+            handleSearch={handleSearch}
+            searchPlaceholder={searchPlaceholder}
+          />
         )}
 
         {createButton && (
           <div className="mb-4">
-            <button
+            <ButtonCallUp
+              type="button"
               onClick={onCreateClick}
-              className="px-4 py-2 text-sm rounded-lg bg-indigo-600 text-white hover:bg-indigo-700 transition"
+              isLoading={false}
             >
               Crear nuevo
-            </button>
+            </ButtonCallUp>
           </div>
         )}
       </div>
@@ -314,103 +246,17 @@ export default function DataTable<T extends Record<string, any>>({
       </div>
 
       {/* Footer: count + pagination */}
-      <div className="mt-3 flex flex-col sm:flex-row items-center justify-between gap-3 text-sm text-slate-500">
-        <span>
-          Mostrando{" "}
-          <span className="font-medium text-slate-700">
-            {paginated.length === 0
-              ? 0
-              : serverSidePagination
-                ? (safePage - 1) * pageSize + 1
-                : (safePage - 1) * pageSize + 1}
-            –
-            {paginated.length === 0
-              ? 0
-              : serverSidePagination
-                ? (safePage - 1) * pageSize + paginated.length
-                : Math.min(safePage * pageSize, sorted.length)}
-          </span>{" "}
-          de{" "}
-          <span className="font-medium text-slate-700">
-            {serverSidePagination ? (totalItems ?? 0) : sorted.length}
-          </span>{" "}
-          resultados
-        </span>
-
-        {effectiveTotalPages > 1 && (
-          <div className="flex items-center gap-1">
-            <button
-              onClick={() => setPage(Math.max(1, safePage - 1))}
-              disabled={safePage === 1}
-              className="p-1.5 rounded-md border border-slate-200 hover:bg-slate-100 disabled:opacity-40
-                disabled:cursor-not-allowed transition"
-            >
-              <ChevronIcon dir="left" />
-            </button>
-
-            {pageNumbers.map((p, i) =>
-              p === "..." ? (
-                <span key={`ellipsis-${i}`} className="px-1">
-                  …
-                </span>
-              ) : (
-                <button
-                  key={p}
-                  onClick={() => setPage(p as number)}
-                  className={`min-w-[2rem] h-8 rounded-md text-sm font-medium border transition
-                    ${
-                      safePage === p
-                        ? "bg-indigo-600 text-white border-indigo-600 shadow-sm"
-                        : "border-slate-200 text-slate-600 hover:bg-slate-100"
-                    }`}
-                >
-                  {p}
-                </button>
-              ),
-            )}
-
-            <button
-              onClick={() =>
-                setPage(Math.min(effectiveTotalPages, safePage + 1))
-              }
-              disabled={safePage === effectiveTotalPages}
-              className="p-1.5 rounded-md border border-slate-200 hover:bg-slate-100 disabled:opacity-40
-                disabled:cursor-not-allowed transition"
-            >
-              <ChevronIcon dir="right" />
-            </button>
-          </div>
-        )}
-      </div>
+      <TableFooter
+        paginated={paginated}
+        serverSidePagination={serverSidePagination}
+        safePage={safePage}
+        pageSize={pageSize}
+        sorted={sorted}
+        totalItems={totalItems}
+        effectiveTotalPages={effectiveTotalPages}
+        pageNumbers={pageNumbers}
+        setPage={setPage}
+      />
     </div>
   );
 }
-
-// ─── Usage Example (puedes borrar esto) ──────────────────────────────────────
-//
-// interface User {
-//   id: number;
-//   name: string;
-//   email: string;
-//   role: string;
-//   status: "active" | "inactive";
-// }
-//
-// const columns: Column<User>[] = [
-//   { key: "id", label: "ID" },
-//   { key: "name", label: "Nombre" },
-//   { key: "email", label: "Correo" },
-//   { key: "role", label: "Rol" },
-//   {
-//     key: "status",
-//     label: "Estado",
-//     render: (val) => (
-//       <span className={`px-2 py-0.5 rounded-full text-xs font-medium
-//         ${val === "active" ? "bg-green-100 text-green-700" : "bg-red-100 text-red-700"}`}>
-//         {val === "active" ? "Activo" : "Inactivo"}
-//       </span>
-//     ),
-//   },
-// ];
-//
-// <DataTable data={users} columns={columns} pageSize={10} />
