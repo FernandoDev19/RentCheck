@@ -1,7 +1,11 @@
 import z from "zod";
 import { IDENTITY_TYPE } from "../../../common/types/identity-type.type";
+import { getUser } from "../../dashboard/helpers/user.helper";
+import { ROLES } from "../../../common/types/roles.type";
 
-export const createRentalSchema = z.object({
+const userRoleOwner = getUser().role === ROLES.OWNER;
+
+export const createRentalAndCustomerSchema = z.object({
   // Cliente
   identityType: z.optional(z.enum(IDENTITY_TYPE)),
   identityNumber: z.string().nonempty().min(5).max(20),
@@ -15,4 +19,7 @@ export const createRentalSchema = z.object({
   rentalStatus: z
     .optional(z.enum(["active", "returned", "late", "cancelled"]))
     .default("active"),
+  branchId: userRoleOwner
+    ? z.string().min(36, "La sede es obligatoria")
+    : z.string().optional(),
 });

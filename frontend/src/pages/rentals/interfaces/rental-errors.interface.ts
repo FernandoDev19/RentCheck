@@ -7,4 +7,5 @@ export interface RentalErrors {
     phone?: string;
     startDate?: string;
     expectedReturnDate?: string;
+    branchId?: string;
 }

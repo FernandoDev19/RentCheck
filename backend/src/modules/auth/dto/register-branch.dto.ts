@@ -37,13 +37,12 @@ export class RegisterBranchDto {
   @IsString()
   @Transform(({ value }) => value.trim())
   @IsNotEmpty()
-  @MinLength(5)
+  @MinLength(3)
   @MaxLength(100)
   responsible: string;
 
+  @IsOptional()
   @IsString()
-  @Transform(({ value }) => value.trim())
-  @IsNotEmpty()
   @MinLength(7)
   @MaxLength(15)
   responsiblePhone?: string;

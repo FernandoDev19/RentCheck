@@ -4,6 +4,7 @@ import {
   IsNotEmpty,
   IsNumber,
   IsString,
+  Max,
   Min,
   MinLength,
 } from 'class-validator';
@@ -17,10 +18,12 @@ export class CreatePlanDto {
 
   @IsNumber()
   @Min(0)
+  @Max(9999)
   max_users: number;
 
   @IsNumber()
   @Min(0)
+  @Max(9999)
   max_branches: number;
 
   @IsBoolean()
@@ -31,6 +34,11 @@ export class CreatePlanDto {
 
   @IsBoolean()
   priority_support: boolean;
+
+  @IsNumber()
+  @Min(0)
+  @Max(9999)
+  max_vehicles: number;
 
   @IsNumber()
   @Min(0)

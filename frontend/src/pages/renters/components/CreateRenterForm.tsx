@@ -3,14 +3,23 @@ import Label from "../../../common/components/ui/Label";
 import Select from "../../../common/components/ui/Select";
 import type { RenterErrors } from "../interfaces/renter-errors.interface";
 import type { Plan } from "../../../models/plan.model";
+import type { Renter } from "../../../models/renter.model";
 
 type props = {
   plans: Plan[];
   currentValues?: any;
   errors?: RenterErrors;
+  renter?: Renter;
 };
 
-export default function CreateRenterForm({ plans, currentValues, errors }: props) {
+export default function CreateRenterForm({
+  plans,
+  currentValues,
+  errors,
+  renter,
+}: props) {
+  const planIdValue = currentValues?.planId || renter?.planId?.toString() || "";
+  console.log("Final planId value:", planIdValue);
   return (
     <div className="text-left space-y-4">
       <div>
@@ -19,7 +28,7 @@ export default function CreateRenterForm({ plans, currentValues, errors }: props
           type="text"
           id="swal-name"
           name="swal-name"
-          value={currentValues?.name || ""}
+          value={currentValues?.name || renter?.name || ""}
           required={true}
           placeholder="Ej. Ejemplo Rent"
           className={errors?.name ? "bg-red-400/20 border border-red-600" : ""}
@@ -35,7 +44,7 @@ export default function CreateRenterForm({ plans, currentValues, errors }: props
           name="swal-nit"
           required={true}
           placeholder="NIT"
-          value={currentValues?.nit || ""}
+          value={currentValues?.nit || renter?.nit || ""}
           className={errors?.nit ? "bg-red-400/20 border border-red-600" : ""}
         />
         {errors?.nit && <p className="text-red-500 text-sm">{errors.nit}</p>}
@@ -47,7 +56,7 @@ export default function CreateRenterForm({ plans, currentValues, errors }: props
           type="text"
           id="swal-address"
           name="swal-address"
-          value={currentValues?.address || ""}
+          value={currentValues?.address || renter?.address || ""}
           placeholder="Dirección"
           className={
             errors?.address ? "bg-red-400/20 border border-red-600" : ""
@@ -64,7 +73,7 @@ export default function CreateRenterForm({ plans, currentValues, errors }: props
           type="text"
           id="swal-city"
           name="swal-city"
-          value={currentValues?.city || ""}
+          value={currentValues?.city || renter?.city || ""}
           placeholder="Ciudad"
           className={errors?.city ? "bg-red-400/20 border border-red-600" : ""}
         />
@@ -77,7 +86,7 @@ export default function CreateRenterForm({ plans, currentValues, errors }: props
           type="email"
           id="swal-email"
           name="swal-email"
-          value={currentValues?.email || ""}
+          value={currentValues?.email || renter?.user?.email || ""}
           required={true}
           placeholder="Email"
           className={errors?.email ? "bg-red-400/20 border border-red-600" : ""}
@@ -93,7 +102,7 @@ export default function CreateRenterForm({ plans, currentValues, errors }: props
           type="text"
           id="swal-phone"
           name="swal-phone"
-          value={currentValues?.phone || ""}
+          value={currentValues?.phone || renter?.phone || ""}
           required={true}
           placeholder="Teléfono"
           className={errors?.phone ? "bg-red-400/20 border border-red-600" : ""}
@@ -103,23 +112,25 @@ export default function CreateRenterForm({ plans, currentValues, errors }: props
         )}
       </div>
 
-      <div>
-        <Label htmlFor="swal-password">Contraseña*</Label>
-        <Input
-          type="password"
-          id="swal-password"
-          name="swal-password"
-          value={currentValues?.password || ""}
-          required={true}
-          placeholder="Contraseña"
-          className={
-            errors?.password ? "bg-red-400/20 border border-red-600" : ""
-          }
-        />
-        {errors?.password && (
-          <p className="text-red-500 text-sm">{errors.password}</p>
-        )}
-      </div>
+      {!renter && (
+        <div>
+          <Label htmlFor="swal-password">Contraseña*</Label>
+          <Input
+            type="password"
+            id="swal-password"
+            name="swal-password"
+            value={currentValues?.password || ""}
+            required={!renter ? true : false}
+            placeholder="Contraseña"
+            className={
+              errors?.password ? "bg-red-400/20 border border-red-600" : ""
+            }
+          />
+          {errors?.password && (
+            <p className="text-red-500 text-sm">{errors.password}</p>
+          )}
+        </div>
+      )}
 
       <div>
         <Label htmlFor="swal-legal-representative">Representante Legal*</Label>
@@ -127,7 +138,7 @@ export default function CreateRenterForm({ plans, currentValues, errors }: props
           type="text"
           id="swal-legal-representative"
           name="swal-legal-representative"
-          value={currentValues?.legalRepresentative || ""}
+          value={currentValues?.legalRepresentative || renter?.legalRepresentative || ""}
           placeholder="Representante Legal"
           required={true}
           className={
@@ -146,19 +157,16 @@ export default function CreateRenterForm({ plans, currentValues, errors }: props
         <Select
           id="swal-plan"
           name="swal-plan"
-          value={currentValues?.planId || ""}
+          value={currentValues?.planId || renter?.plan?.id || ""}
           className={
             errors?.planId ? "bg-red-400/20 border border-red-600" : ""
           }
         >
-          <option value="" disabled>
+          <option value="">
             Selecciona un plan
           </option>
           {plans.map((plan) => (
-            <option
-              key={plan.id}
-              value={plan.id}
-            >
+            <option key={plan.id} value={plan.id}>
               {plan.name}
             </option>
           ))}
@@ -176,7 +184,13 @@ export default function CreateRenterForm({ plans, currentValues, errors }: props
           id="swal-expiration-date"
           name="swal-expiration-date"
           type="date"
-          value={currentValues?.planExpiresAt || ""}
+          value={
+            currentValues?.planExpiresAt ||
+            (renter?.planExpiresAt 
+              ? new Date(renter.planExpiresAt).toISOString().split('T')[0]
+              : ""
+            )
+          }
           placeholder="Fecha de expiración del plan"
           className={
             errors?.planExpiresAt ? "bg-red-400/20 border border-red-600" : ""
@@ -193,9 +207,11 @@ export default function CreateRenterForm({ plans, currentValues, errors }: props
           id="swal-balance"
           type="number"
           name="swal-balance"
-          value={currentValues?.balance || ""}
+          value={currentValues?.balance || renter?.balance || ""}
           placeholder="Saldo"
-          className={errors?.balance ? "bg-red-400/20 border border-red-600" : ""}
+          className={
+            errors?.balance ? "bg-red-400/20 border border-red-600" : ""
+          }
         />
         {errors?.balance && (
           <p className="text-red-500 text-sm">{errors.balance}</p>
@@ -208,7 +224,7 @@ export default function CreateRenterForm({ plans, currentValues, errors }: props
           id="swal-balance-threshold"
           type="number"
           name="swal-balance-threshold"
-          value={currentValues?.lowBalanceThreshold || ""}
+          value={currentValues?.lowBalanceThreshold || renter?.lowBalanceThreshold || ""}
           placeholder="Umbral de saldo bajo"
           className={
             errors?.lowBalanceThreshold
@@ -227,7 +243,7 @@ export default function CreateRenterForm({ plans, currentValues, errors }: props
           id="swal-low-balance-alert"
           name="swal-low-balance-alert"
           type="checkbox"
-          value={Boolean(currentValues?.lowBalanceAlertEnabled)}
+          value={Boolean(currentValues?.lowBalanceAlertEnabled || renter?.lowBalanceAlertEnabled)}
         />
       </div>
 
@@ -236,18 +252,14 @@ export default function CreateRenterForm({ plans, currentValues, errors }: props
         <Select
           id="swal-status"
           name="swal-status"
-          value={currentValues?.status || ""}
-          className={errors?.status ? "bg-red-400/20 border border-red-600" : ""}
+          value={currentValues?.status || renter?.status || ""}
+          className={
+            errors?.status ? "bg-red-400/20 border border-red-600" : ""
+          }
         >
           <option value="">Selecciona</option>
-          <option value="active">
-            Activo
-          </option>
-          <option
-            value="suspended"
-          >
-            Suspendido
-          </option>
+          <option value="active">Activo</option>
+          <option value="suspended">Suspendido</option>
         </Select>
         {errors?.status && (
           <p className="text-red-500 text-sm">{errors.status}</p>

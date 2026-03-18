@@ -13,6 +13,9 @@ import { UsersService } from '../users/users.service';
 import { RolesService } from '../roles/roles.service';
 import { RolesEnum } from '../../core/enums/roles.enum';
 import { ListResponse } from '../../core/interfaces/list-response';
+import { RenterStatus } from './enums/renter-status.enum';
+import { User } from '../users/entities/user.entity';
+import { UserStatus } from '../users/enums/user-status.enum';
 
 @Injectable()
 export class RentersService {
@@ -21,13 +24,25 @@ export class RentersService {
     private readonly renterRepository: Repository<Renter>,
     private readonly userService: UsersService,
     private readonly roleService: RolesService,
+    @InjectRepository(User)
+    private readonly userRepository: Repository<User>,
   ) {}
 
   async create(createRenterDto: CreateRenterDto) {
     const role = await this.roleService.findOneByName(RolesEnum.OWNER);
 
     const renterExists = await this.renterRepository.findOne({
-      where: [{ nit: createRenterDto.nit }, { name: createRenterDto.name }],
+      where: [
+        { nit: createRenterDto.nit },
+        { name: ILike(createRenterDto.name) },
+        { phone: createRenterDto.phone },
+        {
+          user: {
+            email: createRenterDto.email,
+          },
+        },
+      ],
+      relations: ['user'],
     });
 
     if (renterExists) throw new ConflictException('Renter already exists');
@@ -50,7 +65,7 @@ export class RentersService {
     page: number = 1,
     limit: number = 10,
     orderBy: string = 'createdAt',
-    orderDir: string = 'ASC',
+    orderDir: string = 'DESC',
     search: string = '',
   ): Promise<ListResponse<Renter>> {
     const safeOrderDir =
@@ -70,6 +85,18 @@ export class RentersService {
       : 'createdAt';
 
     const [data, total] = await this.renterRepository.findAndCount({
+      select: [
+        'id',
+        'name',
+        'nit',
+        'city',
+        'address',
+        'phone',
+        'plan',
+        'balance',
+        'createdAt',
+        'status',
+      ],
       take: limit,
       skip: (page - 1) * limit,
       relations: ['plan'],
@@ -80,6 +107,7 @@ export class RentersService {
       ],
       order: {
         [safeOrderBy]: safeOrderDir,
+        status: 'ASC',
       },
     });
 
@@ -93,7 +121,36 @@ export class RentersService {
 
   async findOne(id: string) {
     try {
-      const renter = await this.renterRepository.findOne({ where: { id } });
+      const renter = await this.renterRepository
+        .createQueryBuilder('renter')
+        .leftJoinAndSelect('renter.plan', 'plan')
+        .leftJoinAndSelect('renter.user', 'user')
+        .leftJoinAndSelect('user.role', 'role')
+        .select([
+          'renter.id',
+          'renter.name',
+          'renter.nit',
+          'renter.city',
+          'renter.address',
+          'renter.phone',
+          'renter.legalRepresentative',
+          'plan.id',
+          'plan.name',
+          'user.id',
+          'user.email',
+          'role.name',
+          'renter.planExpiresAt',
+          'renter.balance',
+          'renter.lowBalanceThreshold',
+          'renter.lowBalanceAlertEnabled',
+          'renter.createdAt',
+          'renter.updatedAt',
+          'renter.status',
+          'renter.totalRentals',
+          'renter.totalBranches',
+        ])
+        .where('renter.id = :id', { id })
+        .getOne();
 
       if (!renter) throw new NotFoundException('Renter not found');
 
@@ -106,31 +163,53 @@ export class RentersService {
   }
 
   async update(id: string, updateRenterDto: UpdateRenterDto) {
-    await this.findOne(id);
-    await this.renterRepository.update(id, updateRenterDto);
+    const renter = await this.findOne(id);
 
-    if (
-      updateRenterDto.name ||
-      updateRenterDto.email ||
-      updateRenterDto.password
-    ) {
+    await this.renterRepository.update(id, {
+      name: updateRenterDto.name,
+      nit: updateRenterDto.nit,
+      city: updateRenterDto.city,
+      address: updateRenterDto.address,
+      phone: updateRenterDto.phone,
+      legalRepresentative: updateRenterDto.legalRepresentative,
+      planId: updateRenterDto.planId,
+      planExpiresAt: updateRenterDto.planExpiresAt,
+      balance: updateRenterDto.balance,
+      lowBalanceThreshold: updateRenterDto.lowBalanceThreshold,
+      lowBalanceAlertEnabled: updateRenterDto.lowBalanceAlertEnabled,
+      status: updateRenterDto.status,
+    });
+
+    if (updateRenterDto.name || updateRenterDto.email) {
       await this.userService.updateByRenterId(id, {
         name: updateRenterDto.name,
         email: updateRenterDto.email,
-        password: updateRenterDto.password,
+        status:
+          updateRenterDto.status === RenterStatus.ACTIVE
+            ? UserStatus.ACTIVE
+            : UserStatus.SUSPENDED,
       });
     }
 
-    return await this.findOne(id);
+    return renter;
   }
 
-  // async remove(id: string) {
-  //   const renter = await this.renterRepository.findOne({ where: { id } });
-  //   if (!renter) throw new NotFoundException('Rentadora no encontrada');
+  async remove(id: string) {
+    const renter = await this.renterRepository.findOne({
+      where: { id },
+      select: ['id', 'status'],
+      relations: ['user'],
+    });
+    const user = await this.userRepository.findOne({
+      where: { id: renter.user.id },
+    });
+    if (!renter && !user)
+      throw new NotFoundException('Rentadora no encontrada');
 
-  //   renter.status = 'suspended';
-  //   await this.renterRepository.save(renter);
+    renter.status = RenterStatus.SUSPENDED;
+    user.status = UserStatus.SUSPENDED;
 
-  //   return await this.renterRepository.softDelete(id);
-  // }
+    await this.userRepository.save(user);
+    return await this.renterRepository.save(renter);
+  }
 }

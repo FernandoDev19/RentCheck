@@ -8,6 +8,7 @@ import type { ListResponse } from "../../../common/interfaces/list-response.inte
 import { renterService } from "../../../services/renter.service";
 import { catchError } from "../../../common/errors/catch-error";
 import ViewRenter from "../components/ViewRenter";
+import { useNavigate } from "react-router";
 
 const MySwal = withReactContent(Swal);
 
@@ -19,12 +20,13 @@ export const useRenters = () => {
   const [totalPages, setTotalPages] = useState<number>(1);
   const [page, setPage] = useState<number>(1);
   const [searchTerm, setSearchTerm] = useState<string>("");
+  const navigate = useNavigate();
   const [orderBy, setOrderBy] = useState<{
     key: string;
     direction: "asc" | "desc";
   }>({
-    key: "name",
-    direction: "asc",
+    key: "createdAt",
+    direction: "desc",
   });
   const limit = 10;
 
@@ -65,7 +67,7 @@ export const useRenters = () => {
     setSearchTerm(term);
   };
 
-  const handleSortChange = (key: string, direction: string = "asc") => {
+  const handleSortChange = (key: string, direction: string = "desc") => {
     if (!key) return;
     setPage(1);
     setOrderBy({ key, direction: direction === "desc" ? "desc" : "asc" });
@@ -74,12 +76,50 @@ export const useRenters = () => {
   const handleView = async (row: Renter) => {
     MySwal.fire({
       title: "Ver rentadora",
-      html: <ViewRenter renter={row} />,
+      html: <ViewRenter renterId={row.id} />,
       icon: "info",
       showConfirmButton: false,
       showCloseButton: true,
       width: 560,
+      didOpen: () => {
+        document
+          .getElementById("view-branches")
+          ?.addEventListener("click", () => {
+            MySwal.close();
+            navigate(`/adm/branches/${row.id}`);
+          });
+      },
     });
+  };
+
+  const handleDelete = async (renterId: string) => {
+    try {
+      const result = await Swal.fire({
+        title: "¿Eliminar Rentadora?",
+        text: "¿Estás seguro de que quieres eliminar a esta rentadora?",
+        icon: "question",
+        showCancelButton: true,
+        confirmButtonColor: "#3085d6",
+        cancelButtonColor: "#d33",
+        confirmButtonText: "Sí, Eliminar",
+        cancelButtonText: "Cancelar",
+      });
+
+      if(result.isConfirmed) {
+        await renterService.delete(renterId);
+        MySwal.fire({
+          title: "Eliminado",
+          icon: "success",
+          text: "Rentadora eliminada correctamente",
+          timer: 2000,
+          showConfirmButton: false,
+        });
+        loadRenters();
+      };
+
+    } catch (error) {
+      await catchError(error, MySwal, "Error al eliminar la rentadora");
+    }
   };
 
   return {
@@ -94,6 +134,7 @@ export const useRenters = () => {
     handleSortChange,
     handleSearchChange,
     handleView,
-    loadRenters
+    handleDelete,
+    loadRenters,
   };
 };

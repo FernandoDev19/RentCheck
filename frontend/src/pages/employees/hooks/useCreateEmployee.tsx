@@ -6,7 +6,7 @@ import withReactContent from "sweetalert2-react-content";
 import Swal from "sweetalert2";
 import CreateEmployeeForm from "../components/CreateEmployeeForm";
 import { IDENTITY_TYPE } from "../../../common/types/identity-type.type";
-import { createEmployeeSchema } from "../schemas/employee.schema";
+import { createEmployeeSchema } from "../schemas/create-employee.schema";
 import type { EmployeeErrors } from "../interfaces/employee-errors.interface";
 import { employeeService } from "../../../services/employee.service";
 

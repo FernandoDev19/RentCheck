@@ -97,7 +97,7 @@ export class MvpDataService {
       await fakeBiometryRequestsSeeder(
         this.BiometryRequestRepository,
         this.CustomerRepository,
-        this.UserRepository,
+        this.EmployeeRepository,
       );
     }
   }
@@ -115,6 +115,7 @@ export class MvpDataService {
       'customers',
       'rentals',
       'rental_feedbacks',
+      'biometry_requests',
     ];
 
     try {

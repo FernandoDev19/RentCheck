@@ -1,16 +1,8 @@
 import type { ListResponse } from "../common/interfaces/list-response.interface";
-import type { IdentityType } from "../common/types/identity-type.type";
 import api from "../config/api";
 import type { Employee } from "../models/employee.model";
-
-export interface CreateEmployeeInterface {
-    name: string;
-    email: string;
-    password: string;
-    branchId?: string;
-    identityType?: IdentityType;
-    identityNumber: string;
-}
+import type { CreateEmployeeInterface } from "../pages/employees/interfaces/create-employee.interface";
+import type { EditEmployeeInterface } from "../pages/employees/interfaces/edit-employee.interface";
 
 export const employeeService = {
   getAll: async (params?: {
@@ -31,6 +23,16 @@ export const employeeService = {
     });
 
     return respone.data;
+  },
+
+  update: async (id: string, data: EditEmployeeInterface) => {
+    const response = await api.put(`/employees/${id}`, data);
+    return response.data;
+  },
+
+  delete: async (id: string) => {
+    const response = await api.delete(`/employees/${id}`);
+    return response.data;
   },
   
   createEmployee: async (data: CreateEmployeeInterface) => {

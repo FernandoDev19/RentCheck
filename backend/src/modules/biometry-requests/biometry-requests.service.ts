@@ -11,12 +11,16 @@ import { RolesEnum } from '../../core/enums/roles.enum';
 import { ListResponse } from '../../core/interfaces/list-response';
 import { StatusBiometryRequest } from './enums/status-biometry-request.enum';
 import { ResultBecomeEnum } from './enums/result-become.enum';
+import { Customer } from '../customers/entities/customer.entity';
+import { CustomerStatusEnum } from '../customers/enums/customer-status.enum';
 
 @Injectable()
 export class BiometryRequestsService {
   constructor(
     @InjectRepository(BiometryRequest)
     private readonly biometryRequestRepository: Repository<BiometryRequest>,
+    @InjectRepository(Customer)
+    private readonly customerRepository: Repository<Customer>,
   ) {}
 
   // async create(createBiometryRequestDto: CreateBiometryRequestDto) {

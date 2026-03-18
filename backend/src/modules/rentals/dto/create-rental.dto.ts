@@ -8,10 +8,9 @@ export class CreateRentalDto {
   // @IsNotEmpty()
   // renterId: string;
 
-  // @IsString()
-  // @Transform(({ value }) => value.trim())
-  // @IsNotEmpty()
-  // branchId: string;
+  @IsOptional()
+  @IsString()
+  branchId?: string;
 
   // @IsString()
   // @Transform(({ value }) => value.trim())
@@ -22,6 +21,10 @@ export class CreateRentalDto {
   // @Transform(({ value }) => value.trim())
   // @IsNotEmpty()
   // customerId: string;
+
+  @IsOptional()
+  @IsString()
+  vehicleId?: string;
 
   @IsString()
   @Transform(({ value }) => value.trim())
@@ -37,7 +40,7 @@ export class CreateRentalDto {
   @IsString()
   @Transform(({ value }) => value.trim())
   @IsNotEmpty()
-  actualReturnDate: string;
+  actualReturnDate?: string;
 
   @IsOptional()
   @IsEnum(RentalStatusEnum)

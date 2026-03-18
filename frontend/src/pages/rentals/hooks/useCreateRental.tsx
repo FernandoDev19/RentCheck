@@ -3,14 +3,21 @@ import withReactContent from "sweetalert2-react-content";
 import type { Customer } from "../../../models/customer.model";
 import { customerService } from "../../../services/customer.service";
 import { catchError } from "../../../common/errors/catch-error";
-import { createRentalSchema } from "../schemas/rental.schema";
+import { createRentalAndCustomerSchema } from "../schemas/create-rental-and-customer.schema";
 import { rentalService } from "../../../services/rental.service";
 import CreateRentalForm from "../components/CreateRentalForm";
 import type { RentalErrors } from "../interfaces/rental-errors.interface";
+import { CUSTOMER_STATUS_LABELS } from "../../customers/constants/customer-status-label";
+import { getUser } from "../../dashboard/helpers/user.helper";
+import { ROLES } from "../../../common/types/roles.type";
+import { createRentalSchema } from "../schemas/create-rental.schema";
 
 const MySwal = withReactContent(Swal);
 
 export const useCreateRental = () => {
+
+  const user = getUser();
+  const userRoleOwner = user.role === ROLES.OWNER;
 
   const handleCreateClick = async (loadRentals: () => Promise<void> | void, identityNumber?: string) => {
     let idData = identityNumber;
@@ -53,47 +60,75 @@ export const useCreateRental = () => {
       existingCustomer.status !== "normal" &&
       existingCustomer.status !== "yellow_alert"
     ) {
-      // Recopilar qué critical flags están activos
-      const activeFlags = existingCustomer.rentals
-        ?.flatMap((rental) => rental.rentalFeedback)
-        ?.flatMap((fb) => Object.entries(fb?.criticalFlags ?? {}))
-        .filter(([_, value]) => value === true)
-        .map(([key]) => key);
+       const rentalsWithCriticalFlags =
+        existingCustomer.rentals
+          ?.filter((rental) => rental.rentalFeedback?.criticalFlags)
+          .filter((rental) => {
+            const flags = rental?.rentalFeedback!.criticalFlags;
+            return flags.vehicleTheft || flags.impersonation;
+          }) ?? [];
 
       const flagLabels: Record<string, string> = {
         vehicleTheft: "🚗 Robo de vehículo",
         impersonation: "🪪 Suplantación de identidad",
-        // agrega más si tienes
       };
 
-      const flagsHtml = activeFlags?.length
-        ? activeFlags.map((f) => `<li>${flagLabels[f] ?? f}</li>`).join("")
-        : "<li>Sin flags específicos</li>";
+      const flagSummary: Record<
+        string,
+        { count: number; cities: Set<string> }
+      > = {};
+
+      for (const rental of rentalsWithCriticalFlags) {
+        const flags = rental?.rentalFeedback!.criticalFlags;
+        const city =
+          rental.branch?.city ?? rental.renter?.city ?? rental.renter.name ?? "Ciudad desconocida";
+
+        for (const [key, active] of Object.entries(flags)) {
+          if (!active) continue;
+          if (!flagSummary[key])
+            flagSummary[key] = { count: 0, cities: new Set() };
+          flagSummary[key].count++;
+          flagSummary[key].cities.add(city);
+        }
+      }
+
+      const flagsHtml = Object.entries(flagSummary)
+        .map(
+          ([key, { count, cities }]) => `
+            <li style="margin-bottom:8px;">
+              <span style="font-weight:700;">${flagLabels[key] ?? key}</span>
+              <span style="font-weight:400; color:#9b1c1c;">
+                — ${count} ${count === 1 ? "vez" : "veces"}
+              </span>
+              <div style="font-size:11px; color:#b91c1c; margin-top:2px;">
+                📍 ${[...cities].join(", ")}
+              </div>
+            </li>
+          `,
+        )
+        .join("");
 
       // Mostrar advertencia ANTES del swal de crear renta
-      const { isConfirmed } = await Swal.fire({
+      const { isConfirmed } = await MySwal.fire({
         title: "⚠️ Cliente en alerta",
         html: `
-              <p style="color:#6b7280; margin-bottom:12px;">
-                Este cliente tiene estado <strong style="color:#dc2626">${existingCustomer.status}</strong>.
-                Se han reportado los siguientes flags críticos:
-              </p>
-              <ul style="text-align:left; color:#dc2626; font-weight:600; list-style:none; padding:0; 
-                background:#fee2e2; border-radius:8px; padding:12px 16px; margin:0;">
-                ${flagsHtml}
-              </ul>
-              <p style="color:#6b7280; margin-top:12px; font-size:13px;">
-                ¿Deseas continuar con la creación de la renta?
-              </p>
-            `,
+            <p style="color:#6b7280; margin-bottom:12px; font-size:13px;">
+              Estado: <strong style="color:#dc2626">${CUSTOMER_STATUS_LABELS[existingCustomer.status]}</strong>
+              — reportado en <strong>${rentalsWithCriticalFlags.length}</strong> ${rentalsWithCriticalFlags.length === 1 ? "renta" : "rentas"}
+            </p>
+            <ul style="text-align:left; list-style:none; padding:12px 16px; margin:0;
+              background:#fee2e2; border-radius:8px; color:#dc2626;">
+              ${flagsHtml}
+            </ul>
+          `,
         icon: "warning",
+        confirmButtonText: "Entendido, continuar",
         showCancelButton: true,
-        confirmButtonText: "Sí, continuar",
         cancelButtonText: "Cancelar",
         confirmButtonColor: "#dc2626",
       });
 
-      if (!isConfirmed) return; // El empleado decidió no proceder
+      if (!isConfirmed) return; // Decidió no proceder
     }
 
     MySwal.fire({
@@ -101,7 +136,7 @@ export const useCreateRental = () => {
       html: (
         <CreateRentalForm
           customer={existingCustomer || null}
-          identityNumber={idData}
+          identityNumber={idData!}
         />
       ),
       width: 600,
@@ -138,6 +173,8 @@ export const useCreateRental = () => {
                 "swal-expectedReturnDate",
               ) as HTMLInputElement
             )?.value || "",
+          branchId: (document.getElementById('swal-branch') as HTMLSelectElement)
+            ?.value || ""
         };
 
         const name = existingCustomer
@@ -169,17 +206,31 @@ export const useCreateRental = () => {
         const expectedReturnDate = (
           document.getElementById("swal-expectedReturnDate") as HTMLInputElement
         ).value;
+        const branchId = userRoleOwner
+        ? (document.getElementById('swal-branch') as HTMLSelectElement)?.value || ""
+        : undefined;
 
-        const result = createRentalSchema.safeParse({
-          name,
-          lastName,
-          identityType,
-          identityNumber,
-          email,
-          phone,
-          startDate,
-          expectedReturnDate,
-        });
+        let result;
+        
+        if (!existingCustomer) {
+          result = createRentalAndCustomerSchema.safeParse({
+            name,
+            lastName,
+            identityType,
+            identityNumber,
+            email,
+            phone,
+            startDate,
+            expectedReturnDate,
+            branchId
+          });
+        }else {
+          result = createRentalSchema.safeParse({
+            startDate,
+            expectedReturnDate,
+            branchId
+          });
+        }
 
         if (!result.success) {
           const errorObj: RentalErrors = {};
@@ -193,7 +244,7 @@ export const useCreateRental = () => {
               <CreateRentalForm
                 customer={existingCustomer || null}
                 currentValues={currentValues}
-                identityNumber={idData}
+                identityNumber={idData!}
                 errors={errorObj}
               />
             ),

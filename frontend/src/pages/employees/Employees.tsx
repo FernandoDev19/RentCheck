@@ -1,12 +1,33 @@
+import { Edit, Trash2 } from "lucide-react";
 import DataTable from "../../common/components/datatable/DataTable";
 import PageHeader from "../../common/components/PageHeader";
+import ButtonActionDataTable from "../../common/components/ui/ButtonActionDataTable";
+import { ROLES } from "../../common/types/roles.type";
+import { getUser } from "../dashboard/helpers/user.helper";
 import { columns } from "./constants/employee.columns";
 import { useCreateEmployee } from "./hooks/useCreateEmployee";
 import { useEmployees } from "./hooks/useEmployees";
+import { useEditEmployee } from "./hooks/useEditEmployee";
 
 export default function Employees() {
-  const {employees, limit, page, setPage, handleSearchChange, handleSortChange, totalPages, totalItems, loadEmployees} = useEmployees();
+  const {
+    employees,
+    limit,
+    page,
+    setPage,
+    handleSearchChange,
+    handleSortChange,
+    totalPages,
+    totalItems,
+    loadEmployees,
+    handleDelete,
+  } = useEmployees();
   const { handleCreateClick } = useCreateEmployee();
+  const { handleEdit } = useEditEmployee();
+
+  const userRole = getUser().role;
+  const userRoleManagerOrOwner =
+    userRole === ROLES.MANAGER || userRole === ROLES.OWNER;
 
   return (
     <div className="w-full">
@@ -34,6 +55,30 @@ export default function Employees() {
         emptyMessage="No hay empleados registrados"
         createButton={true}
         onCreateClick={() => handleCreateClick(loadEmployees)}
+        actions={
+          userRoleManagerOrOwner
+            ? (r) => (
+                <>
+                  {userRoleManagerOrOwner && (
+                    <>
+                      <ButtonActionDataTable
+                        onClick={() => handleEdit(loadEmployees, r)}
+                        color="green"
+                      >
+                        <Edit size={16} />
+                      </ButtonActionDataTable>
+                      <ButtonActionDataTable
+                        onClick={() => handleDelete(r.id)}
+                        color="red"
+                      >
+                        <Trash2 size={16} />
+                      </ButtonActionDataTable>
+                    </>
+                  )}
+                </>
+              )
+            : undefined
+        }
       />
     </div>
   );

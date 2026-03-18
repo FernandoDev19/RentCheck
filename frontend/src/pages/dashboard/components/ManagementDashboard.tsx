@@ -1,13 +1,23 @@
 import { useNavigate } from "react-router";
 import { getUser } from "../helpers/user.helper";
 import { ROLES, type RolesType } from "../../../common/types/roles.type";
+import { useSearch } from "../hooks/useSearch";
 
 export default function ManagementDashboard({ role }: { role: RolesType }) {
   const navigate = useNavigate();
+  const { handleSearch } = useSearch();
   const user = getUser();
   const isOwner = role === ROLES.OWNER;
 
   const cards = [
+    {
+      id: "search",
+      icon: "🔍",
+      label: "Buscar Cliente",
+      description: "Consulta historial, score y alertas",
+      gradient: "linear-gradient(135deg, #0f172a 0%, #1e293b 100%)",
+      onClick: handleSearch,
+    },
     ...(isOwner
       ? [
           {
@@ -63,7 +73,6 @@ export default function ManagementDashboard({ role }: { role: RolesType }) {
       style={{
         minHeight: "100vh",
         background: "#f8fafc",
-        fontFamily: "'DM Sans', sans-serif",
       }}
     >
       <style>{`
@@ -80,7 +89,7 @@ export default function ManagementDashboard({ role }: { role: RolesType }) {
         .fade-up { animation: fadeUp 0.4s ease both; }
       `}</style>
 
-      <div style={{ maxWidth: 680, margin: "0 auto", padding: "48px 24px" }}>
+      <div className="py-10 md:py-20 md:px-16" style={{ maxWidth: 680, margin: "0 auto"}}>
         <div className="fade-up" style={{ marginBottom: 36 }}>
           <p
             style={{
@@ -111,7 +120,7 @@ export default function ManagementDashboard({ role }: { role: RolesType }) {
         </div>
 
         <div
-          style={{ display: "grid", gridTemplateColumns: "1fr 1fr", gap: 16 }}
+          style={{ display: "grid", gridTemplateColumns: "repeat(auto-fit, minmax(200px, 1fr))", gap: 16 }}
         >
           {cards.map((card, i) => (
             <button

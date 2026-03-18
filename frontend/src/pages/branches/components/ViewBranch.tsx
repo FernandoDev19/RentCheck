@@ -1,12 +1,30 @@
+import { useEffect, useState } from "react";
 import Paragraph from "../../../common/components/ui/Paragraph";
 import TitleSpan from "../../../common/components/ui/TitleSpan";
 import type { Branch } from "../../../models/branch.model";
+import { branchService } from "../../../services/branch.service";
+import Swal from "sweetalert2";
+import { catchError } from "../../../common/errors/catch-error";
 
 type Props = {
-  row: Branch;
+  branchId: string;
 };
 
-export default function ViewBranch({ row }: Props) {
+export default function ViewBranch({ branchId }: Props) {
+  const [branch, setRenter] = useState<Branch>();
+
+  useEffect(() => {
+    const fetchRenter = async () => {
+      try {
+        const response = await branchService.findOne(branchId);
+        setRenter(response);
+      } catch (error) {
+        await catchError(error, Swal, "Error al obtener rentadora");
+      }
+    };
+    fetchRenter();
+  }, [branchId]);
+  
   return (
     <div className="text-left text-lg space-y-4">
       <div
@@ -19,27 +37,23 @@ export default function ViewBranch({ row }: Props) {
       >
         <div>
           <TitleSpan>Nombre</TitleSpan>
-          <Paragraph>{row.name}</Paragraph>
+          <Paragraph>{branch?.name}</Paragraph>
         </div>
         <div>
           <TitleSpan>Ciudad</TitleSpan>
-          <Paragraph>{row.city ?? "-"}</Paragraph>
+          <Paragraph>{branch?.city ?? "-"}</Paragraph>
         </div>
         <div>
           <TitleSpan>Dirección</TitleSpan>
-          <Paragraph>{row.address ?? "-"}</Paragraph>
+          <Paragraph>{branch?.address ?? "-"}</Paragraph>
         </div>
         <div>
           <TitleSpan>Celular</TitleSpan>
-          <Paragraph>{row.phone}</Paragraph>
+          <Paragraph>{branch?.phone}</Paragraph>
         </div>
         <div>
           <TitleSpan>Representante</TitleSpan>
-          <Paragraph>{row.responsible}</Paragraph>
-        </div>
-        <div>
-          <TitleSpan>Telefono representante</TitleSpan>
-          <Paragraph>{row.responsiblePhone}</Paragraph>
+          <Paragraph>{branch?.responsible}</Paragraph>
         </div>
       </div>
 
@@ -52,22 +66,21 @@ export default function ViewBranch({ row }: Props) {
           gap: "8px 16px",
         }}
       >
-
         <div>
           <TitleSpan>Email</TitleSpan>
-          <Paragraph>{row.email}</Paragraph>
+          <Paragraph>{branch?.email}</Paragraph>
         </div>
         <div>
           <TitleSpan>Estado</TitleSpan>
-            <Paragraph>
+          <Paragraph>
             <span
-                className={`py-[2px] px-2 rounded-full text-xs font-semibold ${row.status === true ? "bg-green-100 text-green-800" : "bg-red-100 text-red-800"}`}
+              className={`py-[2px] px-2 rounded-full text-xs font-semibold ${branch?.status === true ? "bg-green-100 text-green-800" : "bg-red-100 text-red-800"}`}
             >
-                {row.status === true ? "Activo" : "Suspendido"}
+              {branch?.status === true ? "Activo" : "Suspendido"}
             </span>
-            </Paragraph>
+          </Paragraph>
         </div>
-    </div>
+      </div>
 
       <hr />
 
@@ -81,13 +94,13 @@ export default function ViewBranch({ row }: Props) {
         <div>
           <TitleSpan>Creado</TitleSpan>
           <Paragraph>
-            {new Date(row.createdAt).toLocaleDateString("es-CO")}
+            {new Date(branch?.createdAt as Date).toLocaleDateString("es-CO")}
           </Paragraph>
         </div>
         <div>
           <TitleSpan>Actualizado</TitleSpan>
           <Paragraph>
-            {new Date(row.updatedAt).toLocaleDateString("es-CO")}
+            {new Date(branch?.updatedAt as Date).toLocaleDateString("es-CO")}
           </Paragraph>
         </div>
       </div>

@@ -5,7 +5,7 @@ import Swal from "sweetalert2";
 import type { ListResponse } from "../../../common/interfaces/list-response.interface";
 import { employeeService } from "../../../services/employee.service";
 import { catchError } from "../../../common/errors/catch-error";
-import { createEmployeeSchema } from "../schemas/employee.schema";
+import { createEmployeeSchema } from "../schemas/create-employee.schema";
 
 const MySwal = withReactContent(Swal);
 
@@ -20,8 +20,8 @@ export const useEmployees = () => {
     key: string;
     direction: "asc" | "desc";
   }>({
-    key: "name",
-    direction: "asc",
+    key: "createdAt",
+    direction: "desc",
   });
   const limit = 10;
 
@@ -64,6 +64,35 @@ export const useEmployees = () => {
     setOrderBy({ key, direction: direction === "desc" ? "desc" : "asc" });
   };
 
+  const handleDelete = async (employeeId: string) => {
+      try {
+        const result = await Swal.fire({
+          title: "¿Eliminar Empleado?",
+          text: "¿Estás seguro de que quieres eliminar a este Empleado?",
+          icon: "question",
+          showCancelButton: true,
+          confirmButtonColor: "#3085d6",
+          cancelButtonColor: "#d33",
+          confirmButtonText: "Sí, Eliminar",
+          cancelButtonText: "Cancelar",
+        });
+  
+        if (result.isConfirmed) {
+          await employeeService.delete(employeeId);
+          MySwal.fire({
+            title: "Eliminado",
+            icon: "success",
+            text: "Empleado eliminado correctamente",
+            timer: 2000,
+            showConfirmButton: false,
+          });
+          loadEmployees();
+        }
+      } catch (error) {
+        await catchError(error, MySwal, "Error al eliminar la rentadora");
+      }
+    };
+
   return {
     isLoading,
     employees,
@@ -75,6 +104,7 @@ export const useEmployees = () => {
     setPage,
     handleSearchChange,
     handleSortChange,
-    loadEmployees
+    loadEmployees,
+    handleDelete
   };
 };

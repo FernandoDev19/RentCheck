@@ -22,7 +22,7 @@ export class RolesGuard implements CanActivate {
       .switchToHttp()
       .getRequest();
 
-    if (user.role === 'Admin Rentcheck') {
+    if ((user.role as RolesEnum) === RolesEnum.ADMIN) {
       return true;
     }
 

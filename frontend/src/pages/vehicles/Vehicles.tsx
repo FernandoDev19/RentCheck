@@ -1,0 +1,141 @@
+import PageHeader from "../../common/components/PageHeader";
+import DataTable from "../../common/components/datatable/DataTable";
+import CardList from "../../common/components/card-list/CardList";
+import { useVehicles } from "./hooks/useVehicles";
+import type { Vehicle } from "../../models/Vehicle.model";
+import { getUser } from "../dashboard/helpers/user.helper";
+import { ROLES } from "../../common/types/roles.type";
+import ButtonActionDataTable from "../../common/components/ui/ButtonActionDataTable";
+import { Edit, Trash2 } from "lucide-react";
+import { useCreateVehicle } from "./hooks/useCreateVehicle";
+import { useEditVehicle } from "./hooks/useEditVehicle";
+import { useChangeStatus } from "./hooks/useChangeStatus";
+import { columns } from "./constants/vehicles.columns";
+import { cardFields } from "./constants/vehicles.fields";
+import { StatusBadge } from "./helpers/vehicle-status-badge.helper";
+
+export default function Vehicles() {
+  const { vehicles, loadVehicles, handleDelete, page, setPage, viewMode, setViewMode, limit, totalItems, totalPages, setSearchTerm, setOrderBy } = useVehicles();
+  const { handleCreate } = useCreateVehicle();
+  const { handleEdit } = useEditVehicle();
+  const { handleChangeStatus } = useChangeStatus();
+
+  const user = getUser();
+
+  const canManage = user.role === ROLES.OWNER || user.role === ROLES.MANAGER;
+    const renderActions = (row: Vehicle) => (
+      <div className="flex items-center gap-1.5 flex-wrap">
+        {/* <ButtonActionDataTable onClick={() => handleHistory(row)} color="indigo">
+          Historial
+        </ButtonActionDataTable> */}
+        {canManage && (
+          <>
+            <ButtonActionDataTable onClick={() => handleEdit(loadVehicles, row)} color="slate">
+              <Edit size={16} />
+            </ButtonActionDataTable>
+            {row.status !== "rented" && (
+              <ButtonActionDataTable
+                onClick={() => handleChangeStatus(loadVehicles, row)}
+                color="yellow"
+              >
+                Estado
+              </ButtonActionDataTable>
+            )}
+            <ButtonActionDataTable
+              onClick={() => handleDelete(row)}
+              color="red"
+              disabled={row.status === "rented"}
+            >
+              <Trash2 size={16} />
+            </ButtonActionDataTable>
+          </>
+        )}
+      </div>
+    );
+
+  return (
+    <div className="w-full">
+      <PageHeader
+        eyebrow="Inventario"
+        title="Vehículos"
+        description="Gestiona el inventario de vehículos de tu rentadora"
+      />
+
+      {/* ── Toggle view ── */}
+      <div className="flex items-center justify-between mb-4">
+        <div className="flex items-center gap-1 p-1 bg-slate-100 rounded-lg">
+          <button
+            onClick={() => setViewMode("table")}
+            className={`px-3 py-1.5 rounded-md text-xs font-semibold transition ${
+              viewMode === "table"
+                ? "bg-white text-slate-800 shadow-sm"
+                : "text-slate-500 hover:text-slate-700"
+            }`}
+          >
+            ☰ Tabla
+          </button>
+          <button
+            onClick={() => setViewMode("cards")}
+            className={`px-3 py-1.5 rounded-md text-xs font-semibold transition ${
+              viewMode === "cards"
+                ? "bg-white text-slate-800 shadow-sm"
+                : "text-slate-500 hover:text-slate-700"
+            }`}
+          >
+            ⊞ Cards
+          </button>
+        </div>
+      </div>
+
+      {/* ── Table view ── */}
+      {viewMode === "table" && (
+        <DataTable
+          data={vehicles}
+          columns={columns}
+          pageSize={limit}
+          serverSidePagination
+          serverSideSearch
+          serverSideSort
+          currentPage={page}
+          onPageChange={setPage}
+          onSearchChange={(term) => { setPage(1); setSearchTerm(term); }}
+          onSortChange={(key, dir) => { setPage(1); setOrderBy({ key, direction: dir === "desc" ? "desc" : "asc" }); }}
+          totalPages={totalPages}
+          totalItems={totalItems}
+          searchPlaceholder="Buscar por placa, marca, modelo..."
+          emptyMessage="No hay vehículos registrados"
+          createButton={canManage}
+          onCreateClick={() => handleCreate(loadVehicles)}
+          actions={renderActions}
+        />
+      )}
+
+      {/* ── Card view ── */}
+      {viewMode === "cards" && (
+        <CardList
+          data={vehicles}
+          fields={cardFields}
+          title={(v) => (
+            <span className="font-mono font-bold tracking-wide">{v.plate}</span>
+          )}
+          subtitle={(v) => `${v.brand} ${v.model} · ${v.year}`}
+          badge={(v) => <StatusBadge status={v.status} />}
+          icon={() => "🚗"}
+          footer={(v) => renderActions(v)}
+          pageSize={limit}
+          serverSidePagination
+          serverSideSearch
+          currentPage={page}
+          onPageChange={setPage}
+          onSearchChange={(term) => { setPage(1); setSearchTerm(term); }}
+          totalPages={totalPages}
+          totalItems={totalItems}
+          searchPlaceholder="Buscar vehículo..."
+          emptyMessage="No hay vehículos registrados"
+          createButton={canManage}
+          onCreateClick={() => handleCreate(loadVehicles)}
+        />
+      )}
+    </div>
+  );
+}

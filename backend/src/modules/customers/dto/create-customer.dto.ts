@@ -17,6 +17,7 @@ export class CreateCustomerDto {
   @IsEnum(IdentityTypeEnum)
   identityType: IdentityTypeEnum;
 
+  @IsOptional()
   @IsString()
   @Transform(({ value }) => value.trim())
   @IsNotEmpty()
@@ -24,6 +25,7 @@ export class CreateCustomerDto {
   @MaxLength(15)
   identityNumber: string;
 
+  @IsOptional()
   @IsString()
   @Transform(({ value }) => value.trim())
   @IsNotEmpty()
@@ -31,6 +33,7 @@ export class CreateCustomerDto {
   @MaxLength(60)
   name: string;
 
+  @IsOptional()
   @IsString()
   @Transform(({ value }) => value.trim())
   @IsNotEmpty()

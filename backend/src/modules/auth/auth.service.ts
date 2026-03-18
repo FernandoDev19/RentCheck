@@ -24,6 +24,7 @@ import { RegisterEmployeeDto } from './dto/register-employee.dto';
 import { Renter } from '../renters/entities/renter.entity';
 import { RegisterRenterDto } from './dto/register-renter.dto';
 import { RenterStatus } from '../renters/enums/renter-status.enum';
+import { UserStatus } from '../users/enums/user-status.enum';
 
 @Injectable()
 export class AuthService {
@@ -58,11 +59,12 @@ export class AuthService {
     });
 
     if (!userExist)
-      throw new UnauthorizedException('Email is wrong or user not exists');
+      throw new UnauthorizedException('Email o usuario no existe');
 
     const isPasswordValid = await bcrypt.compare(password, userExist.password);
 
-    if (!isPasswordValid) throw new UnauthorizedException('Password is wrong');
+    if (!isPasswordValid)
+      throw new UnauthorizedException('Contraseña incorrecta');
 
     let renterId: string;
 
@@ -75,7 +77,7 @@ export class AuthService {
         renterId = userExist.renterId;
 
         if (renter?.status === RenterStatus.SUSPENDED)
-          throw new UnauthorizedException('Renter is suspended');
+          throw new UnauthorizedException('La rentadora está suspendida');
         break;
       }
       case RolesEnum.MANAGER: {
@@ -116,9 +118,18 @@ export class AuthService {
         userExist.branchId = employee.branch.id;
 
         if (employee.branch.renter.status === RenterStatus.SUSPENDED)
-          throw new UnauthorizedException('Renter is suspended');
+          throw new UnauthorizedException('La rentadora está suspendida');
         break;
       }
+    }
+
+    if (
+      userExist.status === UserStatus.SUSPENDED ||
+      userExist.status === UserStatus.INACTIVE
+    ) {
+      throw new UnauthorizedException(
+        'Este usuario ha sido suspendido o eliminado, por favor contacta con el administrador',
+      );
     }
 
     const payload: UserActiveInterface = {

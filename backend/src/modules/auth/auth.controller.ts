@@ -55,8 +55,8 @@ export class AuthController {
     return this.authService.profile(user);
   }
 
-  @UseGuards(AuthGuard)
   @Post('verify')
+  @UseGuards(AuthGuard)
   verify(@ActiveUser() user: UserActiveInterface) {
     return {
       isValid: true,

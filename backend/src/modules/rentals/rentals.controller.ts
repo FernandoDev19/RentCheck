@@ -107,8 +107,8 @@ export class RentalsController {
   //   return this.rentalsService.update(id, updateRentalDto);
   // }
 
-  @Auth(RolesEnum.EMPLOYEE, RolesEnum.OWNER, RolesEnum.MANAGER)
   @Post(':id/return')
+  @Auth(RolesEnum.EMPLOYEE, RolesEnum.OWNER, RolesEnum.MANAGER)
   returnRental(
     @Param('id') id: string,
     @ActiveUser() user: UserActiveInterface,
@@ -116,8 +116,8 @@ export class RentalsController {
     return this.rentalsService.returnRental(id, user);
   }
 
-  @Auth(...Object.values(RolesEnum))
   @Delete(':id')
+  @Auth(...Object.values(RolesEnum))
   remove(@Param('id') id: string, @ActiveUser() user: UserActiveInterface) {
     return this.rentalsService.remove(id, user);
   }

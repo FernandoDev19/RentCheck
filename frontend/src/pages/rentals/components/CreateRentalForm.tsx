@@ -5,6 +5,13 @@ import Input from "../../../common/components/ui/Input";
 import Select from "../../../common/components/ui/Select";
 import { IDENTITY_TYPE } from "../../../common/types/identity-type.type";
 import type { RentalErrors } from "../interfaces/rental-errors.interface";
+import { getUser } from "../../dashboard/helpers/user.helper";
+import type { UserActiveInterface } from "../../../common/interfaces/user-active.interface";
+import { ROLES } from "../../../common/types/roles.type";
+import { useCallback, useEffect, useState } from "react";
+import { branchService } from "../../../services/branch.service";
+import { catchError } from "../../../common/errors/catch-error";
+import Swal from "sweetalert2";
 
 type Props = {
   customer?: Customer | null;
@@ -13,8 +20,36 @@ type Props = {
   currentValues?: any;
 };
 
-export default function CreateRentalForm({ customer, errors, identityNumber, currentValues }: Props) {
+export default function CreateRentalForm({
+  customer,
+  errors,
+  identityNumber,
+  currentValues,
+}: Props) {
   const isRealCustomer = !!customer?.id;
+  const user: UserActiveInterface = getUser();
+  const userRoleOwner = user.role === ROLES.OWNER;
+  const [branches, setBranches] = useState<{ id: string; name: string }[]>([]);
+
+  const loadBranches = useCallback(async () => {
+    if (userRoleOwner && !branches.length) {
+      try {
+        const branchNames = await branchService.getAllNames();
+        setBranches(branchNames);
+      } catch (error) {
+        await catchError(error, Swal, "Error al cargar las sedes");
+        return;
+      }
+    }
+  }, [branches, userRoleOwner]);
+
+  useEffect(() => {
+    const run = async () => {
+      await loadBranches();
+    };
+    run();
+  }, [loadBranches]);
+
   return (
     <div className="text-left space-y-4">
       <TitleSpan className="mb-4">
@@ -34,7 +69,9 @@ export default function CreateRentalForm({ customer, errors, identityNumber, cur
             readonly={isRealCustomer}
             required={true}
             placeholder="Ej. Juan"
-            className={errors?.name ? "bg-red-400/20 border border-red-600" : ""}
+            className={
+              errors?.name ? "bg-red-400/20 border border-red-600" : ""
+            }
           />
           {errors?.name && (
             <p className="text-red-500 text-sm">{errors.name}</p>
@@ -50,7 +87,9 @@ export default function CreateRentalForm({ customer, errors, identityNumber, cur
             readonly={isRealCustomer}
             required={true}
             placeholder="Ej. Pérez"
-            className={errors?.lastName ? "bg-red-400/20 border border-red-600" : ""}
+            className={
+              errors?.lastName ? "bg-red-400/20 border border-red-600" : ""
+            }
           />
           {errors?.lastName && (
             <p className="text-red-500 text-sm">{errors.lastName}</p>
@@ -62,7 +101,9 @@ export default function CreateRentalForm({ customer, errors, identityNumber, cur
             id="swal-identityType"
             name="swal-identityType"
             disabled={isRealCustomer}
-            className={errors?.identityType ? "bg-red-400/20 border border-red-600" : ""}
+            className={
+              errors?.identityType ? "bg-red-400/20 border border-red-600" : ""
+            }
             value={currentValues?.identityType || ""}
           >
             {Object.values(IDENTITY_TYPE).map((value) => (
@@ -79,11 +120,19 @@ export default function CreateRentalForm({ customer, errors, identityNumber, cur
             id="swal-identityNumber"
             name="swal-identityNumber"
             type="text"
-            value={customer?.identityNumber || currentValues?.identityNumber || identityNumber}
+            value={
+              customer?.identityNumber ||
+              currentValues?.identityNumber ||
+              identityNumber
+            }
             readonly={isRealCustomer}
             required={true}
             placeholder="Ej. 12345678"
-            className={errors?.identityNumber ? "bg-red-400/20 border border-red-600" : ""}
+            className={
+              errors?.identityNumber
+                ? "bg-red-400/20 border border-red-600"
+                : ""
+            }
           />
           {errors?.identityNumber && (
             <p className="text-red-500 text-sm">{errors.identityNumber}</p>
@@ -98,7 +147,9 @@ export default function CreateRentalForm({ customer, errors, identityNumber, cur
             value={customer?.email || currentValues?.email || ""}
             readonly={isRealCustomer}
             placeholder="Ej. juan.perez@example.com"
-            className={errors?.email ? "bg-red-400/20 border border-red-600" : ""}
+            className={
+              errors?.email ? "bg-red-400/20 border border-red-600" : ""
+            }
           />
           {errors?.email && (
             <p className="text-red-500 text-sm">{errors.email}</p>
@@ -113,7 +164,9 @@ export default function CreateRentalForm({ customer, errors, identityNumber, cur
             value={customer?.phone || currentValues?.phone || ""}
             readonly={isRealCustomer}
             placeholder="Ej. 12345678"
-            className={errors?.phone ? "bg-red-400/20 border border-red-600" : ""}
+            className={
+              errors?.phone ? "bg-red-400/20 border border-red-600" : ""
+            }
           />
           {errors?.phone && (
             <p className="text-red-500 text-sm">{errors.phone}</p>
@@ -225,7 +278,9 @@ export default function CreateRentalForm({ customer, errors, identityNumber, cur
             name="swal-startDate"
             type="date"
             required={true}
-            className={errors?.startDate ? "bg-red-400/20 border border-red-600" : ""}
+            className={
+              errors?.startDate ? "bg-red-400/20 border border-red-600" : ""
+            }
           />
           {errors?.startDate && (
             <p className="text-red-500 text-sm">{errors.startDate}</p>
@@ -240,12 +295,40 @@ export default function CreateRentalForm({ customer, errors, identityNumber, cur
             name="swal-expectedReturnDate"
             type="date"
             required={true}
-            className={errors?.expectedReturnDate ? "bg-red-400/20 border border-red-600" : ""}
+            className={
+              errors?.expectedReturnDate
+                ? "bg-red-400/20 border border-red-600"
+                : ""
+            }
           />
           {errors?.expectedReturnDate && (
             <p className="text-red-500 text-sm">{errors.expectedReturnDate}</p>
           )}
         </div>
+        {userRoleOwner && (
+          <div>
+            <Label htmlFor="swal-branch">Sede*</Label>
+            <Select
+              id="swal-branch"
+              name="swal-branch"
+              value={currentValues?.branchId || ""}
+              required={true}
+              className={
+                errors?.branchId ? "bg-red-400/20 border border-red-600" : ""
+              }
+            >
+              <option value="" selected disabled>Seleccionar Sede</option>
+              {branches.map((branch) => (
+                <option key={branch.id} value={branch.id}>
+                  {branch.name}
+                </option>
+              ))}
+            </Select>
+             {errors?.branchId && (
+            <p className="text-red-500 text-sm">{errors.branchId}</p>
+          )}
+          </div>
+        )}
       </div>
     </div>
   );

@@ -22,13 +22,13 @@ export const columns: Column<Renter>[] = [
           : String(val ?? "-"),
     },
     {
-      key: "createdAt",
-      label: "Fecha de creación",
-      render: (val) => new Date(val as string).toLocaleDateString("es-CO"),
-    },
-    {
       key: "status",
       label: "Estado",
       render: (val) => (val === "active" ? "Activo" : "Suspendido"),
+    },
+    {
+      key: "createdAt",
+      label: "Fecha de creación",
+      render: (val) => new Date(val as string).toLocaleDateString("es-CO"),
     },
   ];

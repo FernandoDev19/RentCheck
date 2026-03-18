@@ -32,7 +32,7 @@ export default function Rentals() {
         onPageChange={setPage}
         onSearchChange={handleSearchChange}
         onSortChange={(key, direction) =>
-          handleSortChange(key, direction ?? "asc")
+          handleSortChange(key, direction ?? "desc")
         }
         totalPages={totalPages}
         totalItems={totalItems}

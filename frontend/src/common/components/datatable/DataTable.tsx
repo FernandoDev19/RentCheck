@@ -103,7 +103,6 @@ export default function DataTable<T extends Record<string, any>>({
   };
 
   const handleSort = (key: keyof T) => {
-    console.log(key);
     let nextKey: keyof T | null = sortKey;
     let nextDir: SortDirection = sortDir;
 

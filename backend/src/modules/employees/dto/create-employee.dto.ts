@@ -9,6 +9,7 @@ import {
   MinLength,
 } from 'class-validator';
 import { IdentityTypeEnum } from '../../../core/enums/identity-type.enum';
+import { UserStatus } from '../../users/enums/user-status.enum';
 
 export class CreateEmployeeDto {
   @IsString()
@@ -29,8 +30,13 @@ export class CreateEmployeeDto {
   password: string;
 
   @IsOptional()
+  @IsString()
+  @IsNotEmpty()
+  branchId?: string;
+
+  @IsOptional()
   @IsEnum(IdentityTypeEnum)
-  identityType: IdentityTypeEnum;
+  identityType?: IdentityTypeEnum;
 
   @IsString()
   @Transform(({ value }) => value.trim())
@@ -38,4 +44,8 @@ export class CreateEmployeeDto {
   @MinLength(5)
   @MaxLength(15)
   identityNumber: string;
+
+  @IsOptional()
+  @IsEnum(UserStatus)
+  status?: UserStatus;
 }

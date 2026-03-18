@@ -1,11 +1,9 @@
 import {
-  BadRequestException,
   ConflictException,
   Injectable,
   NotFoundException,
 } from '@nestjs/common';
 import { CreateCustomerDto } from './dto/create-customer.dto';
-import { UpdateCustomerDto } from './dto/update-customer.dto';
 import { InjectRepository } from '@nestjs/typeorm';
 import { Customer } from './entities/customer.entity';
 import { Repository } from 'typeorm';
@@ -39,7 +37,7 @@ export class CustomersService {
     page: number = 1,
     limit: number = 10,
     orderBy: string = 'createdAt',
-    orderDir: string = 'ASC',
+    orderDir: string = 'DESC',
     search: string = '',
     user: UserActiveInterface,
   ): Promise<ListResponse<Customer>> {
@@ -47,14 +45,15 @@ export class CustomersService {
       String(orderDir).toUpperCase() === 'DESC' ? 'DESC' : 'ASC';
 
     const allowedOrderBy = new Set<keyof Customer>([
-      'identityNumber',
       'identityType',
+      'identityNumber',
       'name',
       'lastName',
       'phone',
       'email',
       'generalScore',
       'status',
+      'createdAt',
     ]);
     const safeOrderBy = allowedOrderBy.has(orderBy as keyof Customer)
       ? (orderBy as keyof Customer)
@@ -73,7 +72,7 @@ export class CustomersService {
         parameters.branchId = user.branchId;
         break;
       default:
-        rentalFilterCondition = 'filterRental.renterId = :renterId';
+        rentalFilterCondition = '';
         break;
     }
 
@@ -93,15 +92,29 @@ export class CustomersService {
     if (search) {
       qb.andWhere(
         `(customer.name ILIKE :search 
-        OR customer.lastName ILIKE :search 
-        OR customer.identityNumber ILIKE :search 
-        OR customer.email ILIKE :search 
-        OR customer.phone ILIKE :search)`,
+          OR customer.lastName ILIKE :search 
+          OR customer.identityNumber ILIKE :search 
+          OR customer.email ILIKE :search 
+          OR customer.phone ILIKE :search)`,
         { search: `%${search}%` },
       );
     }
 
-    qb.orderBy(`customer.${safeOrderBy}`, safeOrderDir)
+    qb.select([
+      'customer.id',
+      'customer.identityType',
+      'customer.identityNumber',
+      'customer.name',
+      'customer.lastName',
+      'customer.phone',
+      'customer.email',
+      'customer.generalScore',
+      'customer.status',
+      'customer.createdAt',
+      'customer.updatedAt',
+      'biometryRequests',
+    ])
+      .orderBy(`customer.${safeOrderBy}`, safeOrderDir)
       .skip((page - 1) * limit)
       .take(limit);
 
@@ -130,6 +143,7 @@ export class CustomersService {
       .leftJoinAndSelect('creatorBranch.renter', 'creatorBranchRenter') // Manager → Renter
       // 3. Rentas
       .leftJoinAndSelect('customer.rentals', 'rentals')
+      .leftJoinAndSelect('rentals.renter', 'renter')
       .leftJoinAndSelect('rentals.employee', 'rentalEmployee')
       .leftJoinAndSelect('rentalEmployee.user', 'rentalEmployeeUser')
       .leftJoinAndSelect('rentals.branch', 'branch')
@@ -141,13 +155,128 @@ export class CustomersService {
         'biometryRequests.renterId = :renterId',
         { renterId: user.renterId },
       )
-      .where('customer.identityNumber = :identityNumber', { identityNumber })
+      .select([
+        'customer.id',
+        'customer.name',
+        'customer.lastName',
+        'customer.status',
+        'customer.generalScore',
+        'customer.email',
+        'customer.phone',
+        'customer.identityType',
+        'customer.identityNumber',
+        'customer.createdAt',
+        'customer.updatedAt',
+        'creatorUser.name',
+        'rentals.id',
+        'rentals.startDate',
+        'rentals.actualReturnDate',
+        'rentalFeedback.id',
+        'rentalFeedback.criticalFlags',
+        'rentalFeedback.score',
+        'rentalFeedback.comments',
+        'biometryRequests.id',
+        'biometryRequests.status',
+        'biometryRequests.result',
+        'biometryRequests.createdAt',
+        'renter.id',
+        'renter.name',
+        'branch.city',
+        'renter.city',
+      ])
+      .where('LOWER(customer.identityNumber) = LOWER(:identityNumber)', {
+        identityNumber,
+      })
       .orderBy('rentals.createdAt', 'DESC');
 
     const customer = await qb.getOne();
 
     if (!customer)
       throw new NotFoundException('Cliente sin historial en RentCheck.');
+
+    const rentedWithMe = customer.rentals?.some(
+      (rental) => rental.renter?.name && rental.renter.id === user.renterId,
+    );
+
+    if (!rentedWithMe && (user.role as RolesEnum) !== RolesEnum.ADMIN) {
+      customer.phone = customer.phone ? '🔒 Privado' : null;
+      customer.email = customer.email ? '🔒 Privado' : null;
+    }
+
+    return customer;
+  }
+
+  async findOne(id: string, user: UserActiveInterface) {
+    const parameters: Record<string, any> = { renterId: user.renterId };
+
+    switch (user.role as RolesEnum) {
+      case RolesEnum.OWNER:
+        break;
+      case RolesEnum.MANAGER:
+      case RolesEnum.EMPLOYEE:
+        parameters.branchId = user.branchId;
+        break;
+      default:
+        break;
+    }
+
+    const qb = this.customerRepository
+      .createQueryBuilder('customer')
+      .innerJoin(
+        'customer.rentals',
+        'securityRental',
+        (user.role as RolesEnum) === RolesEnum.MANAGER ||
+          (user.role as RolesEnum) === RolesEnum.EMPLOYEE
+          ? 'securityRental.branchId = :branchId'
+          : 'securityRental.renterId = :renterId',
+      )
+      .leftJoinAndSelect('customer.registeredByUser', 'creator')
+      .leftJoinAndSelect(
+        'customer.biometryRequests',
+        'biometryRequests',
+        'biometryRequests.renterId = :renterId',
+      )
+      .leftJoinAndSelect(
+        'customer.rentals',
+        'rentals',
+        'rentals.rentalStatus IN (:...status)',
+        { status: ['returned', 'late', 'cancelled'] },
+      )
+      .innerJoinAndSelect('rentals.rentalFeedback', 'rentalFeedback')
+      .leftJoinAndSelect('rentals.renter', 'renter')
+      .setParameters(parameters);
+
+    qb.select([
+      'customer.id',
+      'customer.identityType',
+      'customer.identityNumber',
+      'customer.name',
+      'customer.lastName',
+      'customer.phone',
+      'customer.email',
+      'customer.generalScore',
+      'customer.status',
+      'customer.createdAt',
+      'customer.updatedAt',
+      'biometryRequests',
+      'creator.name',
+      'rentals.id',
+      'rentals.actualReturnDate',
+      'rentals.startDate',
+      'rentalFeedback',
+      'renter.id',
+      'renter.name',
+    ]).where('customer.id = :id', { id });
+
+    const customer = await qb.getOne();
+
+    if (!customer) {
+      throw new NotFoundException('Cliente no encontrado');
+    }
+
+    if (customer.rentals) {
+      customer.rentals = customer.rentals.slice(0, 5);
+    }
 
     return customer;
   }
@@ -193,13 +322,13 @@ export class CustomersService {
     );
 
     const totalScore = feedbacks.reduce((sum, feedback) => {
-      const feedbackScore = (
-        (5 - feedback.score.damageToCar) +
-        (5 - feedback.score.unpaidFines) +
-        (5 - feedback.score.arrears) +
-        (5 - feedback.score.carAbuse) +
-        (5 - feedback.score.badAttitude)
-      ) / 5;
+      const feedbackScore =
+        (feedback.score.damageToCar +
+          feedback.score.unpaidFines +
+          feedback.score.arrears +
+          feedback.score.carAbuse +
+          feedback.score.badAttitude) /
+        5;
 
       return sum + feedbackScore;
     }, 0);

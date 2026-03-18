@@ -21,11 +21,12 @@ type Props = {
   search: string;
   handleSearch: (e: React.ChangeEvent<HTMLInputElement>) => void;
   searchPlaceholder: string;
+  className?: string;
 };
 
-export default function SearchBar({ search, handleSearch, searchPlaceholder }: Props) {
+export default function SearchBar({ search, handleSearch, searchPlaceholder, className }: Props) {
   return (
-    <div className="mb-4 relative max-w-sm flex items-center">
+    <div className={`mb-4 relative max-w-sm flex items-center ${className || ''}`}>
       <span className="absolute left-3 top-1/2 -translate-y-1/2">
         <SearchIcon />
       </span>

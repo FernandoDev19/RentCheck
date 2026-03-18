@@ -1,5 +1,7 @@
+import ButtonActionDataTable from "../../../common/components/ui/ButtonActionDataTable";
 import TitleSpan from "../../../common/components/ui/TitleSpan";
 import type { Rental } from "../../../models/rental.model";
+import { useCustomer } from "../../customers/hooks/useCustomer";
 import {
   RENTAL_STATUS_COLORS,
   RENTAL_STATUS_LABELS,
@@ -16,6 +18,7 @@ export default function ViewRental({ row }: Props) {
     bg: "bg-gray-100",
     text: "text-gray-500",
   };
+  const { handleViewInfo } = useCustomer();
 
   return (
     <div className="text-left text-sm text-[#374151]">
@@ -28,7 +31,10 @@ export default function ViewRental({ row }: Props) {
         </span>
       </div>
       <div className="bg-[#f9fafb] rounded-lg p-3 border border-[#e5e7eb] mb-3">
-        <TitleSpan className="mb-4">Información del Cliente</TitleSpan>
+        <div className="flex justify-between gap-4">
+          <TitleSpan className="mb-4">Información del Cliente</TitleSpan>
+          <ButtonActionDataTable color="indigo" onClick={() => handleViewInfo(row.customer)}>Ver info</ButtonActionDataTable>
+        </div>
         <p className="m-0">
           <strong>
             {row.customer?.name} {row.customer?.lastName}

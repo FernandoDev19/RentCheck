@@ -7,13 +7,11 @@ import {
 import { CreateRentalFeedbackDto } from './dto/create-rental-feedback.dto';
 import { InjectRepository } from '@nestjs/typeorm';
 import { RentalFeedback } from './entities/rental-feedback.entity';
-import { FindOptionsWhere, ILike, IsNull, Repository } from 'typeorm';
+import { Repository } from 'typeorm';
 import { CustomersService } from '../customers/customers.service';
 import { UserActiveInterface } from '../auth/interfaces/active-user.interface';
-import { RolesEnum } from '../../core/enums/roles.enum';
 import { Rental } from '../rentals/entities/rental.entity';
-import { ListResponse } from '../../core/interfaces/list-response';
-import { RentalStatusEnum } from '../rentals/enums/rental-status.enum';
+import { RenterStatus } from '../renters/enums/renter-status.enum';
 
 @Injectable()
 export class RentalFeedbacksService {
@@ -36,7 +34,7 @@ export class RentalFeedbacksService {
 
     if (!rental) throw new NotFoundException('La renta no existe');
 
-    if (rental.renter.status === 'suspended') {
+    if (rental.renter.status === RenterStatus.SUSPENDED) {
       throw new ForbiddenException('Rentadora suspendida');
     }
 

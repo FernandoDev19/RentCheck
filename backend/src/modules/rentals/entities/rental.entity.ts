@@ -16,6 +16,7 @@ import { RentalFeedback } from '../../rental-feedbacks/entities/rental-feedback.
 import { Branch } from '../../branches/entities/branch.entity';
 import { RentalStatusEnum } from '../enums/rental-status.enum';
 import { User } from '../../users/entities/user.entity';
+import { Vehicle } from '../../vehicles/entities/vehicle.entity';
 
 @Entity('rentals')
 export class Rental {
@@ -85,6 +86,13 @@ export class Rental {
     default: RentalStatusEnum.ACTIVE,
   })
   rentalStatus: RentalStatusEnum;
+
+  @Column({ name: 'vehicle_id', nullable: true })
+  vehicleId: string;
+
+  @ManyToOne(() => Vehicle, (vehicle) => vehicle.rentals, { nullable: true })
+  @JoinColumn({ name: 'vehicle_id' })
+  vehicle: Vehicle;
 
   @DeleteDateColumn({ name: 'deleted_at', nullable: true })
   deletedAt: Date;

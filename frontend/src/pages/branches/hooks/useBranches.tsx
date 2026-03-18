@@ -9,7 +9,7 @@ import ViewBranch from "../components/ViewBranch";
 
 const MySwal = withReactContent(Swal);
 
-export const useBranches = () => {
+export const useBranches = (renterId?: string) => {
   const [isLoading, setIsLoading] = useState<boolean>(false);
   const [branches, setBranches] = useState<Branch[]>([]);
   const [totalItems, setTotalItems] = useState<number>(0);
@@ -20,21 +20,32 @@ export const useBranches = () => {
     key: string;
     direction: "asc" | "desc";
   }>({
-    key: "name",
-    direction: "asc",
+    key: "createdAt",
+    direction: "desc",
   });
   const limit = 10;
 
   const loadBranches = useCallback(async () => {
     try {
       setIsLoading(true);
-      const response: ListResponse<Branch> = await branchService.getAll({
-        page,
-        limit,
-        orderBy: orderBy.key,
-        orderDir: orderBy.direction,
-        search: searchTerm,
-      });
+      let response: ListResponse<Branch>;
+      if (renterId && renterId.length === 36) {
+        response = await branchService.findAllByRenterId(renterId, {
+          page,
+          limit,
+          orderBy: orderBy.key,
+          orderDir: orderBy.direction,
+          search: searchTerm,
+        });
+      } else {
+        response = await branchService.getAll({
+          page,
+          limit,
+          orderBy: orderBy.key,
+          orderDir: orderBy.direction,
+          search: searchTerm,
+        });
+      }
       setBranches(response.data);
       setTotalItems(response.total);
       setTotalPages(response.lastPage);
@@ -43,7 +54,7 @@ export const useBranches = () => {
     } finally {
       setIsLoading(false);
     }
-  }, [page, limit, orderBy.key, orderBy.direction, searchTerm]);
+  }, [page, limit, orderBy.key, orderBy.direction, searchTerm, renterId]);
 
   useEffect(() => {
     loadBranches();
@@ -56,8 +67,8 @@ export const useBranches = () => {
 
   const handleView = async (row: Branch) => {
     MySwal.fire({
-      title: "Ver rentadora",
-      html: <ViewBranch row={row} />,
+      title: "Ver sede",
+      html: <ViewBranch branchId={row.id} />,
       icon: "info",
       showConfirmButton: false,
       showCloseButton: true,
@@ -69,6 +80,35 @@ export const useBranches = () => {
     if (!key) return;
     setPage(1);
     setOrderBy({ key, direction: direction === "desc" ? "desc" : "asc" });
+  };
+
+  const handleDelete = async (branchId: string) => {
+    try {
+      const result = await Swal.fire({
+        title: "¿Eliminar Sede?",
+        text: "¿Estás seguro de que quieres eliminar a esta Sede?",
+        icon: "question",
+        showCancelButton: true,
+        confirmButtonColor: "#3085d6",
+        cancelButtonColor: "#d33",
+        confirmButtonText: "Sí, Eliminar",
+        cancelButtonText: "Cancelar",
+      });
+
+      if (result.isConfirmed) {
+        await branchService.delete(branchId);
+        MySwal.fire({
+          title: "Eliminado",
+          icon: "success",
+          text: "Sede eliminada correctamente",
+          timer: 2000,
+          showConfirmButton: false,
+        });
+        loadBranches();
+      }
+    } catch (error) {
+      await catchError(error, MySwal, "Error al eliminar la rentadora");
+    }
   };
 
   return {
@@ -84,6 +124,7 @@ export const useBranches = () => {
     handleView,
     handleSearchChange,
     handleSortChange,
-    loadBranches
+    loadBranches,
+    handleDelete
   };
 };

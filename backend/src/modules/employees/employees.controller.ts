@@ -1,7 +1,6 @@
 import {
   Controller,
   Get,
-  Post,
   Body,
   Param,
   Delete,
@@ -27,8 +26,8 @@ export class EmployeesController {
   //   return this.employeesService.create(createEmployeeDto, user);
   // }
 
-  @Auth(RolesEnum.MANAGER, RolesEnum.OWNER)
   @Get()
+  @Auth(RolesEnum.MANAGER, RolesEnum.OWNER)
   findAll(
     @Query('page') page: number,
     @Query('limit') limit: number,
@@ -47,14 +46,14 @@ export class EmployeesController {
     );
   }
 
-  @Auth(RolesEnum.MANAGER)
   @Get(':id')
+  @Auth(RolesEnum.MANAGER)
   findOne(@Param('id') id: string, @ActiveUser() user: UserActiveInterface) {
     return this.employeesService.findOne(id, user);
   }
 
-  @Auth(RolesEnum.MANAGER)
   @Put(':id')
+  @Auth(RolesEnum.MANAGER, RolesEnum.OWNER)
   update(
     @Param('id') id: string,
     @Body() updateEmployeeDto: UpdateEmployeeDto,
@@ -63,8 +62,8 @@ export class EmployeesController {
     return this.employeesService.update(id, updateEmployeeDto, user);
   }
 
-  @Auth(RolesEnum.MANAGER)
   @Delete(':id')
+  @Auth(RolesEnum.MANAGER, RolesEnum.OWNER)
   remove(@Param('id') id: string, @ActiveUser() user: UserActiveInterface) {
     return this.employeesService.remove(id, user);
   }

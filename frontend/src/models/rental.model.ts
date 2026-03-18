@@ -5,6 +5,7 @@ import type { Employee } from "./employee.model";
 import type { RentalFeedback } from "./rental-feedback.model";
 import type { Renter } from "./renter.model";
 import type { User } from "./user.model";
+import type { Vehicle } from "./Vehicle.model";
 
 export interface Rental {
   id: string;
@@ -33,6 +34,9 @@ export interface Rental {
 
   cancelledByUserId?: string;
   cancelledByUser?: User;
+
+  vehicleId?: string;
+  vehicle?: Vehicle;
 
   createdAt: Date;
   updatedAt: Date;

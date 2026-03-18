@@ -13,10 +13,19 @@ import Rentals from "./pages/rentals/Rentals";
 import VerifyBiometry from "./pages/verify-biometry/VerifyBiometry";
 import Customers from "./pages/customers/Customers";
 import PendingFeedbacks from "./pages/pending-feedbacks/PendingFeedbacks";
+import { useLoading } from "./common/context/loading-context/hooks/useLoading";
+import { useEffect } from "react";
+import Loader from "./common/components/GlobalLoader";
+import { setupLoadingInterceptor } from "./config/api";
+import Vehicles from "./pages/vehicles/Vehicles";
 
 function App() {
+  const { setLoading } = useLoading();
+  useEffect(() => setupLoadingInterceptor(setLoading), [setLoading]);
+
   return (
     <div className="min-h-screen">
+      <Loader />
       <BrowserRouter>
         <Routes>
           <Route path="/verify/:token" element={<VerifyBiometry />} />
@@ -46,6 +55,11 @@ function App() {
                       element={<Navigate to="/adm/dashboard" replace />}
                     />
                     <Route path="/dashboard" element={<Dashboard />} />
+                    <Route path="/branches" element={<Branches />} />
+                    <Route path="/branches/:renterId" element={<Branches />} />
+                    <Route path="/customers" element={<Customers />} />
+                    <Route path="/employees" element={<Employees />} />
+                    <Route path="/vehicles" element={<Vehicles />} />
                     <Route path="/renters" element={<Renters />} />
                   </Routes>
                 </main>
@@ -70,6 +84,7 @@ function App() {
                     <Route path="/feedbacks" element={<PendingFeedbacks />} />
                     <Route path="/employees" element={<Employees />} />
                     <Route path="/customers" element={<Customers />} />
+                    <Route path="/vehicles" element={<Vehicles />} />
                     <Route path="/*" element={ <Navigate to="/owner/dashboard" /> } />
                   </Routes>
                 </main>
@@ -93,6 +108,7 @@ function App() {
                     <Route path="/rentals" element={<Rentals />} />
                     <Route path="/feedbacks" element={<PendingFeedbacks />} />
                     <Route path="/customers" element={<Customers />} />
+                    <Route path="/vehicles" element={<Vehicles />} />
                     <Route path="/*" element={ <Navigate to="/manager/dashboard" /> } />
                   </Routes>
                 </main>
@@ -115,6 +131,7 @@ function App() {
                     <Route path="/rentals" element={<Rentals />} />
                     <Route path="/feedbacks" element={<PendingFeedbacks />} />
                     <Route path="/customers" element={<Customers />} />
+                    <Route path="/vehicles" element={<Vehicles />} />
                     <Route path="/*" element={ <Navigate to="/employee/dashboard" /> } />
                   </Routes>
                 </main>

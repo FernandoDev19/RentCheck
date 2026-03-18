@@ -15,8 +15,8 @@ export class CustomersController {
   //   return this.customersService.create(createCustomerDto);
   // }
 
-  @Auth(...Object.values(RolesEnum))
   @Get()
+  @Auth(...Object.values(RolesEnum))
   findAll(
     @Query('page') page: number,
     @Query('limit') limit: number,
@@ -35,11 +35,11 @@ export class CustomersController {
     );
   }
 
-  // @Auth(...Object.values(RolesEnum))
-  // @Get(':id')
-  // findOne(@Param('id') id: string, @ActiveUser() user: UserActiveInterface) {
-  //   return this.customersService.findOne(id, user);
-  // }
+  @Get(':id')
+  @Auth(...Object.values(RolesEnum))
+  findOne(@Param('id') id: string, @ActiveUser() user: UserActiveInterface) {
+    return this.customersService.findOne(id, user);
+  }
 
   @Get('/identity/:identity')
   @Auth(RolesEnum.EMPLOYEE, RolesEnum.OWNER, RolesEnum.MANAGER)

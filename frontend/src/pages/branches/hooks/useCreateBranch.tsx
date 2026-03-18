@@ -1,7 +1,7 @@
 import Swal from "sweetalert2";
 import withReactContent from "sweetalert2-react-content";
 import CreateBranchForm from "../components/CreateBranchForm";
-import { createBranchSchema } from "../schemas/branch.schema";
+import { createBranchSchema } from "../schemas/create-branch.schema";
 import type { BranchErrors } from "../interfaces/branch-errors.interface";
 import { branchService } from "../../../services/branch.service";
 import { catchError } from "../../../common/errors/catch-error";
@@ -33,9 +33,6 @@ export const useCreateBranch = () => {
           responsible: (
             document.getElementById("swal-responsible") as HTMLInputElement
           ).value || "",
-          responsiblePhone: (
-            document.getElementById("swal-responsible-phone") as HTMLInputElement
-          ).value || "",
           email: (
             document.getElementById("swal-email") as HTMLInputElement
           ).value || "",
@@ -60,9 +57,6 @@ export const useCreateBranch = () => {
         const responsible = (
           document.getElementById("swal-responsible") as HTMLInputElement
         ).value;
-        const responsiblePhone = (
-          document.getElementById("swal-responsible-phone") as HTMLInputElement
-        ).value;
         const email = (
           document.getElementById("swal-email") as HTMLInputElement
         ).value;
@@ -79,7 +73,6 @@ export const useCreateBranch = () => {
           city,
           phone,
           responsible,
-          responsiblePhone,
           email,
           password,
           status: status === "true" ? true : false,

@@ -9,26 +9,35 @@ export class Plan {
   @Column({ unique: true })
   name: string;
 
-  @Column()
+  @Column({
+    default: 0,
+    type: 'decimal',
+    precision: 12,
+    scale: 2,
+    nullable: true,
+  })
   price: number;
 
   // Cantidad total de Usuarios a nombre de una rentadora (Owner, Manager & Employees)
-  @Column()
+  @Column({ default: 1 })
   max_users: number;
 
   // Cantidad total de Sucursales a nombre de una rentadora (Owner)
-  @Column()
+  @Column({ default: 1 })
   max_branches: number;
 
   // Habilitar reportes avanzados
-  @Column()
+  @Column({ default: false })
   advanced_reports_enabled: boolean;
 
-  @Column()
+  @Column({ default: false })
   email_alerts_enabled: boolean;
 
-  @Column()
+  @Column({ default: false })
   priority_support: boolean;
+
+  @Column({ default: 5 })
+  max_vehicles: number;
 
   @OneToMany(() => Renter, (renter) => renter.plan)
   renters: Renter[];

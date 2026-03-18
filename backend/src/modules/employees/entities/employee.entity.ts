@@ -8,6 +8,7 @@ import {
   UpdateDateColumn,
   OneToMany,
   ManyToOne,
+  DeleteDateColumn,
 } from 'typeorm';
 import { Branch } from '../../branches/entities/branch.entity';
 import { User } from '../../users/entities/user.entity';
@@ -55,6 +56,9 @@ export class Employee {
     (biometryRequest) => biometryRequest.employee,
   )
   biometryRequests: BiometryRequest[];
+
+  @DeleteDateColumn({ name: 'deleted_at' })
+  deletedAt: Date;
 
   @CreateDateColumn({ name: 'created_at' })
   createdAt: Date;

@@ -4,6 +4,7 @@ import type { Branch } from "./branch.model";
 import type { Plan } from "./plan.model";
 import type { Rental } from "./rental.model";
 import type { User } from "./user.model";
+import type { Vehicle } from "./Vehicle.model";
 
 export interface Renter {
   id: string;
@@ -24,9 +25,12 @@ export interface Renter {
   lowBalanceAlertEnabled: boolean;
   status: RenterStatus;
 
+  totalBranches?: number;
   branches?: Branch[];
   rentals?: Rental[];
+  totalRentals?: number;
   biometryRequests?: BiometryRequest[];
+  vehicles?: Vehicle[];
 
   deletedAt: Date;
   createdAt: Date;

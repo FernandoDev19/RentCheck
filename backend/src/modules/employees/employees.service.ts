@@ -1,28 +1,25 @@
 import {
   BadRequestException,
-  ConflictException,
   Injectable,
   NotFoundException,
 } from '@nestjs/common';
-import { CreateEmployeeDto } from './dto/create-employee.dto';
 import { UpdateEmployeeDto } from './dto/update-employee.dto';
 import { InjectRepository } from '@nestjs/typeorm';
 import { Employee } from './entities/employee.entity';
 import { ILike, Repository } from 'typeorm';
-import { RolesService } from '../roles/roles.service';
 import { RolesEnum } from '../../core/enums/roles.enum';
-import { UsersService } from '../users/users.service';
-import * as bcrypt from 'bcrypt';
 import { UserActiveInterface } from '../auth/interfaces/active-user.interface';
 import { ListResponse } from '../../core/interfaces/list-response';
+import { User } from '../users/entities/user.entity';
+import { UserStatus } from '../users/enums/user-status.enum';
 
 @Injectable()
 export class EmployeesService {
   constructor(
     @InjectRepository(Employee)
     private readonly employeeRepository: Repository<Employee>,
-    private readonly roleService: RolesService,
-    private readonly userService: UsersService,
+    @InjectRepository(User)
+    private readonly userRepository: Repository<User>,
   ) {}
 
   // async create(
@@ -61,7 +58,7 @@ export class EmployeesService {
     page: number = 1,
     limit: number = 10,
     orderBy: string = 'createdAt',
-    orderDir: string = 'ASC',
+    orderDir: string = 'DESC',
     search: string = '',
     user: UserActiveInterface,
   ): Promise<ListResponse<Employee>> {
@@ -97,15 +94,27 @@ export class EmployeesService {
         break;
     }
 
-    const [data, total] = await this.employeeRepository.findAndCount({
-      take: limit,
-      skip: (page - 1) * limit,
-      where,
-      order: {
-        [safeOrderBy]: safeOrderDir,
-      },
-      relations: ['user', 'branch'],
-    });
+    const [data, total] = await this.employeeRepository
+      .createQueryBuilder('employee')
+      .leftJoinAndSelect('employee.user', 'user')
+      .leftJoinAndSelect('employee.branch', 'branch')
+      .select([
+        'employee.id',
+        'branch.id',
+        'branch.name',
+        'employee.name',
+        'user.id',
+        'user.email',
+        'employee.identityType',
+        'employee.identityNumber',
+        'employee.createdAt',
+        'user.status',
+      ])
+      .orderBy(`employee.${safeOrderBy}`, safeOrderDir)
+      .take(limit)
+      .skip((page - 1) * limit)
+      .where(where)
+      .getManyAndCount();
 
     return {
       data,
@@ -141,11 +150,33 @@ export class EmployeesService {
     user: UserActiveInterface,
   ) {
     await this.findOne(id, user);
-    return await this.employeeRepository.update(id, updateEmployeeDto);
+
+    if (updateEmployeeDto.name || updateEmployeeDto.email) {
+      await this.userRepository.update(
+        {
+          employee: { id },
+        },
+        {
+          name: updateEmployeeDto.name,
+          email: updateEmployeeDto.email,
+          status: updateEmployeeDto.status,
+        },
+      );
+    }
+
+    return await this.employeeRepository.update(id, {
+      name: updateEmployeeDto.name,
+      identityType: updateEmployeeDto.identityType,
+      identityNumber: updateEmployeeDto.identityNumber,
+      branchId: updateEmployeeDto.branchId,
+    });
   }
 
   async remove(id: string, user: UserActiveInterface) {
     await this.findOne(id, user);
-    return await this.employeeRepository.delete(id);
+
+    await this.update(id, { status: UserStatus.SUSPENDED }, user);
+
+    return await this.employeeRepository.softDelete(id);
   }
 }

@@ -9,6 +9,7 @@ import {
   OneToOne,
   PrimaryGeneratedColumn,
   UpdateDateColumn,
+  VirtualColumn,
 } from 'typeorm';
 import { Plan } from '../../plans/entities/plan.entity';
 import { Branch } from '../../branches/entities/branch.entity';
@@ -16,6 +17,7 @@ import { User } from '../../users/entities/user.entity';
 import { Rental } from '../../rentals/entities/rental.entity';
 import { BiometryRequest } from '../../biometry-requests/entities/biometry-request.entity';
 import { RenterStatus } from '../enums/renter-status.enum';
+import { Vehicle } from '../../vehicles/entities/vehicle.entity';
 
 @Entity('renters')
 export class Renter {
@@ -69,17 +71,35 @@ export class Renter {
   @Column({ default: RenterStatus.ACTIVE, enum: RenterStatus })
   status: RenterStatus;
 
+  @VirtualColumn({
+    query: (alias) => `
+      SELECT COUNT(*)
+      FROM branches
+      WHERE branches.renter_id = ${alias}.id
+    `,
+  })
+  totalBranches?: number;
+
   @OneToMany(() => Branch, (branch) => branch.renter)
   branches: Branch[];
+
+  @OneToMany(() => Vehicle, (vehicle) => vehicle.renter)
+  vehicles: Vehicle[];
+
+  @VirtualColumn({
+    query: (alias) => `
+      SELECT COUNT(*) 
+      FROM rentals 
+      WHERE rentals.renter_id = ${alias}.id
+    `,
+  })
+  totalRentals?: number;
 
   @OneToMany(() => Rental, (rental) => rental.renter)
   rentals: Rental[];
 
   @OneToMany(() => BiometryRequest, (biometryRequest) => biometryRequest.renter)
   biometryRequests: BiometryRequest[];
-
-  @DeleteDateColumn({ name: 'deleted_at' })
-  deletedAt: Date;
 
   @CreateDateColumn({ name: 'created_at' })
   createdAt: Date;

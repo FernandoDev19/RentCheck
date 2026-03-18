@@ -1,6 +1,7 @@
 import {
   Column,
   CreateDateColumn,
+  DeleteDateColumn,
   Entity,
   JoinColumn,
   ManyToOne,
@@ -14,6 +15,7 @@ import { Employee } from '../../employees/entities/employee.entity';
 import { User } from '../../users/entities/user.entity';
 import { Rental } from '../../rentals/entities/rental.entity';
 import { BiometryRequest } from '../../biometry-requests/entities/biometry-request.entity';
+import { Vehicle } from '../../vehicles/entities/vehicle.entity';
 
 @Entity('branches')
 export class Branch {
@@ -62,6 +64,12 @@ export class Branch {
 
   @OneToOne(() => User, (user) => user.branch)
   user: User;
+
+  @OneToMany(() => Vehicle, (vehicle) => vehicle.branch)
+  vehicles: Vehicle[];
+
+  @DeleteDateColumn({ name: 'deleted_at' })
+  deletedAt: Date;
 
   @CreateDateColumn({ name: 'created_at' })
   createdAt: Date;

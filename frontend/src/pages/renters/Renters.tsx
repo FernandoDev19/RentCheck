@@ -1,9 +1,14 @@
+import { Edit, Info, Trash } from "lucide-react";
 import DataTable from "../../common/components/datatable/DataTable";
 import PageHeader from "../../common/components/PageHeader";
 import ButtonActionDataTable from "../../common/components/ui/ButtonActionDataTable";
 import { columns } from "./constants/renters.column";
 import { useCreateRenter } from "./hooks/useCreateRenter";
 import { useRenters } from "./hooks/useRenters";
+import { useEditRenter } from "./hooks/useEditRenter";
+import { RENTER_STATUS } from "../../common/types/renter-status.type";
+import { getUser } from "../dashboard/helpers/user.helper";
+import { ROLES } from "../../common/types/roles.type";
 
 export default function Renters() {
   const {
@@ -18,8 +23,11 @@ export default function Renters() {
     handleSearchChange,
     handleSortChange,
     handleView,
+    handleDelete,
   } = useRenters();
   const { handleCreateClick } = useCreateRenter();
+  const { handleEdit } = useEditRenter();
+  const userRole = getUser().role;
 
   return (
     <div className="w-full">
@@ -39,7 +47,7 @@ export default function Renters() {
         onPageChange={setPage}
         onSearchChange={handleSearchChange}
         onSortChange={(key, direction) =>
-          handleSortChange(key, direction ?? "asc")
+          handleSortChange(key, direction ?? "desc")
         }
         totalPages={totalPages}
         totalItems={totalItems}
@@ -49,7 +57,33 @@ export default function Renters() {
         onCreateClick={() => handleCreateClick({ plans, loadRenters })}
         actions={(row) => (
           <div className="flex items-center gap-2">
-            <ButtonActionDataTable onClick={() => handleView(row)} color="indigo">Detalles</ButtonActionDataTable>
+            <ButtonActionDataTable
+              onClick={() => handleView(row)}
+              color="indigo"
+            >
+              <Info size={20} />
+            </ButtonActionDataTable>
+            {userRole === ROLES.ADMIN && (
+              <>
+                <ButtonActionDataTable
+                  onClick={() =>
+                    handleEdit({ plans, loadRenters, renterId: row.id })
+                  }
+                  color="green"
+                >
+                  <Edit size={16} />
+                </ButtonActionDataTable>
+
+                {row.status !== RENTER_STATUS.SUSPENDED && (
+                  <ButtonActionDataTable
+                    onClick={() => handleDelete(row.id)}
+                    color="red"
+                  >
+                    <Trash size={16} />
+                  </ButtonActionDataTable>
+                )}
+              </>
+            )}
           </div>
         )}
       />

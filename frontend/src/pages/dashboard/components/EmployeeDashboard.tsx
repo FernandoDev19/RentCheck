@@ -1,7 +1,7 @@
 import { useNavigate } from "react-router";
-import { getUser } from "../../helpers/user.helper";
-import { useSearch } from "./hooks/useSearch";
-import { useCreateRental } from "../../../rentals/hooks/useCreateRental";
+import { getUser } from "../helpers/user.helper";
+import { useSearch } from "../hooks/useSearch";
+import { useCreateRental } from "../../rentals/hooks/useCreateRental";
 
 export default function EmployeeDashboard() {
   const navigate = useNavigate();

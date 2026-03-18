@@ -25,6 +25,8 @@ import { Plan } from './modules/plans/entities/plan.entity';
 import { Role } from './modules/roles/entities/role.entity';
 import { MvpDataModule } from './seeders/mvp-data/mvp-data.module';
 import { AuthModule } from './modules/auth/auth.module';
+import { VehiclesModule } from './modules/vehicles/vehicles.module';
+import { Vehicle } from './modules/vehicles/entities/vehicle.entity';
 
 @Module({
   imports: [
@@ -52,6 +54,7 @@ import { AuthModule } from './modules/auth/auth.module';
           Renter,
           Branch,
           Employee,
+          Vehicle,
           User,
         ],
         synchronize: config.get('NODE_ENV') === 'development',
@@ -66,6 +69,7 @@ import { AuthModule } from './modules/auth/auth.module';
     RolesModule,
     MvpDataModule,
     AuthModule,
+    VehiclesModule,
   ],
   controllers: [AppController],
   providers: [AppService],

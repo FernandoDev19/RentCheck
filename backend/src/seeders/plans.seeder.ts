@@ -11,6 +11,7 @@ export async function PlansSeeder(PlanRepository: Repository<Plan>) {
       advanced_reports_enabled: false,
       email_alerts_enabled: false,
       priority_support: false,
+      max_vehicles: 5,
       price: 0,
     },
     {
@@ -20,6 +21,7 @@ export async function PlansSeeder(PlanRepository: Repository<Plan>) {
       advanced_reports_enabled: true,
       email_alerts_enabled: true,
       priority_support: false,
+      max_vehicles: 10,
       price: 10000,
     },
     {
@@ -29,6 +31,7 @@ export async function PlansSeeder(PlanRepository: Repository<Plan>) {
       advanced_reports_enabled: true,
       email_alerts_enabled: true,
       priority_support: true,
+      max_vehicles: 9999,
       price: 50000,
     },
   ];

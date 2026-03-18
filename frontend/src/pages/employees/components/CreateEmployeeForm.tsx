@@ -3,6 +3,8 @@ import Label from "../../../common/components/ui/Label";
 import Select from "../../../common/components/ui/Select";
 import { IDENTITY_TYPE } from "../../../common/types/identity-type.type";
 import { ROLES, type RolesType } from "../../../common/types/roles.type";
+import { USER_STATUS } from "../../../common/types/user-status.type";
+import type { Employee } from "../../../models/employee.model";
 import type { EmployeeErrors } from "../interfaces/employee-errors.interface";
 
 type Props = {
@@ -10,6 +12,7 @@ type Props = {
   branches: { id: string; name: string }[];
   errors?: EmployeeErrors;
   currentValues?: any;
+  employee?: Employee;
 };
 
 export default function CreateEmployeeForm({
@@ -17,6 +20,7 @@ export default function CreateEmployeeForm({
   branches,
   errors,
   currentValues,
+  employee,
 }: Props) {
   return (
     <div className="text-left space-y-4">
@@ -28,7 +32,7 @@ export default function CreateEmployeeForm({
           type="text"
           className={errors?.name ? "bg-red-400/20 border border-red-600" : ""}
           placeholder="Ej. Enrique Gonzales"
-          value={currentValues?.name || ""}
+          value={currentValues?.name || employee?.name || ""}
           required
         />
         {errors?.name && <p className="text-red-500 text-sm">{errors.name}</p>}
@@ -42,7 +46,7 @@ export default function CreateEmployeeForm({
           type="email"
           className={errors?.email ? "bg-red-400/20 border border-red-600" : ""}
           placeholder="Ej. ejemplo123@ejemplo.com"
-          value={currentValues?.email || ""}
+          value={currentValues?.email || employee?.user?.email || ""}
           required
         />
         {errors?.email && (
@@ -50,23 +54,25 @@ export default function CreateEmployeeForm({
         )}
       </div>
 
-      <div>
-        <Label htmlFor="swal-password">Contraseña*</Label>
-        <Input
-          id="swal-password"
-          name="swal-password"
-          type="password"
-          required
-          className={
-            errors?.password ? "bg-red-400/20 border border-red-600" : ""
-          }
-          placeholder="•••••••••"
-          value={currentValues?.password || ""}
-        />
-        {errors?.password && (
-          <p className="text-red-500 text-sm">{errors.password}</p>
-        )}
-      </div>
+      {!employee && (
+        <div>
+          <Label htmlFor="swal-password">Contraseña*</Label>
+          <Input
+            id="swal-password"
+            name="swal-password"
+            type="password"
+            required={!employee ? true : false}
+            className={
+              errors?.password ? "bg-red-400/20 border border-red-600" : ""
+            }
+            placeholder="•••••••••"
+            value={currentValues?.password || ""}
+          />
+          {errors?.password && (
+            <p className="text-red-500 text-sm">{errors.password}</p>
+          )}
+        </div>
+      )}
 
       {userRole === ROLES.OWNER && (
         <div>
@@ -74,7 +80,7 @@ export default function CreateEmployeeForm({
           <Select
             id="swal-branch"
             name="swal-branch"
-            value={currentValues?.branchId || ""}
+            value={currentValues?.branchId || employee?.branch?.id || ""}
             className={
               errors?.branchId ? "bg-red-400/20 border border-red-600" : ""
             }
@@ -96,7 +102,7 @@ export default function CreateEmployeeForm({
         <Select
           id="swal-identity-type"
           name="swal-identity-type"
-          value={currentValues?.identityType || ""}
+          value={currentValues?.identityType || employee?.identityType || ""}
         >
           {Object.values(IDENTITY_TYPE).map((value) => (
             <option key={value} value={value}>
@@ -117,12 +123,34 @@ export default function CreateEmployeeForm({
           }
           placeholder="Ej. 12345678..."
           required
-          value={currentValues?.identityNumber || ""}
+          value={
+            currentValues?.identityNumber || employee?.identityNumber || ""
+          }
         />
         {errors?.identityNumber && (
           <p className="text-red-500 text-sm">{errors.identityNumber}</p>
         )}
       </div>
+
+      {employee && (
+        <div>
+          <Label htmlFor="swal-status">Estado*</Label>
+          <Select
+            id="swal-status"
+            name="swal-status"
+            value={currentValues?.status || employee?.user?.status || ""}
+          >
+            {Object.values(USER_STATUS).map((value) => (
+              <option key={value} value={value}>
+                {value}
+              </option>
+            ))}
+          </Select>
+          {errors?.status && (
+            <p className="text-red-500 text-sm">{errors.status}</p>
+          )}
+        </div>
+      )}
     </div>
   );
 }

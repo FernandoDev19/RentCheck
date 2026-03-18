@@ -1,9 +1,45 @@
 import { useNavigate } from "react-router";
 import { getUser } from "../helpers/user.helper";
+import { useSearch } from "../hooks/useSearch";
 
 export default function AdminDashboard() {
   const navigate = useNavigate();
   const user = getUser();
+  const {handleSearch} = useSearch();
+
+  const actions = [
+    {
+      icon: "🔍",
+      label: "Buscar Cliente",
+      description: "Consulta historial, score y alertas",
+      onClick: handleSearch,
+    },
+    {
+      icon: "🏢",
+      label: "Rentadoras",
+      description: "Gestiona todas las empresas",
+      onClick: () => navigate("/adm/renters"),
+    },
+    {
+      icon: "🏢",
+      label: "Sedes",
+      description: "Gestiona tus sedes",
+      onClick: () => navigate("/adm/branches"),
+    },
+    {
+      icon: "👥",
+      label: "Clientes",
+      description: "Historial unificado",
+      onClick: () =>
+        navigate(`/adm/customers`),
+    },
+    {
+      icon: "👤",
+      label: "Empleados",
+      description: "Usuarios y accesos",
+      onClick: () => navigate("/adm/employees"),
+    },
+  ];
 
   return (
     <div
@@ -60,14 +96,7 @@ export default function AdminDashboard() {
         <div
           style={{ display: "grid", gridTemplateColumns: "1fr 1fr", gap: 16 }}
         >
-          {[
-            {
-              icon: "🏢",
-              label: "Rentadoras",
-              description: "Gestiona todas las empresas",
-              onClick: () => navigate("/adm/renters"),
-            },
-          ].map((card, i) => (
+          {actions.map((card, i) => (
             <button
               key={i}
               onClick={card.onClick}

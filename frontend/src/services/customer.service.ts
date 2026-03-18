@@ -26,5 +26,10 @@ export const customerService = {
     });
 
     return response.data;
+  },
+  
+  findOne: async (id: string) => {
+    const response = await api.get(`/customers/${id}`);
+    return response.data;
   }
 };

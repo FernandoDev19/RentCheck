@@ -1,6 +1,6 @@
 import { ROLES, type RolesType } from "../../common/types/roles.type";
 import { getUser } from "./helpers/user.helper";
-import EmployeeDashboard from "./components/employee-dashboard/EmployeeDashboard";
+import EmployeeDashboard from "./components/EmployeeDashboard";
 import ManagementDashboard from "./components/ManagementDashboard";
 import AdminDashboard from "./components/AdminDashboard";
 

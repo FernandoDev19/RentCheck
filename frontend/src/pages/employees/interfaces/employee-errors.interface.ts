@@ -5,4 +5,5 @@ export interface EmployeeErrors {
     branchId?: string;
     identityType?: string;
     identityNumber?: string;
+    status?: string;
 }

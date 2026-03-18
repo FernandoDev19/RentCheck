@@ -5,7 +5,7 @@ import { useCallback, useEffect, useState } from "react";
 import type { ListResponse } from "../../../common/interfaces/list-response.interface";
 import { customerService } from "../../../services/customer.service";
 import { catchError } from "../../../common/errors/catch-error";
-import RentalsByCustomerTable from "../components/RentalsByCustomerTable";
+import RentalsByCustomerTable from "../components/rentals-by-customer-table/RentalsByCustomerTable";
 import ViewCustomer from "../components/ViewCustomer";
 import { useCreateRental } from "../../rentals/hooks/useCreateRental";
 
@@ -66,7 +66,7 @@ export const useCustomer = () => {
   const handleViewInfo = (row: Customer) => {
     MySwal.fire({
       title: "Detalle del cliente",
-      html: <ViewCustomer row={row} />,
+      html: <ViewCustomer customerId={row.id} />,
       showConfirmButton: true,
       confirmButtonText: "Crear Renta",
       showCloseButton: true,

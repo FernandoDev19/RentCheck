@@ -63,6 +63,11 @@ export const rentalService = {
     return response.data;
   },
 
+  findOne: async (id: string) => {
+    const response = await api.get(`/rentals/${id}`);
+    return response.data;
+  },
+
   createRentalManually: async (rental: CreateRentalManuallyInterface) => {
     const response = await api.post("/rentals/create-manually", rental);
     return response.data;

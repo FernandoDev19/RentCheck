@@ -1,26 +1,20 @@
 import type { Column } from "../../../common/components/datatable/types/column.type";
 import type { Customer } from "../../../models/customer.model";
+import { CUSTOMER_STATUS_COLORS } from "../constants/customer-status-color";
+import { CUSTOMER_STATUS_LABELS } from "../constants/customer-status-label";
 import { useRequestBiometry } from "./useRequestBiometry";
-
-const CUSTOMER_STATUS_COLORS: Record<string, { bg: string; text: string }> = {
-  normal: { bg: "bg-green-100", text: "text-green-700" },
-  yellow_alert: { bg: "bg-yellow-100", text: "text-yellow-700" },
-  red_alert: { bg: "bg-red-100", text: "text-red-700" },
-};
-
-const CUSTOMER_STATUS_LABELS: Record<string, string> = {
-  normal: "Normal",
-  yellow_alert: "Alerta amarilla",
-  red_alert: "Alerta roja",
-};
 
 export const useCustomerColumns = (loadCustomers: () => Promise<void> | void) => {
   const { handleRequestBiometry } = useRequestBiometry();
 
   const columns: Column<Customer>[] = [
     {
+      key: "identityType",
+      label: "Tipo Ident."
+    },
+    {
       key: "identityNumber",
-      label: "Cédula / NIT",
+      label: "N. Ident.",
     },
     {
       key: "name",
@@ -29,7 +23,7 @@ export const useCustomerColumns = (loadCustomers: () => Promise<void> | void) =>
     },
     {
       key: "phone",
-      label: "Teléfono",
+      label: "Celular",
       render: (val) => (val ? String(val) : "-"),
     },
     {

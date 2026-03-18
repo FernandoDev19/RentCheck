@@ -15,5 +15,6 @@ export const branchesColumns: Column<Branch>[] = [
   {
     key: "status",
     label: "Estado",
+    render: (val) => (val ? "Activo" : "Inactivo"),
   },
 ];

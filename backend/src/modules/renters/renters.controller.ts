@@ -1,4 +1,13 @@
-import { Controller, Get, Post, Body, Param, Query, Put } from '@nestjs/common';
+import {
+  Controller,
+  Get,
+  Post,
+  Body,
+  Param,
+  Query,
+  Put,
+  Delete,
+} from '@nestjs/common';
 import { RentersService } from './renters.service';
 import { CreateRenterDto } from './dto/create-renter.dto';
 import { UpdateRenterDto } from './dto/update-renter.dto';
@@ -36,8 +45,8 @@ export class RentersController {
     return this.rentersService.update(id, updateRenterDto);
   }
 
-  // @Delete(':id')
-  // remove(@Param('id') id: string) {
-  //   return this.rentersService.remove(id);
-  // }
+  @Delete(':id')
+  remove(@Param('id') id: string) {
+    return this.rentersService.remove(id);
+  }
 }

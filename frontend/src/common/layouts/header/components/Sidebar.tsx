@@ -6,22 +6,31 @@ import {
   Car,
   HousePlus,
   MessageCircle,
+  Users2Icon,
 } from "lucide-react";
 import { ROLES, type RolesType } from "../../../types/roles.type";
 import LogoutButton from "../../../components/ui/LogoutButton";
+import { NavLink } from "react-router";
 
 type Props = {
   isMobileMenuOpen: boolean;
   setIsMobileMenuOpen: (open: boolean) => void;
-  handleNavigation: (path: string) => void;
 };
 
 export default function Sidebar({
   isMobileMenuOpen,
   setIsMobileMenuOpen,
-  handleNavigation,
 }: Props) {
   const userRole = JSON.parse(localStorage.getItem("user")!).role as RolesType;
+
+  const rolePath =
+    userRole === ROLES.ADMIN
+      ? "adm"
+      : userRole === ROLES.OWNER
+        ? "owner"
+        : userRole === ROLES.MANAGER
+          ? "manager"
+          : "employee";
 
   const navLinks: {
     name: string;
@@ -31,16 +40,52 @@ export default function Sidebar({
   }[] = [
     {
       name: "Panel Control",
-      path: `/${userRole === ROLES.ADMIN ? "adm" : userRole === ROLES.OWNER ? "owner" : userRole === ROLES.MANAGER ? "manager" : "employee"}/dashboard`,
+      path: `/${rolePath}/dashboard`,
       icon: LayoutDashboard,
       roles: [ROLES.ADMIN, ROLES.OWNER, ROLES.MANAGER, ROLES.EMPLOYEE],
     },
-    { name: "Rentadoras", path: "/adm/renters", icon: Users, roles: [ROLES.ADMIN] },
-    { name: "Sedes", path: "/owner/branches", icon: HousePlus, roles: [ROLES.OWNER] },
-    { name: "Empleados", path: `/${userRole === ROLES.MANAGER ? "manager" : "owner"}/employees`, icon: Users, roles: [ROLES.MANAGER, ROLES.OWNER] },
-    { name: "Rentas", path: `/${userRole === ROLES.OWNER ? "owner" : userRole === ROLES.MANAGER ? "manager" : "employee"}/rentals`, icon: Car, roles: [ROLES.OWNER, ROLES.MANAGER, ROLES.EMPLOYEE] },
-    { name: "Feedbacks pendientes", path: `/${userRole === ROLES.OWNER ? "owner" : userRole === ROLES.MANAGER ? "manager" : "employee"}/feedbacks`, icon: MessageCircle, roles: [ROLES.EMPLOYEE, ROLES.OWNER, ROLES.MANAGER] },
-    { name: "Clientes", path: `/${userRole === ROLES.EMPLOYEE ? "employee" : userRole === ROLES.OWNER ? "owner" : "manager"}/customers`, icon: Users, roles: [ROLES.EMPLOYEE, ROLES.OWNER, ROLES.MANAGER] },
+    {
+      name: "Rentadoras",
+      path: "/adm/renters",
+      icon: Car,
+      roles: [ROLES.ADMIN],
+    },
+    {
+      name: "Sedes",
+      path: `/${rolePath}/branches`,
+      icon: HousePlus,
+      roles: [ROLES.OWNER, ROLES.ADMIN],
+    },
+    {
+      name: "Empleados",
+      path: `/${rolePath}/employees`,
+      icon: Users2Icon,
+      roles: [ROLES.MANAGER, ROLES.OWNER, ROLES.ADMIN],
+    },
+    {
+      name: "Rentas",
+      path: `/${rolePath}/rentals`,
+      icon: Car,
+      roles: [ROLES.OWNER, ROLES.MANAGER, ROLES.EMPLOYEE],
+    },
+    {
+      name: "Feedbacks pendientes",
+      path: `/${rolePath}/feedbacks`,
+      icon: MessageCircle,
+      roles: [ROLES.EMPLOYEE, ROLES.OWNER, ROLES.MANAGER],
+    },
+    {
+      name: "Clientes",
+      path: `/${rolePath}/customers`,
+      icon: Users,
+      roles: [ROLES.EMPLOYEE, ROLES.OWNER, ROLES.MANAGER, ROLES.ADMIN],
+    },
+    {
+      name: "Vehiculos",
+      path: `/${rolePath}/vehicles`,
+      icon: Car,
+      roles: [ROLES.OWNER, ROLES.MANAGER, ROLES.EMPLOYEE, ROLES.ADMIN],
+    },
   ];
 
   return (
@@ -90,18 +135,21 @@ export default function Sidebar({
               {navLinks.map((link) => {
                 return (
                   link.roles.includes(userRole as RolesType) && (
-                    <button
+                    <NavLink
                       key={link.path}
-                      onClick={() => handleNavigation(link.path)}
-                      className={`w-full flex items-center space-x-3 px-4 py-3 rounded-lg transition-all duration-200 ${
-                        location.pathname === link.path
-                          ? "bg-primary text-white"
-                          : "hover:bg-primary/10"
-                      }`}
+                      to={link.path}
+                      onClick={() => setIsMobileMenuOpen(false)}
+                      className={({ isActive }) => { 
+                        return `w-full flex items-center space-x-3 px-4 py-3 rounded-lg transition-all duration-200 ${
+                          isActive
+                            ? "bg-primary text-white"
+                            : "hover:bg-primary/10"
+                        }`
+                      }}
                     >
                       <link.icon size={20} />
                       <span className="font-medium">{link.name}</span>
-                    </button>
+                    </NavLink>
                   )
                 );
               })}

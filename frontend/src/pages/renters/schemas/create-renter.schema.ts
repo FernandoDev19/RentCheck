@@ -16,3 +16,4 @@ export const createRenterSchema = z.object({
     lowBalanceAlertEnabled: z.optional(z.boolean()),
     status: z.optional(z.enum(["active", "suspended"])),
   });
+  

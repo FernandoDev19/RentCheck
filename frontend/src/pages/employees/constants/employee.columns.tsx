@@ -11,6 +11,7 @@ export const columns: Column<Employee>[] = [
       const branch = val as Branch;
       return `${branch.name}`;
     },
+    sortable: false,
   },
   { key: "name", label: "Nombre" },
   {
@@ -24,16 +25,16 @@ export const columns: Column<Employee>[] = [
   { key: "identityType", label: "Tipo ID" },
   { key: "identityNumber", label: "Num. ID" },
   {
-    key: "createdAt",
-    label: "Fecha de creación",
-    render: (val) => new Date(val as string).toLocaleDateString("es-CO"),
-  },
-  {
     key: "status",
     label: "Estado",
     render: (_val, row) => {
       const user = row.user as User;
       return user.status;
     },
+  },
+  {
+    key: "createdAt",
+    label: "Fecha de creación",
+    render: (val) => new Date(val as string).toLocaleDateString("es-CO"),
   },
 ];

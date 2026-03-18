@@ -7,13 +7,14 @@ import {
 } from '@nestjs/common';
 import { InjectRepository } from '@nestjs/typeorm';
 import { Rental } from './entities/rental.entity';
-import { Brackets, FindOptionsWhere, ILike, In, IsNull, Repository } from 'typeorm';
+import { Brackets, In, Repository } from 'typeorm';
 import { UserActiveInterface } from '../auth/interfaces/active-user.interface';
 import { ListResponse } from '../../core/interfaces/list-response';
 import { RolesEnum } from '../../core/enums/roles.enum';
 import { CreateRentalManualDto } from './dto/create-rental-manual.dto';
 import { Customer } from '../customers/entities/customer.entity';
 import { RentalStatusEnum } from './enums/rental-status.enum';
+import { VehiclesService } from '../vehicles/vehicles.service';
 
 @Injectable()
 export class RentalsService {
@@ -22,6 +23,7 @@ export class RentalsService {
     private readonly rentalRepository: Repository<Rental>,
     @InjectRepository(Customer)
     private readonly customerRepository: Repository<Customer>,
+    private readonly vehicleService: VehiclesService,
   ) {}
 
   // async create(createRentalDto: CreateRentalDto) {
@@ -96,15 +98,20 @@ export class RentalsService {
       );
     }
 
+    if (dto.vehicleId) {
+      await this.vehicleService.rentVehicle(dto.vehicleId, user);
+    }
+
     // 4. Crear la Renta
     const rental = this.rentalRepository.create({
       customerId: customer.id,
       renterId: user.renterId,
-      branchId: user.branchId || null,
+      branchId: dto.branchId || user.branchId || null,
       employeeId: user.employeeId || null,
       startDate: new Date(),
       expectedReturnDate: dto.expectedReturnDate,
       rentalStatus: RentalStatusEnum.ACTIVE,
+      vehicleId: dto.vehicleId,
     });
 
     return await this.rentalRepository.save(rental);
@@ -204,7 +211,7 @@ export class RentalsService {
       .leftJoinAndSelect('rental.renter', 'renter')
       .leftJoinAndSelect('rental.branch', 'branch')
       .leftJoinAndSelect('rental.employee', 'employee')
-      .leftJoinAndSelect('rental.rentalFeedback', 'rentalFeedback')
+      .innerJoinAndSelect('rental.rentalFeedback', 'rentalFeedback')
       // Relación para ver quién hizo cada movimiento
       .leftJoinAndSelect('rental.receivedByUser', 'receivedByUser')
       .leftJoinAndSelect('rental.cancelledByUser', 'cancelledByUser')
@@ -229,7 +236,21 @@ export class RentalsService {
       );
     }
 
-    qb.orderBy(`rental.${orderBy}`, safeOrderDir)
+    qb.select([
+      'rental.id',
+      'renter.id',
+      'renter.name',
+      'branch.id',
+      'branch.renterId',
+      'branch.name',
+      'rental.startDate',
+      'rental.actualReturnDate',
+      'rental.rentalStatus',
+      'rentalFeedback.id',
+      'rentalFeedback.score',
+      'rental.createdAt',
+    ])
+      .orderBy(`rental.${orderBy}`, safeOrderDir)
       .skip((page - 1) * limit)
       .take(limit);
 
@@ -269,6 +290,21 @@ export class RentalsService {
       .leftJoinAndSelect('rental.employee', 'employee')
       .leftJoinAndSelect('rental.customer', 'customer')
       .leftJoinAndSelect('customer.biometryRequests', 'biometryRequests')
+      .select([
+        'rental.id',
+        'customer.id',
+        'customer.name',
+        'customer.lastName',
+        'renter.id',
+        'renter.name',
+        'branch.id',
+        'branch.name',
+        'employee.id',
+        'employee.name',
+        'rental.startDate',
+        'rental.expectedReturnDate',
+        'rental.rentalStatus',
+      ])
       .where('feedback.id IS NULL')
       .andWhere('rental.rentalStatus = :status', {
         status: RentalStatusEnum.RETURNED,
@@ -313,41 +349,63 @@ export class RentalsService {
 
   async findOne(id: string, user: UserActiveInterface) {
     try {
-      let where = {};
+      const qb = this.rentalRepository
+        .createQueryBuilder('rental')
+        .leftJoinAndSelect('rental.renter', 'renter')
+        .leftJoinAndSelect('rental.branch', 'branch')
+        .leftJoinAndSelect('rental.employee', 'employee')
+        .leftJoinAndSelect('rental.rentalFeedback', 'rentalFeedback');
 
-      switch (user.role as RolesEnum) {
-        case RolesEnum.EMPLOYEE:
-          where = { id, employeeId: user.employeeId };
-          break;
-        case RolesEnum.MANAGER:
-          where = { id, branchId: user.branchId };
-          break;
-        case RolesEnum.OWNER:
-          where = { id, renterId: user.renterId };
-          break;
-      }
+      const selectFields = [
+        'rental.id',
+        'renter.id',
+        'renter.name',
+        'branch.id',
+        'branch.name',
+        'employee.id',
+        'employee.name',
+        'rental.rentalStatus',
+        'rental.startDate',
+        'rental.expectedReturnDate',
+        'rental.actualReturnDate',
+        'rentalFeedback.id',
+        'rentalFeedback.score',
+        'rentalFeedback.criticalFlags',
+      ];
 
-      const rental = await this.rentalRepository.findOne({
-        where,
-      });
+      qb.where('rental.id = :id', { id });
+
+      const rental = await qb.select(selectFields).getOne();
 
       if (!rental) throw new NotFoundException('Rental not found');
+
+      const isOwnerOfData = rental.renter.id === user.renterId;
+
+      if (!isOwnerOfData) {
+        delete rental.employee;
+        delete rental.branch;
+      }
 
       return rental;
     } catch (error) {
       if (error instanceof NotFoundException) {
         throw error;
       }
-      throw new BadRequestException(
-        error.response || 'Error trying to find user',
-      );
+      throw new BadRequestException(error.response || error);
     }
   }
 
   async returnRental(id: string, user: UserActiveInterface) {
     const rental = await this.rentalRepository.findOne({
       where: { id },
-      select: ['id', 'renterId', 'branchId', 'employeeId', 'rentalStatus'],
+      select: [
+        'id',
+        'renterId',
+        'branchId',
+        'employeeId',
+        'rentalStatus',
+        'vehicleId',
+      ],
     });
 
     if (!rental) throw new NotFoundException('Renta no encontrada');
@@ -361,6 +419,10 @@ export class RentalsService {
       );
     }
 
+    if (rental.vehicleId) {
+      await this.vehicleService.returnVehicle(rental.vehicleId, user);
+    }
+
     return await this.rentalRepository.update(id, {
       rentalStatus: RentalStatusEnum.RETURNED,
       actualReturnDate: new Date(),
@@ -371,7 +433,14 @@ export class RentalsService {
   async remove(id: string, user: UserActiveInterface) {
     const rental = await this.rentalRepository.findOne({
       where: { id },
-      select: ['id', 'renterId', 'branchId', 'employeeId', 'rentalStatus'],
+      select: [
+        'id',
+        'renterId',
+        'branchId',
+        'employeeId',
+        'rentalStatus',
+        'vehicleId',
+      ],
     });
 
     if (!rental) throw new NotFoundException('Renta no encontrada');
@@ -395,7 +464,7 @@ export class RentalsService {
         if (rental.branchId === user.branchId) canDelete = true;
         break;
       case RolesEnum.EMPLOYEE:
-        if (rental.employeeId === user.employeeId) canDelete = true;
+        if (rental.branchId === user.branchId) canDelete = true;
         break;
     }
 
@@ -403,6 +472,10 @@ export class RentalsService {
       throw new ForbiddenException(
         'No tienes permiso para cancelar esta renta',
       );
+    }
+
+    if (rental.vehicleId) {
+      await this.vehicleService.returnVehicle(rental.vehicleId, user);
     }
 
     return await this.rentalRepository.update(id, {

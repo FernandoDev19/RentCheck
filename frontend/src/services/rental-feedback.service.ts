@@ -20,13 +20,14 @@ export interface CreateFeedbackInterface {
   comments?: string;
 }
 
-export const SCORE_FIELDS: { key: keyof CreateFeedbackScore; label: string }[] = [
-  { key: "damageToCar", label: "Daño al vehículo" },
-  { key: "unpaidFines", label: "Multas impagas" },
-  { key: "arrears", label: "Atrasos" },
-  { key: "carAbuse", label: "Abuso del vehículo" },
-  { key: "badAttitude", label: "Mala actitud" },
-];
+export const SCORE_FIELDS: { key: keyof CreateFeedbackScore; label: string }[] =
+  [
+    { key: "damageToCar", label: "Cuidado del vehículo" },
+    { key: "unpaidFines", label: "Cumplimiento de multas" },
+    { key: "arrears", label: "Puntualidad en pagos" },
+    { key: "carAbuse", label: "Uso responsable" },
+    { key: "badAttitude", label: "Actitud y trato" },
+  ];
 
 export const rentalFeedbackService = {
   create: async (data: CreateFeedbackInterface) => {

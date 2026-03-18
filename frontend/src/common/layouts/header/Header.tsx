@@ -67,7 +67,6 @@ export default function Header() {
       <Sidebar
         isMobileMenuOpen={isMobileMenuOpen}
         setIsMobileMenuOpen={setIsMobileMenuOpen}
-        handleNavigation={handleNavigation}
       />
     </>
   );
