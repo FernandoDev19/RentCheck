@@ -23,8 +23,22 @@ export const branchService = {
     return response.data;
   },
 
-  getAllNames: async (): Promise<{ id: string; name: string }[]> => {
-    const response = await api.get("/branches/names");
+  getAllNames: async (params?: {
+    page?: number;
+    limit?: number;
+    orderBy?: string;
+    orderDir?: "asc" | "desc";
+    search?: string;
+  }): Promise<ListResponse<{ id: string; name: string }>> => {
+    const response = await api.get("/branches/names", {
+      params: {
+        page: params?.page,
+        limit: params?.limit,
+        orderBy: params?.orderBy,
+        orderDir: params?.orderDir,
+        search: params?.search,
+      },
+    });
     return response.data;
   },
 

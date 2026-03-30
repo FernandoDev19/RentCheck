@@ -178,18 +178,38 @@ export const useRentals = () => {
   };
 
   const handleDelete = async (row: Rental) => {
-    const result = await MySwal.fire({
-      title: "¿Cancelar Renta?",
-      text: "¿Estás seguro de que quieres cancelar esta renta?",
+    const isPending = row.rentalStatus === "pending";
+
+    const { isConfirmed: confirmCancel } = await MySwal.fire({
+      title: isPending ? "¿Eliminar renta?" : "¿Cancelar renta?",
+      text: isPending
+        ? "Esta renta aún no ha iniciado. Se eliminará sin afectar el historial del cliente."
+        : "¿Estás seguro? Esta acción quedará registrada.",
       icon: "question",
       showCancelButton: true,
       confirmButtonColor: "#d33",
-      cancelButtonColor: "#3085d6",
-      confirmButtonText: "Sí, cancelar",
+      confirmButtonText: isPending ? "Sí, eliminar" : "Sí, cancelar",
       cancelButtonText: "No",
     });
 
-    if (!result.isConfirmed) return;
+    if (!confirmCancel) return;
+
+    // Renta pending → cancelar directo, sin feedback
+    if (isPending) {
+      try {
+        await rentalService.cancelRental(row.id);
+        MySwal.fire({
+          title: "Renta eliminada",
+          icon: "success",
+          timer: 2000,
+          showConfirmButton: false,
+        });
+        loadRentals();
+      } catch (error) {
+        await catchError(error, MySwal, "Error al eliminar la renta");
+      }
+      return;
+    }
 
     const { isConfirmed, value } = await MySwal.fire({
       title: "📋 Motivo de cancelación",
@@ -257,18 +277,23 @@ export const useRentals = () => {
     try {
       await rentalService.cancelRental(row.id);
 
-      await rentalFeedbackService.create({
-        rentalId: row.id,
-        score: {
-          damageToCar: 0,
-          unpaidFines: 0,
-          arrears: 0,
-          carAbuse: 0,
-          badAttitude: 0,
-        },
-        criticalFlags: value.criticalFlags,
-        comments: value.comments,
-      });
+      if (
+        value.criticalFlags.vehicleTheft ||
+        value.criticalFlags.impersonation
+      ) {
+        await rentalFeedbackService.create({
+          rentalId: row.id,
+          score: {
+            damageToCar: 0,
+            unpaidFines: 0,
+            arrears: 0,
+            carAbuse: 0,
+            badAttitude: 0,
+          },
+          criticalFlags: value.criticalFlags,
+          comments: value.comments,
+        });
+      }
 
       MySwal.fire({
         title: "Renta cancelada",

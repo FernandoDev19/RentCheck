@@ -19,7 +19,7 @@ export const useCreateRental = () => {
   const user = getUser();
   const userRoleOwner = user.role === ROLES.OWNER;
 
-  const handleCreateClick = async (loadRentals: () => Promise<void> | void, identityNumber?: string) => {
+  const handleCreateClick = async (loadRentals: () => Promise<void> | void, identityNumber?: string, prefill?: { vehicleId?: string; startDate?: string; endDate?: string }) => {
     let idData = identityNumber;
     
     if (!idData) {
@@ -137,6 +137,7 @@ export const useCreateRental = () => {
         <CreateRentalForm
           customer={existingCustomer || null}
           identityNumber={idData!}
+          prefill={prefill}
         />
       ),
       width: 600,
@@ -166,15 +167,17 @@ export const useCreateRental = () => {
               ?.value || "",
           startDate:
             (document.getElementById("swal-startDate") as HTMLInputElement)
-              ?.value || "",
+              ?.value || prefill?.startDate || "",
           expectedReturnDate:
             (
               document.getElementById(
                 "swal-expectedReturnDate",
               ) as HTMLInputElement
-            )?.value || "",
+            )?.value || prefill?.endDate || "",
           branchId: (document.getElementById('swal-branch') as HTMLSelectElement)
-            ?.value || ""
+            ?.value || "",
+          vehicleId: (document.getElementById("swal-vehicle") as HTMLInputElement)?.value || prefill?.vehicleId || undefined,
+          totalPrice: (document.getElementById('swal-totalPrice') as HTMLInputElement)?.value
         };
 
         const name = existingCustomer
@@ -202,13 +205,15 @@ export const useCreateRental = () => {
             undefined;
         const startDate = (
           document.getElementById("swal-startDate") as HTMLInputElement
-        ).value;
+        ).value || prefill?.startDate;
         const expectedReturnDate = (
           document.getElementById("swal-expectedReturnDate") as HTMLInputElement
-        ).value;
+        ).value || prefill?.endDate;
         const branchId = userRoleOwner
-        ? (document.getElementById('swal-branch') as HTMLSelectElement)?.value || ""
+        ? (document.getElementById('swal-branch') as HTMLSelectElement)?.value
         : undefined;
+        const vehicleId = (document.getElementById("swal-vehicle") as HTMLInputElement)?.value || prefill?.vehicleId || undefined;
+        const totalPrice = Number((document.getElementById('swal-totalPrice') as HTMLInputElement)?.value);
 
         let result;
         
@@ -222,13 +227,18 @@ export const useCreateRental = () => {
             phone,
             startDate,
             expectedReturnDate,
-            branchId
+            branchId,
+            vehicleId,
+            totalPrice
           });
         }else {
           result = createRentalSchema.safeParse({
+            identityNumber,
             startDate,
             expectedReturnDate,
-            branchId
+            branchId,
+            vehicleId,
+            totalPrice
           });
         }
 
@@ -248,6 +258,9 @@ export const useCreateRental = () => {
                 errors={errorObj}
               />
             ),
+            showConfirmButton: true,
+            confirmButtonText: "Crear renta",
+            cancelButtonText: "Cancelar",
           });
 
           MySwal.showValidationMessage("Revisa los campos marcados en rojo");

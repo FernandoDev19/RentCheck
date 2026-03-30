@@ -13,11 +13,15 @@ import { VehicleStatus } from '../enums/vehicle-status.enum';
 import { Branch } from '../../branches/entities/branch.entity';
 import { Renter } from '../../renters/entities/renter.entity';
 import { Rental } from '../../rentals/entities/rental.entity';
+import { TypeTransmissionEnum } from '../enums/type-transmission.enum';
 
 @Entity('vehicles')
 export class Vehicle {
   @PrimaryGeneratedColumn('uuid')
   id: string;
+
+  @Column({ nullable: true })
+  gamma: string;
 
   @Column({ unique: true })
   plate: string;
@@ -33,6 +37,17 @@ export class Vehicle {
 
   @Column()
   color: string;
+
+  @Column({ enum: TypeTransmissionEnum })
+  transmission: TypeTransmissionEnum;
+
+  @Column({
+    name: 'rental_price_by_day',
+    type: 'decimal',
+    precision: 12,
+    scale: 2,
+  })
+  rentalPriceByDay: number;
 
   @Column({
     name: 'insured_value',

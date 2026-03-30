@@ -3,4 +3,5 @@ export interface CreateRentalInterface {
   expectedReturnDate: string;
   actualReturnDate?: string;
   rentalStatus?: 'active' | 'returned' | 'late' | 'cancelled';
+  vehicleId?: string;
 }

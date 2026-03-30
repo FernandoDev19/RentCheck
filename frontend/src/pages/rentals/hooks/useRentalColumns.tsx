@@ -4,6 +4,7 @@ import type { Branch } from "../../../models/branch.model";
 import type { Customer } from "../../../models/customer.model";
 import type { Employee } from "../../../models/employee.model";
 import type { Rental } from "../../../models/rental.model";
+import type { Vehicle } from "../../../models/Vehicle.model";
 import { RENTAL_STATUS_COLORS, RENTAL_STATUS_LABELS } from "./useRentals";
 import { useRequestBiometry } from "./useRequestBiometry";
 
@@ -44,7 +45,10 @@ export const useRentalColumns = (loadRentals: () => Promise<void> | void) => {
 
         if (biometries.length === 0) {
           return (
-            <ButtonActionDataTable onClick={() => handleRequestBiometry(row, loadRentals)} color="red">
+            <ButtonActionDataTable
+              onClick={() => handleRequestBiometry(row, loadRentals)}
+              color="red"
+            >
               🔴 Sin verificar
             </ButtonActionDataTable>
           );
@@ -92,6 +96,25 @@ export const useRentalColumns = (loadRentals: () => Promise<void> | void) => {
       },
     },
     {
+      key: "vehicle",
+      label: "Vehículo",
+      render: (val) => {
+        const vehicle = val as Vehicle;
+        if (!vehicle) return "-";
+        
+        return (
+          <div>
+            <p className="font-semibold text-slate-800 text-sm">
+              {vehicle?.brand} {vehicle?.model}
+            </p>
+            <p className="text-xs text-slate-400">
+              {vehicle?.year} · {vehicle?.color}
+            </p>
+          </div>
+        );
+      },
+    },
+    {
       key: "startDate",
       label: "Fecha inicio",
       render: (val) => new Date(val as string).toLocaleDateString("es-CO"),
@@ -132,5 +155,5 @@ export const useRentalColumns = (loadRentals: () => Promise<void> | void) => {
     },
   ];
 
-  return { columns }
+  return { columns };
 };

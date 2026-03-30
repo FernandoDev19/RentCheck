@@ -22,9 +22,10 @@ export async function fakeRentalsSeeder(
   if (rentalsCount > 0) return;
 
   const customers = await CustomerRepository.find();
-  const employees = await EmployeeRepository.find({
-    relations: ['branch', 'branch.renter'],
-  });
+  const employees = await EmployeeRepository.createQueryBuilder('employee')
+    .innerJoinAndSelect('employee.branch', 'branch')
+    .innerJoinAndSelect('branch.renter', 'renter')
+    .getMany();
 
   if (customers.length === 0 || employees.length === 0) {
     console.log('Faltan clientes o empleados para sembrar rentas');
@@ -44,9 +45,13 @@ export async function fakeRentalsSeeder(
         ? RentalStatusEnum.ACTIVE
         : RentalStatusEnum.RETURNED;
 
-      const startDate = new Date(2025, i, 1);
-      const expectedReturnDate = new Date(2025, i, 7);
-      const actualReturnDate = isActive ? null : new Date(2025, i, 7);
+      const startDate = new Date(2026, i, 1);
+      const expectedReturnDate = new Date(2026, i, 7);
+      const actualReturnDate = isActive ? null : new Date(2026, i, 7);
+      const now = new Date();
+
+      const initialStatus =
+        startDate <= now ? status : RentalStatusEnum.PENDING;
 
       const rental = RentalRepository.create({
         customerId: customer.id,
@@ -56,7 +61,8 @@ export async function fakeRentalsSeeder(
         startDate,
         expectedReturnDate,
         actualReturnDate,
-        rentalStatus: status,
+        rentalStatus: initialStatus,
+        totalPrice: Math.floor(Math.random() * 999999),
       });
 
       const savedRental = await RentalRepository.save(rental);

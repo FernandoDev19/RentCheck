@@ -6,52 +6,82 @@ import type { Vehicle } from "../../models/Vehicle.model";
 import { getUser } from "../dashboard/helpers/user.helper";
 import { ROLES } from "../../common/types/roles.type";
 import ButtonActionDataTable from "../../common/components/ui/ButtonActionDataTable";
-import { Edit, Trash2 } from "lucide-react";
+import { Edit, Info, Trash2 } from "lucide-react";
 import { useCreateVehicle } from "./hooks/useCreateVehicle";
 import { useEditVehicle } from "./hooks/useEditVehicle";
 import { useChangeStatus } from "./hooks/useChangeStatus";
 import { columns } from "./constants/vehicles.columns";
 import { cardFields } from "./constants/vehicles.fields";
 import { StatusBadge } from "./helpers/vehicle-status-badge.helper";
+import { VEHICLE_STATUS } from "../../common/types/vehicle-status.type";
+import { useVehicleAvailability } from "./hooks/useVehicleAvailability";
+import { useViewDetails } from "./hooks/useViewDetails";
 
 export default function Vehicles() {
-  const { vehicles, loadVehicles, handleDelete, page, setPage, viewMode, setViewMode, limit, totalItems, totalPages, setSearchTerm, setOrderBy } = useVehicles();
+  const {
+    vehicles,
+    loadVehicles,
+    handleDelete,
+    page,
+    setPage,
+    viewMode,
+    setViewMode,
+    limit,
+    totalItems,
+    totalPages,
+    setSearchTerm,
+    setOrderBy,
+  } = useVehicles();
   const { handleCreate } = useCreateVehicle();
   const { handleEdit } = useEditVehicle();
   const { handleChangeStatus } = useChangeStatus();
+  const { openAvailabilityModal } = useVehicleAvailability();
+    const { handleViewDetail } = useViewDetails();
 
   const user = getUser();
 
   const canManage = user.role === ROLES.OWNER || user.role === ROLES.MANAGER;
-    const renderActions = (row: Vehicle) => (
-      <div className="flex items-center gap-1.5 flex-wrap">
-        {/* <ButtonActionDataTable onClick={() => handleHistory(row)} color="indigo">
+  const renderActions = (row: Vehicle) => (
+    <div className="flex items-center gap-1.5 flex-wrap">
+      {/* <ButtonActionDataTable onClick={() => handleHistory(row)} color="indigo">
           Historial
         </ButtonActionDataTable> */}
-        {canManage && (
-          <>
-            <ButtonActionDataTable onClick={() => handleEdit(loadVehicles, row)} color="slate">
-              <Edit size={16} />
-            </ButtonActionDataTable>
-            {row.status !== "rented" && (
-              <ButtonActionDataTable
-                onClick={() => handleChangeStatus(loadVehicles, row)}
-                color="yellow"
-              >
-                Estado
-              </ButtonActionDataTable>
-            )}
+        <ButtonActionDataTable color="indigo" onClick={() => handleViewDetail(row)}>
+          <Info size={16}/>
+        </ButtonActionDataTable>
+      {canManage && (
+        <>
+          <ButtonActionDataTable
+            onClick={() => handleEdit(loadVehicles, row)}
+            color="slate"
+          >
+            <Edit size={16} />
+          </ButtonActionDataTable>
+          {row.status !== VEHICLE_STATUS.RENTED && (
             <ButtonActionDataTable
-              onClick={() => handleDelete(row)}
-              color="red"
-              disabled={row.status === "rented"}
+              onClick={() => handleChangeStatus(loadVehicles, row)}
+              color="yellow"
             >
-              <Trash2 size={16} />
+              Estado
             </ButtonActionDataTable>
-          </>
-        )}
-      </div>
-    );
+          )}
+          <ButtonActionDataTable
+            onClick={() => handleDelete(row)}
+            color="red"
+            disabled={row.status === VEHICLE_STATUS.RENTED}
+            title={
+              row.status === VEHICLE_STATUS.RENTED
+                ? "No puedes eliminar un vehiculo rentado"
+                : undefined
+            }
+            className="disabled:cursor-not-allowed disabled:bg-neutral-200 disabled:text-neutral-400"
+          >
+            <Trash2 size={16} />
+          </ButtonActionDataTable>
+        </>
+      )}
+    </div>
+  );
 
   return (
     <div className="w-full">
@@ -62,7 +92,7 @@ export default function Vehicles() {
       />
 
       {/* ── Toggle view ── */}
-      <div className="flex items-center justify-between mb-4">
+      <div className="flex items-center gap-4 mb-4">
         <div className="flex items-center gap-1 p-1 bg-slate-100 rounded-lg">
           <button
             onClick={() => setViewMode("table")}
@@ -85,6 +115,14 @@ export default function Vehicles() {
             ⊞ Cards
           </button>
         </div>
+        <div>
+          <button
+            onClick={() => openAvailabilityModal(loadVehicles)}
+            className="px-4 py-2 text-sm font-semibold bg-indigo-600 text-white rounded-xl hover:bg-indigo-700 transition"
+          >
+            🔍 Consultar disponibilidad
+          </button>
+        </div>
       </div>
 
       {/* ── Table view ── */}
@@ -98,8 +136,14 @@ export default function Vehicles() {
           serverSideSort
           currentPage={page}
           onPageChange={setPage}
-          onSearchChange={(term) => { setPage(1); setSearchTerm(term); }}
-          onSortChange={(key, dir) => { setPage(1); setOrderBy({ key, direction: dir === "desc" ? "desc" : "asc" }); }}
+          onSearchChange={(term) => {
+            setPage(1);
+            setSearchTerm(term);
+          }}
+          onSortChange={(key, dir) => {
+            setPage(1);
+            setOrderBy({ key, direction: dir === "desc" ? "desc" : "asc" });
+          }}
           totalPages={totalPages}
           totalItems={totalItems}
           searchPlaceholder="Buscar por placa, marca, modelo..."
@@ -127,7 +171,10 @@ export default function Vehicles() {
           serverSideSearch
           currentPage={page}
           onPageChange={setPage}
-          onSearchChange={(term) => { setPage(1); setSearchTerm(term); }}
+          onSearchChange={(term) => {
+            setPage(1);
+            setSearchTerm(term);
+          }}
           totalPages={totalPages}
           totalItems={totalItems}
           searchPlaceholder="Buscar vehículo..."

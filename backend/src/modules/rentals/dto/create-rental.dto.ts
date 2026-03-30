@@ -1,5 +1,14 @@
 import { Transform } from 'class-transformer';
-import { IsEnum, IsNotEmpty, IsOptional, IsString } from 'class-validator';
+import {
+  IsEnum,
+  IsNotEmpty,
+  IsNumber,
+  IsOptional,
+  IsString,
+  IsUUID,
+  Max,
+  Min,
+} from 'class-validator';
 import { RentalStatusEnum } from '../enums/rental-status.enum';
 
 export class CreateRentalDto {
@@ -23,8 +32,14 @@ export class CreateRentalDto {
   // customerId: string;
 
   @IsOptional()
-  @IsString()
+  @IsUUID()
+  @IsNotEmpty()
   vehicleId?: string;
+
+  @IsNumber()
+  @Min(0)
+  @Max(999999999)
+  totalPrice: number;
 
   @IsString()
   @Transform(({ value }) => value.trim())

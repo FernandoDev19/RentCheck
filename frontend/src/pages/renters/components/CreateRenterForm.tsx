@@ -18,8 +18,6 @@ export default function CreateRenterForm({
   errors,
   renter,
 }: props) {
-  const planIdValue = currentValues?.planId || renter?.planId?.toString() || "";
-  console.log("Final planId value:", planIdValue);
   return (
     <div className="text-left space-y-4">
       <div>

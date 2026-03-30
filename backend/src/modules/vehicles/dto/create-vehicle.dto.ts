@@ -13,8 +13,14 @@ import {
   ValidateNested,
 } from 'class-validator';
 import { VehicleStatus } from '../enums/vehicle-status.enum';
+import { TypeTransmissionEnum } from '../enums/type-transmission.enum';
 
 export class CreateVehicleDto {
+  @IsOptional()
+  @IsString()
+  @IsNotEmpty()
+  gamma?: string;
+
   @IsString()
   @IsNotEmpty()
   @MinLength(3)
@@ -45,14 +51,24 @@ export class CreateVehicleDto {
   @MaxLength(50)
   color: string;
 
+  @IsEnum(TypeTransmissionEnum)
+  transmission: TypeTransmissionEnum;
+
+  @IsNumber()
+  @Min(0)
+  @Max(9999999)
+  rentalPriceByDay: number;
+
   @IsOptional()
   @IsNumber()
+  @Min(0)
+  @Max(9999999)
   insuredValue?: number;
 
   @IsOptional()
   @IsArray()
-  @ValidateNested({ each: true })
-  @Type(() => String)
+  @IsString({ each: true })
+  @IsNotEmpty({ each: true })
   photos?: string[];
 
   @IsOptional()

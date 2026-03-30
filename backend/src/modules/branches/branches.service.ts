@@ -159,19 +159,43 @@ export class BranchesService {
     return {
       data,
       total,
-      page: 1,
-      lastPage: 1,
+      page,
+      lastPage: Math.ceil(total / limit),
     };
   }
 
   async findAllNames(
+    page: number = 1,
+    limit: number = 10,
+    orderBy: string = 'createdAt',
+    orderDir: string = 'ASC',
+    search: string = '',
     user: UserActiveInterface,
-  ): Promise<{ id: string; name: string }[]> {
-    const data = await this.branchRepository.find({
-      where: { renterId: user.renterId },
-    });
+  ): Promise<ListResponse<{ id: string; name: string }>> {
+    const safeOrderDir =
+      String(orderDir).toUpperCase() === 'DESC' ? 'DESC' : 'ASC';
 
-    return data.map((b) => ({ id: b.id, name: b.name }));
+    const qb = this.branchRepository
+      .createQueryBuilder('branch')
+      .select(['branch.id', 'branch.name'])
+      .where('branch.renterId = :renterId', { renterId: user.renterId });
+
+    if (search) {
+      qb.andWhere('branch.name ILIKE :search', { search: `%${search}%` });
+    }
+
+    qb.orderBy(`branch.${orderBy}`, safeOrderDir)
+      .take(limit)
+      .skip((page - 1) * limit);
+
+    const [data, total] = await qb.getManyAndCount();
+
+    return {
+      data,
+      total,
+      page,
+      lastPage: Math.ceil(total / limit),
+    };
   }
 
   async findOne(id: string, user: UserActiveInterface) {

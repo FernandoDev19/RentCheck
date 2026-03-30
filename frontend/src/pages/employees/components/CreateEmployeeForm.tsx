@@ -1,15 +1,17 @@
+import { useState } from "react";
 import Input from "../../../common/components/ui/Input";
 import Label from "../../../common/components/ui/Label";
+import PaginatedSelect from "../../../common/components/ui/PaginatedSelect";
 import Select from "../../../common/components/ui/Select";
 import { IDENTITY_TYPE } from "../../../common/types/identity-type.type";
 import { ROLES, type RolesType } from "../../../common/types/roles.type";
 import { USER_STATUS } from "../../../common/types/user-status.type";
 import type { Employee } from "../../../models/employee.model";
+import { branchService } from "../../../services/branch.service";
 import type { EmployeeErrors } from "../interfaces/employee-errors.interface";
 
 type Props = {
   userRole: RolesType;
-  branches: { id: string; name: string }[];
   errors?: EmployeeErrors;
   currentValues?: any;
   employee?: Employee;
@@ -17,11 +19,14 @@ type Props = {
 
 export default function CreateEmployeeForm({
   userRole,
-  branches,
   errors,
   currentValues,
   employee,
 }: Props) {
+  const [selectedBranchId, setSelectedBranchId] = useState(
+    currentValues?.branchId || employee?.branch?.id || "",
+  );
+
   return (
     <div className="text-left space-y-4">
       <div>
@@ -77,20 +82,24 @@ export default function CreateEmployeeForm({
       {userRole === ROLES.OWNER && (
         <div>
           <Label htmlFor="swal-branch">Sede*</Label>
-          <Select
+          <PaginatedSelect
             id="swal-branch"
-            name="swal-branch"
-            value={currentValues?.branchId || employee?.branch?.id || ""}
-            className={
-              errors?.branchId ? "bg-red-400/20 border border-red-600" : ""
-            }
-          >
-            {branches.map((branch) => (
-              <option key={branch.id} value={branch.id}>
-                {branch.name}
-              </option>
-            ))}
-          </Select>
+            placeholder="Seleccionar sede..."
+            value={selectedBranchId}
+            onChange={setSelectedBranchId}
+            error={!!errors?.branchId}
+            loadOptions={async (page, search) => {
+              const res = await branchService.getAllNames({
+                page,
+                limit: 10,
+                search,
+              });
+              return {
+                data: res.data.map((b) => ({ value: b.id, label: b.name })),
+                lastPage: res.lastPage,
+              };
+            }}
+          />
           {errors?.branchId && (
             <p className="text-red-500 text-sm">{errors.branchId}</p>
           )}

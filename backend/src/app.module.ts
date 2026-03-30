@@ -27,6 +27,7 @@ import { MvpDataModule } from './seeders/mvp-data/mvp-data.module';
 import { AuthModule } from './modules/auth/auth.module';
 import { VehiclesModule } from './modules/vehicles/vehicles.module';
 import { Vehicle } from './modules/vehicles/entities/vehicle.entity';
+import { ScheduleModule } from '@nestjs/schedule';
 
 @Module({
   imports: [
@@ -34,6 +35,7 @@ import { Vehicle } from './modules/vehicles/entities/vehicle.entity';
     EmployeesModule,
     RentersModule,
     ConfigModule.forRoot({ isGlobal: true }),
+    ScheduleModule.forRoot(),
     TypeOrmModule.forRootAsync({
       imports: [ConfigModule],
       inject: [ConfigService],

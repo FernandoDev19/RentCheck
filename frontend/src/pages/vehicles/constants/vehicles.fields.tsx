@@ -8,10 +8,10 @@ export const cardFields = [
     },
     { key: "year" as keyof Vehicle, label: "Año" },
     { key: "color" as keyof Vehicle, label: "Color" },
-    {
-      key: "insuredValue" as keyof Vehicle,
-      label: "Valor asegurado",
-      render: (val: unknown) =>
-        val ? `$${Number(val).toLocaleString("es-CO")}` : "—",
-    },
+    // {
+    //   key: "insuredValue" as keyof Vehicle,
+    //   label: "Valor asegurado",
+    //   render: (val: unknown) =>
+    //     val ? `$${Number(val).toLocaleString("es-CO")}` : "—",
+    // },
   ];

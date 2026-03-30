@@ -115,7 +115,6 @@ export class MvpDataService {
       'customers',
       'rentals',
       'rental_feedbacks',
-      'biometry_requests',
     ];
 
     try {

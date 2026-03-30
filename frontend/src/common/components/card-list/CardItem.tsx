@@ -38,7 +38,7 @@ export default function CardItem<T extends object>({
       onClick={isClickable ? () => onClick!(data) : undefined}
       className={`
         group relative bg-white border border-slate-200 rounded-2xl overflow-hidden
-        transition-all duration-200 max-w-[300px]
+        transition-all duration-200
         ${isClickable ? "cursor-pointer hover:border-indigo-300 hover:shadow-lg hover:-translate-y-0.5" : ""}
         ${className}
       `}

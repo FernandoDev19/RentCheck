@@ -22,4 +22,6 @@ export const createRentalAndCustomerSchema = z.object({
   branchId: userRoleOwner
     ? z.string().min(36, "La sede es obligatoria")
     : z.string().optional(),
+  vehicleId: z.optional(z.string().min(36).max(36)),
+  totalPrice: z.number().max(999999999)
 });

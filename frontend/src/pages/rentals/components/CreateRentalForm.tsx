@@ -1,23 +1,24 @@
+import { ROLES } from "../../../common/types/roles.type";
+import { useState, useCallback, useEffect } from "react";
+import { branchService } from "../../../services/branch.service";
+import PaginatedSelect from "../../../common/components/ui/PaginatedSelect";
+import { vehicleService } from "../../../services/vehicle.service";
 import type { Customer } from "../../../models/customer.model";
+import type { RentalErrors } from "../interfaces/rental-errors.interface";
+import type { UserActiveInterface } from "../../../common/interfaces/user-active.interface";
+import { getUser } from "../../dashboard/helpers/user.helper";
 import TitleSpan from "../../../common/components/ui/TitleSpan";
-import Label from "../../../common/components/ui/Label";
 import Input from "../../../common/components/ui/Input";
+import Label from "../../../common/components/ui/Label";
 import Select from "../../../common/components/ui/Select";
 import { IDENTITY_TYPE } from "../../../common/types/identity-type.type";
-import type { RentalErrors } from "../interfaces/rental-errors.interface";
-import { getUser } from "../../dashboard/helpers/user.helper";
-import type { UserActiveInterface } from "../../../common/interfaces/user-active.interface";
-import { ROLES } from "../../../common/types/roles.type";
-import { useCallback, useEffect, useState } from "react";
-import { branchService } from "../../../services/branch.service";
-import { catchError } from "../../../common/errors/catch-error";
-import Swal from "sweetalert2";
 
 type Props = {
   customer?: Customer | null;
   errors?: RentalErrors;
   identityNumber: string;
   currentValues?: any;
+  prefill?: { vehicleId?: string; startDate?: string; endDate?: string };
 };
 
 export default function CreateRentalForm({
@@ -25,30 +26,104 @@ export default function CreateRentalForm({
   errors,
   identityNumber,
   currentValues,
+  prefill,
 }: Props) {
   const isRealCustomer = !!customer?.id;
+  const [vehiclePrice, setVehiclePrice] = useState<number>(0);
+  const [rentalTotalPrice, setRentalTotalPrice] = useState<number>(0);
+  const [totalDays, setTotalDays] = useState<number>(0);
   const user: UserActiveInterface = getUser();
   const userRoleOwner = user.role === ROLES.OWNER;
-  const [branches, setBranches] = useState<{ id: string; name: string }[]>([]);
+  // En CreateRentalForm agrega estos estados:
+  const [selectedVehicleId, setSelectedVehicleId] = useState(
+    currentValues?.vehicleId || prefill?.vehicleId || "",
+  );
+  const [selectedBranchId, setSelectedBranchId] = useState(
+    currentValues?.branchId || "",
+  );
+  const [startDate, setStartDate] = useState(
+    currentValues?.startDate || prefill?.startDate || "",
+  );
+  const [expectedReturnDate, setExpectedReturnDate] = useState(
+    currentValues?.expectedReturnDate || prefill?.endDate || "",
+  );
+  const getTodayLocal = (tomorrow: boolean = false) => {
+    const today = new Date();
+    const year = today.getFullYear();
+    const month = String(today.getMonth() + 1).padStart(2, "0");
+    const day = tomorrow
+      ? String(today.getDate() + 1).padStart(2, "0")
+      : String(today.getDate()).padStart(2, "0");
+    return `${year}-${month}-${day}`;
+  };
 
-  const loadBranches = useCallback(async () => {
-    if (userRoleOwner && !branches.length) {
-      try {
-        const branchNames = await branchService.getAllNames();
-        setBranches(branchNames);
-      } catch (error) {
-        await catchError(error, Swal, "Error al cargar las sedes");
-        return;
+  // Manejar cambio de sede (solo para Owner)
+  const handleBranchChange = useCallback(
+    (branchId: string) => {
+      setSelectedBranchId(branchId);
+      // Limpiar vehículo seleccionado cuando cambia la sede
+      if (userRoleOwner && branchId !== selectedBranchId) {
+        setSelectedVehicleId("");
       }
-    }
-  }, [branches, userRoleOwner]);
+    },
+    [userRoleOwner, selectedBranchId],
+  );
+
+  const handleStartDateChange = useCallback(
+    (value: string) => {
+      setStartDate(value);
+      if (value !== startDate) {
+        setSelectedVehicleId("");
+      }
+    },
+    [startDate],
+  );
+
+  const handleExpectedReturnDateChange = useCallback(
+    (value: string) => {
+      setExpectedReturnDate(value);
+      if (value !== expectedReturnDate) {
+        setSelectedVehicleId("");
+      }
+    },
+    [expectedReturnDate],
+  );
+
+  const handleVehicleIdChange = useCallback(
+    async (vehicleId: string) => {
+      const calculateDays = () => {
+        if (!startDate || !expectedReturnDate) return 0;
+
+        const s = new Date(startDate);
+        const e = new Date(expectedReturnDate);
+
+        const diffInMs = e.getTime() - s.getTime();
+
+        const days = Math.ceil(diffInMs / (1000 * 60 * 60 * 24));
+
+        return days <= 0 ? 1 : days;
+      };
+
+      const vehicle = await vehicleService.getOne(vehicleId);
+
+      const price = vehicle.rentalPriceByDay;
+      const days = calculateDays();
+
+      setTotalDays(days);
+      setSelectedVehicleId(vehicleId);
+      setVehiclePrice(price);
+      setRentalTotalPrice(price * days);
+    },
+    [startDate, expectedReturnDate],
+  );
 
   useEffect(() => {
-    const run = async () => {
-      await loadBranches();
-    };
-    run();
-  }, [loadBranches]);
+    const handleVehicleId = async () => {
+      handleVehicleIdChange(prefill?.vehicleId || "");
+    }
+
+    handleVehicleId();
+  });
 
   return (
     <div className="text-left space-y-4">
@@ -106,8 +181,10 @@ export default function CreateRentalForm({
             }
             value={currentValues?.identityType || ""}
           >
-            {Object.values(IDENTITY_TYPE).map((value) => (
-              <option value={value}>{value}</option>
+            {Object.values(IDENTITY_TYPE).map((value, i) => (
+              <option key={i} value={value}>
+                {value}
+              </option>
             ))}
           </Select>
           {errors?.identityType && (
@@ -278,6 +355,9 @@ export default function CreateRentalForm({
             name="swal-startDate"
             type="date"
             required={true}
+            value={startDate}
+            onChange={(e) => handleStartDateChange(e.target.value)}
+            min={getTodayLocal()}
             className={
               errors?.startDate ? "bg-red-400/20 border border-red-600" : ""
             }
@@ -295,6 +375,9 @@ export default function CreateRentalForm({
             name="swal-expectedReturnDate"
             type="date"
             required={true}
+            value={expectedReturnDate}
+            onChange={(e) => handleExpectedReturnDateChange(e.target.value)}
+            min={getTodayLocal(true)}
             className={
               errors?.expectedReturnDate
                 ? "bg-red-400/20 border border-red-600"
@@ -308,28 +391,93 @@ export default function CreateRentalForm({
         {userRoleOwner && (
           <div>
             <Label htmlFor="swal-branch">Sede*</Label>
-            <Select
+            <PaginatedSelect
               id="swal-branch"
-              name="swal-branch"
-              value={currentValues?.branchId || ""}
-              required={true}
-              className={
-                errors?.branchId ? "bg-red-400/20 border border-red-600" : ""
-              }
-            >
-              <option value="" selected disabled>Seleccionar Sede</option>
-              {branches.map((branch) => (
-                <option key={branch.id} value={branch.id}>
-                  {branch.name}
-                </option>
-              ))}
-            </Select>
-             {errors?.branchId && (
-            <p className="text-red-500 text-sm">{errors.branchId}</p>
-          )}
+              placeholder="Seleccionar sede..."
+              value={selectedBranchId}
+              onChange={handleBranchChange}
+              error={!!errors?.branchId}
+              loadOptions={async (page, search) => {
+                const res = await branchService.getAllNames({
+                  page,
+                  limit: 10,
+                  search,
+                });
+                return {
+                  data: res.data.map((b) => ({ value: b.id, label: b.name })),
+                  lastPage: res.lastPage,
+                };
+              }}
+            />
+            {errors?.branchId && (
+              <p className="text-red-500 text-sm">{errors.branchId}</p>
+            )}
           </div>
         )}
+
+        {/* Vehículo — todos los roles */}
+        <div>
+          <Label htmlFor="swal-vehicle">Vehículo</Label>
+          <PaginatedSelect
+            id="swal-vehicle"
+            placeholder="Seleccionar vehículo (opcional)..."
+            value={selectedVehicleId}
+            onChange={handleVehicleIdChange}
+            error={!!errors?.vehicleId}
+            disabled={
+              !startDate ||
+              !expectedReturnDate ||
+              (userRoleOwner && !selectedBranchId)
+            }
+            loadOptions={async (page, search) => {
+              const res = await vehicleService.getAllAvailableByDate({
+                page,
+                limit: 10,
+                search,
+                startDate: startDate || undefined,
+                endDate: expectedReturnDate || undefined,
+              });
+
+              return {
+                data: res.data.map((v) => ({
+                  value: v.id,
+                  label: `${v.plate} — ${v.brand} ${v.model}`,
+                  sublabel: `${v.color} · $${Number(v.rentalPriceByDay).toLocaleString("es-CO")}/día`,
+                })),
+                lastPage: res.lastPage,
+              };
+            }}
+          />
+          {errors?.vehicleId && (
+            <p className="text-red-500 text-sm">{errors.vehicleId}</p>
+          )}
+        </div>
       </div>
+
+      {selectedVehicleId && (
+        <>
+          <input
+            type="hidden"
+            id="swal-totalPrice"
+            value={currentValues?.totalPrice || rentalTotalPrice}
+          />
+
+          <div className="text-center bg-green-500 rounded-full py-2">
+            <TitleSpan className="font-bold! text-white! text-base!">
+              <strong>Precio Total</strong> <br />$
+              {Number(rentalTotalPrice).toLocaleString("es-CO")}
+              <span className="ml-2 text-white/60!">
+                (${Number(vehiclePrice || 0).toLocaleString("es-CO")} /{" "}
+                {totalDays} Días)
+              </span>
+            </TitleSpan>
+          </div>
+        </>
+      )}
+
+      {errors?.totalPrice && (
+        <p className="text-red-500 text-sm">{errors.totalPrice}</p>
+      )}
     </div>
   );
 }

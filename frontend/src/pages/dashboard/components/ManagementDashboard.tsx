@@ -2,12 +2,14 @@ import { useNavigate } from "react-router";
 import { getUser } from "../helpers/user.helper";
 import { ROLES, type RolesType } from "../../../common/types/roles.type";
 import { useSearch } from "../hooks/useSearch";
+import { useVehicleAvailability } from "../../vehicles/hooks/useVehicleAvailability";
 
 export default function ManagementDashboard({ role }: { role: RolesType }) {
   const navigate = useNavigate();
   const { handleSearch } = useSearch();
   const user = getUser();
   const isOwner = role === ROLES.OWNER;
+  const { openAvailabilityModal } = useVehicleAvailability();
 
   const cards = [
     {
@@ -17,6 +19,14 @@ export default function ManagementDashboard({ role }: { role: RolesType }) {
       description: "Consulta historial, score y alertas",
       gradient: "linear-gradient(135deg, #0f172a 0%, #1e293b 100%)",
       onClick: handleSearch,
+    },
+    {
+      icon: "🚗",
+      label: "Ver disponibilidad",
+      description: "Consulta qué vehículos estarán disponibles por fecha",
+      color: "from-sky-600 to-sky-800",
+      border: "border-sky-500",
+      onClick: () => openAvailabilityModal(),
     },
     ...(isOwner
       ? [
@@ -34,7 +44,8 @@ export default function ManagementDashboard({ role }: { role: RolesType }) {
       icon: "👥",
       label: "Clientes",
       description: "Historial unificado",
-      onClick: () => navigate(`/${role === ROLES.OWNER ? "owner" : "manager"}/customers`),
+      onClick: () =>
+        navigate(`/${role === ROLES.OWNER ? "owner" : "manager"}/customers`),
       bg: "#fff",
       border: "#e2e8f0",
     },
@@ -42,7 +53,8 @@ export default function ManagementDashboard({ role }: { role: RolesType }) {
       icon: "🚗",
       label: "Rentas",
       description: "Todas las rentas",
-      onClick: () => navigate(`/${role === ROLES.OWNER ? "owner" : "manager"}/rentals`),
+      onClick: () =>
+        navigate(`/${role === ROLES.OWNER ? "owner" : "manager"}/rentals`),
       bg: "#fff",
       border: "#e2e8f0",
     },
@@ -50,7 +62,8 @@ export default function ManagementDashboard({ role }: { role: RolesType }) {
       icon: "✍️",
       label: "Pendientes",
       description: "Sin calificar",
-      onClick: () => navigate(`/${role === ROLES.OWNER ? "owner" : "manager"}/feedbacks`),
+      onClick: () =>
+        navigate(`/${role === ROLES.OWNER ? "owner" : "manager"}/feedbacks`),
       bg: "#fffbeb",
       border: "#fde68a",
     },
@@ -89,7 +102,10 @@ export default function ManagementDashboard({ role }: { role: RolesType }) {
         .fade-up { animation: fadeUp 0.4s ease both; }
       `}</style>
 
-      <div className="py-10 md:py-20 md:px-16" style={{ maxWidth: 680, margin: "0 auto"}}>
+      <div
+        className="py-10 md:py-20 md:px-16"
+        style={{ maxWidth: 680, margin: "0 auto" }}
+      >
         <div className="fade-up" style={{ marginBottom: 36 }}>
           <p
             style={{
@@ -120,7 +136,11 @@ export default function ManagementDashboard({ role }: { role: RolesType }) {
         </div>
 
         <div
-          style={{ display: "grid", gridTemplateColumns: "repeat(auto-fit, minmax(200px, 1fr))", gap: 16 }}
+          style={{
+            display: "grid",
+            gridTemplateColumns: "repeat(auto-fit, minmax(200px, 1fr))",
+            gap: 16,
+          }}
         >
           {cards.map((card, i) => (
             <button

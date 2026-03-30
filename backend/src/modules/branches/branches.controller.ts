@@ -60,8 +60,22 @@ export class BranchesController {
 
   @Get('names')
   @Auth(RolesEnum.OWNER)
-  findAllNames(@ActiveUser() user: UserActiveInterface) {
-    return this.branchesService.findAllNames(user);
+  findAllNames(
+    @Query('page') page: number,
+    @Query('limit') limit: number,
+    @Query('orderBy') orderBy: string,
+    @Query('orderDir') orderDir: string,
+    @Query('search') search: string,
+    @ActiveUser() user: UserActiveInterface,
+  ) {
+    return this.branchesService.findAllNames(
+      page,
+      limit,
+      orderBy,
+      orderDir,
+      search,
+      user,
+    );
   }
 
   @Get(':id')

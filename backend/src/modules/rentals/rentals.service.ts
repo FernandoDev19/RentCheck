@@ -15,6 +15,9 @@ import { CreateRentalManualDto } from './dto/create-rental-manual.dto';
 import { Customer } from '../customers/entities/customer.entity';
 import { RentalStatusEnum } from './enums/rental-status.enum';
 import { VehiclesService } from '../vehicles/vehicles.service';
+import { VehicleStatus } from '../vehicles/enums/vehicle-status.enum';
+import { formatInTimeZone, toZonedTime } from 'date-fns-tz';
+import { ConfigService } from '@nestjs/config';
 
 @Injectable()
 export class RentalsService {
@@ -24,6 +27,7 @@ export class RentalsService {
     @InjectRepository(Customer)
     private readonly customerRepository: Repository<Customer>,
     private readonly vehicleService: VehiclesService,
+    private readonly config: ConfigService,
   ) {}
 
   // async create(createRentalDto: CreateRentalDto) {
@@ -52,7 +56,6 @@ export class RentalsService {
     dto: CreateRentalManualDto,
     user: UserActiveInterface,
   ) {
-    // 2. Buscar o Crear Cliente
     let customer = await this.customerRepository.findOne({
       where: {
         identityNumber: dto.identityNumber,
@@ -60,7 +63,6 @@ export class RentalsService {
     });
 
     if (!customer) {
-      // Si no existe, lo creamos con los datos del DTO [cite: 72, 73]
       const savedCustomer = this.customerRepository.create({
         ...dto,
         registeredByUserId: user.sub,
@@ -68,7 +70,6 @@ export class RentalsService {
       customer = await this.customerRepository.save(savedCustomer);
     }
 
-    // 3. Validar si ya tiene rentas ACTIVAS en esta rentadora
     const debtRentals = await this.rentalRepository.find({
       where: {
         customerId: customer.id,
@@ -84,34 +85,77 @@ export class RentalsService {
       (r) => r.rentalStatus === RentalStatusEnum.ACTIVE,
     ).length;
 
-    // 1. Bloqueo Fulminante por moroso
     if (lateCount > 0) {
       throw new BadRequestException(
-        `¡Epa! Este cliente tiene ${lateCount} rentas ATRASADAS. Que devuelva eso primero.`,
+        `Este cliente tiene ${lateCount} rentas ATRASADAS. Debe devolver primero.`,
       );
     }
 
-    // 2. Bloqueo por "Cupo Lleno" (Seguridad de activos)
     if (activeCount >= 3) {
       throw new BadRequestException(
         `El cliente ya tiene 3 carros activos. Por política de seguridad, no puede llevarse más al tiempo.`,
       );
     }
 
-    if (dto.vehicleId) {
-      await this.vehicleService.rentVehicle(dto.vehicleId, user);
+    const [startYear, startMonth, startDay] = dto.startDate
+      .split('-')
+      .map(Number);
+    const startDate = new Date(startYear, startMonth - 1, startDay); // Local
+
+    const [endYear, endMonth, endDay] = dto.expectedReturnDate
+      .split('-')
+      .map(Number);
+    const expectedReturnDate = new Date(endYear, endMonth - 1, endDay); // Local
+
+    const tz = this.config.get<string>('TZ');
+    const now = formatInTimeZone(new Date(), tz, 'yyyy-MM-dd');
+
+    console.log('Now', now);
+    console.log('start', startDate);
+    console.log('dto start', dto.startDate);
+
+    if (dto.startDate < now) {
+      throw new BadRequestException(
+        'La fecha de inicio no puede ser en el pasado',
+      );
     }
 
-    // 4. Crear la Renta
+    if (expectedReturnDate <= startDate) {
+      throw new BadRequestException(
+        'La fecha de devolución debe ser posterior a la fecha de inicio',
+      );
+    }
+
+    const initialStatus =
+      dto.startDate === now
+        ? RentalStatusEnum.ACTIVE
+        : RentalStatusEnum.PENDING;
+
+    const vehicle = await this.vehicleService.findOne(dto.vehicleId, user);
+
+    if (vehicle) {
+      await this.vehicleService.assertVehicleReservableInRange(
+        vehicle.id,
+        startDate,
+        expectedReturnDate,
+        user,
+      );
+
+      if (initialStatus === RentalStatusEnum.ACTIVE) {
+        await this.vehicleService.rentVehicle(vehicle.id, user);
+      }
+    }
+
     const rental = this.rentalRepository.create({
       customerId: customer.id,
       renterId: user.renterId,
       branchId: dto.branchId || user.branchId || null,
       employeeId: user.employeeId || null,
-      startDate: new Date(),
-      expectedReturnDate: dto.expectedReturnDate,
-      rentalStatus: RentalStatusEnum.ACTIVE,
+      startDate: startDate,
+      expectedReturnDate: expectedReturnDate,
+      rentalStatus: initialStatus,
       vehicleId: dto.vehicleId,
+      totalPrice: dto.totalPrice,
     });
 
     return await this.rentalRepository.save(rental);
@@ -145,6 +189,7 @@ export class RentalsService {
       .leftJoinAndSelect('rental.branch', 'branch')
       .leftJoinAndSelect('rental.employee', 'employee')
       .leftJoinAndSelect('rental.customer', 'customer')
+      .leftJoinAndSelect('rental.vehicle', 'vehicle')
       .leftJoinAndSelect('rental.receivedByUser', 'receivedByUser')
       .leftJoinAndSelect('rental.cancelledByUser', 'cancelledByUser')
       // 👇 Solo biometrías de MI rentadora
@@ -153,7 +198,33 @@ export class RentalsService {
         'biometryRequests',
         'biometryRequests.renterId = :renterId',
         { renterId: user.renterId },
-      );
+      )
+      .select([
+        'rental.id',
+        'rental.startDate',
+        'rental.expectedReturnDate',
+        'rental.actualReturnDate',
+        'rental.rentalStatus',
+        'rental.createdAt',
+        'renter.id',
+        'renter.name',
+        'branch.id',
+        'branch.name',
+        'employee.id',
+        'employee.name',
+        'customer.id',
+        'customer.name',
+        'customer.lastName',
+        'customer.identityNumber',
+        'vehicle',
+        'receivedByUser.id',
+        'receivedByUser.name',
+        'cancelledByUser.id',
+        'cancelledByUser.name',
+        'biometryRequests.id',
+        'biometryRequests.status',
+        'rental.totalPrice',
+      ]);
 
     switch (user.role as RolesEnum) {
       case RolesEnum.EMPLOYEE:
@@ -211,6 +282,7 @@ export class RentalsService {
       .leftJoinAndSelect('rental.renter', 'renter')
       .leftJoinAndSelect('rental.branch', 'branch')
       .leftJoinAndSelect('rental.employee', 'employee')
+      .leftJoinAndSelect('rental.vehicle', 'vehicle')
       .innerJoinAndSelect('rental.rentalFeedback', 'rentalFeedback')
       // Relación para ver quién hizo cada movimiento
       .leftJoinAndSelect('rental.receivedByUser', 'receivedByUser')
@@ -224,7 +296,7 @@ export class RentalsService {
               myRenterId: user.renterId,
             })
             .orWhere('rental.rentalStatus IN (:...publicStatus)', {
-              publicStatus: ['returned', 'late'],
+              publicStatus: ['returned', 'late', 'cancelled'],
             });
         }),
       );
@@ -243,6 +315,11 @@ export class RentalsService {
       'branch.id',
       'branch.renterId',
       'branch.name',
+      'vehicle.id',
+      'vehicle.brand',
+      'vehicle.model',
+      'vehicle.year',
+      'vehicle.color',
       'rental.startDate',
       'rental.actualReturnDate',
       'rental.rentalStatus',
@@ -255,6 +332,16 @@ export class RentalsService {
       .take(limit);
 
     const [data, total] = await qb.getManyAndCount();
+
+    const rentedWithMe = data.some(
+      (rental) => rental.renter?.name && rental.renter.id === user.renterId,
+    );
+
+    if (!rentedWithMe && (user.role as RolesEnum) !== RolesEnum.ADMIN) {
+      data.forEach((rental) => {
+        rental.vehicle = null;
+      });
+    }
 
     return { data, total, page, lastPage: Math.ceil(total / limit) };
   }
@@ -371,6 +458,7 @@ export class RentalsService {
         'rentalFeedback.id',
         'rentalFeedback.score',
         'rentalFeedback.criticalFlags',
+        'rental.totalPrice',
       ];
 
       qb.where('rental.id = :id', { id });
@@ -393,6 +481,74 @@ export class RentalsService {
       }
       throw new BadRequestException(error.response || error);
     }
+  }
+
+  async assignVehicle(
+    rentalId: string,
+    vehicleId: string,
+    user: UserActiveInterface,
+  ) {
+    // Buscar la renta
+    const rental = await this.rentalRepository.findOne({
+      where: { id: rentalId },
+      relations: ['vehicle'],
+    });
+
+    if (!rental) throw new NotFoundException('Renta no encontrada');
+
+    // Verificar que la renta esté activa
+    if (
+      rental.rentalStatus !== RentalStatusEnum.ACTIVE &&
+      rental.rentalStatus !== RentalStatusEnum.PENDING
+    ) {
+      throw new BadRequestException(
+        'Solo se puede asignar vehículo a rentas activas o pendientes',
+      );
+    }
+
+    // Verificar que no tenga vehículo asignado
+    if (rental.vehicleId && rental.rentalStatus !== RentalStatusEnum.PENDING) {
+      throw new BadRequestException('Esta renta ya tiene un vehículo asignado');
+    }
+
+    if (rental.vehicleId && rental.rentalStatus === RentalStatusEnum.PENDING) {
+      await this.rentalRepository.update(rentalId, { vehicleId: null });
+    }
+
+    // Verificar permisos según el rol
+    if ((user.role as RolesEnum) === RolesEnum.OWNER) {
+      if (rental.renterId !== user.renterId) {
+        throw new UnauthorizedException(
+          'No tienes permiso para modificar esta renta',
+        );
+      }
+    } else if (
+      (user.role as RolesEnum) === RolesEnum.MANAGER ||
+      (user.role as RolesEnum) === RolesEnum.EMPLOYEE
+    ) {
+      if (rental.branchId !== user.branchId) {
+        throw new UnauthorizedException(
+          'No tienes permiso para modificar esta renta',
+        );
+      }
+    }
+
+    await this.vehicleService.assertVehicleReservableInRange(
+      vehicleId,
+      new Date(rental.startDate),
+      new Date(rental.expectedReturnDate),
+      user,
+    );
+
+    if (rental.rentalStatus === RentalStatusEnum.ACTIVE) {
+      const vehicle = await this.vehicleService.findOne(vehicleId, user);
+      if (vehicle.status !== VehicleStatus.AVAILABLE) {
+        throw new BadRequestException('El vehículo no está disponible');
+      }
+      await this.vehicleService.rentVehicle(vehicleId, user);
+    }
+
+    return await this.rentalRepository.update(rentalId, { vehicleId });
   }
 
   async returnRental(id: string, user: UserActiveInterface) {
@@ -447,7 +603,8 @@ export class RentalsService {
 
     if (
       rental.rentalStatus !== RentalStatusEnum.ACTIVE &&
-      rental.rentalStatus !== RentalStatusEnum.LATE
+      rental.rentalStatus !== RentalStatusEnum.LATE &&
+      rental.rentalStatus !== RentalStatusEnum.PENDING
     ) {
       throw new BadRequestException(
         `No puedes cancelar una renta que ya está en estado: ${rental.rentalStatus}`,
@@ -461,8 +618,6 @@ export class RentalsService {
         if (rental.renterId === user.renterId) canDelete = true;
         break;
       case RolesEnum.MANAGER:
-        if (rental.branchId === user.branchId) canDelete = true;
-        break;
       case RolesEnum.EMPLOYEE:
         if (rental.branchId === user.branchId) canDelete = true;
         break;
@@ -474,8 +629,12 @@ export class RentalsService {
       );
     }
 
-    if (rental.vehicleId) {
+    if (rental.vehicleId && rental.rentalStatus === RentalStatusEnum.ACTIVE) {
       await this.vehicleService.returnVehicle(rental.vehicleId, user);
+    }
+
+    if (rental.rentalStatus === RentalStatusEnum.PENDING) {
+      return await this.rentalRepository.softDelete(id);
     }
 
     return await this.rentalRepository.update(id, {

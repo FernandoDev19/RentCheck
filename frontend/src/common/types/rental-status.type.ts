@@ -1,4 +1,5 @@
 export const RENTAL_STATUS = {
+  PENDING: 'pending',
   ACTIVE: 'active',
   RETURNED: 'returned',
   LATE: 'late',

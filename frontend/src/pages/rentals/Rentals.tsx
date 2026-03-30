@@ -5,6 +5,10 @@ import { useCreateRental } from "./hooks/useCreateRental";
 import { useRentalColumns } from "./hooks/useRentalColumns";
 import { useRentals } from "./hooks/useRentals";
 import { useViewRental } from "./hooks/useViewRental";
+import AssignVehicleModal from "./components/AssignVehicleModal";
+import { useState } from "react";
+import { Info } from "lucide-react";
+import type { Rental } from "../../models/rental.model";
 
 
 export default function Rentals() {
@@ -13,6 +17,8 @@ export default function Rentals() {
   const { columns } = useRentalColumns(loadRentals);
   const { handleCreateClick } = useCreateRental();
   const { handleViewDetails } = useViewRental();
+  const [selectedRental, setSelectedRental] = useState<Rental | null>();
+  const [showAssignModal, setShowAssignModal] = useState(false);
 
   return (
     <div className="w-full">
@@ -43,6 +49,8 @@ export default function Rentals() {
         actions={(row) => {
           const isInDebt =
             row.rentalStatus === "active" || row.rentalStatus === "late";
+          const canAssignVehicle = 
+            (row.rentalStatus === "active" || row.rentalStatus === "pending");
 
           return (
             <div className="flex items-center gap-2">
@@ -51,8 +59,21 @@ export default function Rentals() {
                 onClick={() => handleViewDetails(row)}
                 color="indigo"
               >
-                Detalles
+                <Info size={16} />
               </ButtonActionDataTable>
+
+              {/* Botón de Asignar Vehículo */}
+              {canAssignVehicle && (
+                <ButtonActionDataTable
+                  onClick={() => {
+                    setSelectedRental(row);
+                    setShowAssignModal(true);
+                  }}
+                  color="yellow"
+                >
+                  Asignar Vehículo
+                </ButtonActionDataTable>
+              )}
 
               {/* Botón de Devolución */}
               {isInDebt && (
@@ -67,8 +88,9 @@ export default function Rentals() {
               {/* Botón de Cancelar */}
               <ButtonActionDataTable
                 onClick={() => handleDelete(row)}
-                disabled={!isInDebt}
+                disabled={!isInDebt && row.rentalStatus !== "pending"}
                 color="red"
+                className="disabled:cursor-not-allowed"
               >
                 Cancelar
               </ButtonActionDataTable>
@@ -76,6 +98,22 @@ export default function Rentals() {
           );
         }}
       />
+      
+      {/* Modal para asignar vehículo */}
+      {showAssignModal && selectedRental && (
+        <AssignVehicleModal
+          rental={selectedRental}
+          onClose={() => {
+            setShowAssignModal(false);
+            setSelectedRental(null);
+          }}
+          onSuccess={() => {
+            loadRentals();
+            setShowAssignModal(false);
+            setSelectedRental(null);
+          }}
+        />
+      )}
     </div>
   );
 }

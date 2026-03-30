@@ -8,4 +8,6 @@ export interface RentalErrors {
     startDate?: string;
     expectedReturnDate?: string;
     branchId?: string;
+    vehicleId?: string;
+    totalPrice?: string;
 }

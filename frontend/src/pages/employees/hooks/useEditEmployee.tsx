@@ -1,6 +1,4 @@
-import { useState } from "react";
-import { ROLES, type RolesType } from "../../../common/types/roles.type";
-import { branchService } from "../../../services/branch.service";
+import { type RolesType } from "../../../common/types/roles.type";
 import { catchError } from "../../../common/errors/catch-error";
 import withReactContent from "sweetalert2-react-content";
 import Swal from "sweetalert2";
@@ -14,7 +12,6 @@ import type { Employee } from "../../../models/employee.model";
 const MySwal = withReactContent(Swal);
 
 export const useEditEmployee = () => {
-  const [branches, setBranches] = useState<{ id: string; name: string }[]>([]);
 
   const userRole: RolesType = JSON.parse(localStorage.getItem("user")!)
     .role as RolesType;
@@ -23,17 +20,6 @@ export const useEditEmployee = () => {
     loadEmployees: () => Promise<void> | void,
     employee: Employee,
   ) => {
-    let branchNames = branches;
-
-    if (userRole === ROLES.OWNER && !branchNames.length) {
-      try {
-        branchNames = await branchService.getAllNames();
-        setBranches(branchNames);
-      } catch (error) {
-        await catchError(error, MySwal, "Error al cargar las sedes");
-        return;
-      }
-    }
 
     MySwal.fire({
       title: "Editar empleado",
@@ -41,7 +27,6 @@ export const useEditEmployee = () => {
         <CreateEmployeeForm
           employee={employee}
           userRole={userRole}
-          branches={branchNames}
         />
       ),
       focusConfirm: false,
@@ -112,7 +97,6 @@ export const useEditEmployee = () => {
             html: (
               <CreateEmployeeForm
                 userRole={userRole}
-                branches={branchNames}
                 currentValues={currentValues}
                 errors={errorObj}
               />

@@ -94,6 +94,9 @@ export class Rental {
   @JoinColumn({ name: 'vehicle_id' })
   vehicle: Vehicle;
 
+  @Column({ name: 'total_price', type: 'decimal', precision: 12, scale: 2 })
+  totalPrice: number;
+
   @DeleteDateColumn({ name: 'deleted_at', nullable: true })
   deletedAt: Date;
 

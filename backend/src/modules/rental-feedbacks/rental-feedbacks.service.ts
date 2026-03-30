@@ -12,6 +12,8 @@ import { CustomersService } from '../customers/customers.service';
 import { UserActiveInterface } from '../auth/interfaces/active-user.interface';
 import { Rental } from '../rentals/entities/rental.entity';
 import { RenterStatus } from '../renters/enums/renter-status.enum';
+import { VehiclesService } from '../vehicles/vehicles.service';
+import { VehicleStatus } from '../vehicles/enums/vehicle-status.enum';
 
 @Injectable()
 export class RentalFeedbacksService {
@@ -21,6 +23,7 @@ export class RentalFeedbacksService {
     private readonly customerService: CustomersService,
     @InjectRepository(Rental)
     private readonly rentalRepository: Repository<Rental>,
+    private readonly vehicleService: VehiclesService,
   ) {}
 
   async create(
@@ -28,8 +31,9 @@ export class RentalFeedbacksService {
     user: UserActiveInterface,
   ) {
     const rental = await this.rentalRepository.findOne({
+      select: ['id', 'customerId', 'renter', 'vehicle'],
       where: { id: createRentalFeedbackDto.rentalId },
-      relations: ['renter'],
+      relations: ['renter', 'vehicle'],
     });
 
     if (!rental) throw new NotFoundException('La renta no existe');
@@ -58,6 +62,12 @@ export class RentalFeedbacksService {
     const savedFeedback = await this.rentalFeedbackRepository.save(feedback);
 
     await this.customerService.recalculateCustomerScore(rental.customerId);
+    if (
+      createRentalFeedbackDto.criticalFlags?.vehicleTheft === true &&
+      rental.vehicle
+    ) {
+      await this.vehicleService.markAsStolen(rental.vehicle.id);
+    }
 
     return savedFeedback;
   }

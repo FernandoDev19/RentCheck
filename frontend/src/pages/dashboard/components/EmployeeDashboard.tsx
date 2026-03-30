@@ -2,12 +2,14 @@ import { useNavigate } from "react-router";
 import { getUser } from "../helpers/user.helper";
 import { useSearch } from "../hooks/useSearch";
 import { useCreateRental } from "../../rentals/hooks/useCreateRental";
+import { useVehicleAvailability } from "../../vehicles/hooks/useVehicleAvailability";
 
 export default function EmployeeDashboard() {
   const navigate = useNavigate();
   const user = getUser();
   const { handleSearch, searching } = useSearch();
   const { handleCreateClick } = useCreateRental();
+  const { openAvailabilityModal } = useVehicleAvailability();
 
   const actions = [
     {
@@ -17,6 +19,15 @@ export default function EmployeeDashboard() {
       description: "Consulta historial, score y alertas",
       gradient: "linear-gradient(135deg, #0f172a 0%, #1e293b 100%)",
       onClick: handleSearch,
+    },
+        {
+      icon: "🚗",
+      label: "Ver disponibilidad",
+      description: "Consulta qué vehículos estarán disponibles por fecha",
+      color: "from-sky-600 to-sky-800",
+      gradient: "linear-gradient(135deg, #00ff9f 0%, rgb(62, 164, 53) 100%)",
+      border: "border-sky-500",
+      onClick: () => openAvailabilityModal(),
     },
     {
       id: "create",

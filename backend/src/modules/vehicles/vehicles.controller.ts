@@ -49,6 +49,56 @@ export class VehiclesController {
     );
   }
 
+  @Get('available')
+  @Auth(...Object.values(RolesEnum))
+  findAllAvailable(
+    @Query('page') page: number = 1,
+    @Query('limit') limit: number = 10,
+    @Query('orderBy') orderBy: string,
+    @Query('orderDir') orderDir: string,
+    @Query('search') search: string,
+    @Query('branchId') branchId: string,
+    @ActiveUser() user: UserActiveInterface,
+  ) {
+    return this.vehiclesService.findAllAvailable(
+      page,
+      limit,
+      orderBy,
+      orderDir,
+      search,
+      user,
+      branchId,
+    );
+  }
+
+  @Get('available-by-date')
+  @Auth(...Object.values(RolesEnum))
+  findAvailableByDate(
+    @Query('startDate') startDate: string,
+    @Query('endDate') endDate: string,
+    @Query('page') page: number = 1,
+    @Query('limit') limit: number = 10,
+    @Query('search') search: string = '',
+    @Query('branchId') branchId: string,
+    @ActiveUser() user: UserActiveInterface,
+  ) {
+    return this.vehiclesService.findAvailableByDateRange(
+      startDate,
+      endDate,
+      page,
+      limit,
+      search,
+      user,
+      branchId,
+    );
+  }
+
+  @Get(':id')
+  @Auth(...Object.values(RolesEnum))
+  findOne(@Param('id') id: string, @ActiveUser() user: UserActiveInterface) {
+    return this.vehiclesService.findOne(id, user);
+  }
+
   @Put(':id')
   @Auth(RolesEnum.OWNER, RolesEnum.MANAGER)
   update(

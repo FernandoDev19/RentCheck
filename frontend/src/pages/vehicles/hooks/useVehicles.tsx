@@ -5,6 +5,7 @@ import type { ListResponse } from "../../../common/interfaces/list-response.inte
 import { catchError } from "../../../common/errors/catch-error";
 import withReactContent from "sweetalert2-react-content";
 import Swal from "sweetalert2";
+import { VEHICLE_STATUS } from "../../../common/types/vehicle-status.type";
 
 const MySwal = withReactContent(Swal);
 
@@ -89,8 +90,11 @@ export const useVehicles = () => {
   //   };
 
   const handleDelete = async (row: Vehicle) => {
-    if (row.status === "rented") {
-      MySwal.fire({
+      console.log("Aun no se valida si esta en renta")
+    
+    if (row.status === VEHICLE_STATUS.RENTED) {
+      console.log("Esta en renta")
+      await MySwal.fire({
         title: "No permitido",
         text: "No puedes eliminar un vehículo que está en renta",
         icon: "warning",

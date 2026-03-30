@@ -162,23 +162,23 @@ export default function ViewRentalDetails({ rentalId }: Props) {
                 </Paragraph>
               </div>
               <div>
-                <TitleSpan>Daño al vehículo</TitleSpan>
+                <TitleSpan>Cuidado del vehículo</TitleSpan>
                 <Paragraph>{feedback.score.damageToCar} / 5</Paragraph>
               </div>
               <div>
-                <TitleSpan>Multas impagas</TitleSpan>
+                <TitleSpan>Cumplimiento de multas</TitleSpan>
                 <Paragraph>{feedback.score.unpaidFines} / 5</Paragraph>
               </div>
               <div>
-                <TitleSpan>Atrasos</TitleSpan>
+                <TitleSpan>Puntualidad en pagos</TitleSpan>
                 <Paragraph>{feedback.score.arrears} / 5</Paragraph>
               </div>
               <div>
-                <TitleSpan>Abuso del vehículo</TitleSpan>
+                <TitleSpan>Uso responsable</TitleSpan>
                 <Paragraph>{feedback.score.carAbuse} / 5</Paragraph>
               </div>
               <div>
-                <TitleSpan>Mala Actitud</TitleSpan>
+                <TitleSpan>Actitud y trato</TitleSpan>
                 <Paragraph>{feedback.score.badAttitude} / 5</Paragraph>
               </div>
             </div>

@@ -35,6 +35,8 @@ export interface Rental {
   cancelledByUserId?: string;
   cancelledByUser?: User;
 
+  totalPrice: number;
+
   vehicleId?: string;
   vehicle?: Vehicle;
 

@@ -28,7 +28,7 @@ export default function Header() {
       <header
         className={`sticky top-0 w-full z-20 transition-all duration-300 ${
           isScrolled
-            ? "bg-primary/95 backdrop-blur-xl shadow-lg py-2"
+            ? "bg-primary/95 backdrop-blur-xl shadow-lg py-4"
             : "bg-primary shadow-md py-4"
         } text-primary-foreground`}
       >

@@ -5,8 +5,13 @@ import VehicleForm from "../components/VehicleForm";
 import Swal from "sweetalert2";
 import { CreateVehicleSchema } from "../schemas/create-vehicle.schema";
 import type { VehicleErrors } from "../interfaces/vehicle-errors.interface";
+import { getUser } from "../../dashboard/helpers/user.helper";
+import { ROLES, type RolesType } from "../../../common/types/roles.type";
+
+const userRole: RolesType = getUser().role as RolesType;
 
 const getVehicleFormValues = () => ({
+  gamma: (document.getElementById('v-gamma') as HTMLInputElement).value.trim() || undefined,
   plate: (document.getElementById("v-plate") as HTMLInputElement).value
     .trim()
     .toUpperCase(),
@@ -14,23 +19,30 @@ const getVehicleFormValues = () => ({
   model: (document.getElementById("v-model") as HTMLInputElement).value.trim(),
   year: parseInt((document.getElementById("v-year") as HTMLInputElement).value),
   color: (document.getElementById("v-color") as HTMLInputElement).value.trim(),
-  insuredValue:
+  transmission: (document.getElementById('v-transmission') as HTMLSelectElement).value,
+  rentalPriceByDay:
     parseFloat(
-      (document.getElementById("v-insuredValue") as HTMLInputElement).value,
-    ) || undefined,
+      (document.getElementById("v-rentalPriceByDay") as HTMLInputElement).value,
+    ) || 0,
+  // insuredValue:
+  //   parseFloat(
+  //     (document.getElementById("v-insuredValue") as HTMLInputElement).value,
+  //   ) || undefined,
   photos: (document.getElementById("v-photos") as HTMLTextAreaElement).value
     .split("\n")
     .map((s) => s.trim())
     .filter(Boolean),
+  branchId: userRole === ROLES.OWNER ? (document.getElementById("v-branch") as HTMLSelectElement).value || undefined : undefined
 });
 
 const MySwal = withReactContent(Swal);
 
 export const useCreateVehicle = () => {
+
   const handleCreate = async (loadVehicles: () => Promise<void> | void) => {
     const { isConfirmed, value } = await MySwal.fire({
       title: "➕ Nuevo vehículo",
-      html: <VehicleForm />,
+      html: <VehicleForm userRole={userRole} />,
       width: 560,
       showCancelButton: true,
       confirmButtonText: "Crear vehículo",
@@ -51,10 +63,7 @@ export const useCreateVehicle = () => {
 
           MySwal.update({
             html: (
-              <VehicleForm
-                currentValues={currentValues}
-                errors={errorObj}
-              />
+              <VehicleForm currentValues={currentValues} errors={errorObj} userRole={userRole} />
             ),
           });
 
