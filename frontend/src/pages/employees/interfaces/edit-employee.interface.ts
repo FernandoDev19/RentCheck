@@ -1,5 +1,5 @@
-import type { IdentityType } from "../../../common/types/identity-type.type";
-import type { UserStatus } from "../../../common/types/user-status.type";
+import type { IdentityType } from "../../../shared/types/identity-type.type";
+import type { UserStatus } from "../../../shared/types/user.type";
 
 export interface EditEmployeeInterface {
     name?: string;

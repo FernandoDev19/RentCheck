@@ -1,8 +1,8 @@
 import { Controller, Get, Param, Query } from '@nestjs/common';
 import { CustomersService } from './customers.service';
-import { Auth } from '../auth/decorators/auth.decorator';
-import { RolesEnum } from '../../core/enums/roles.enum';
-import { ActiveUser } from '../auth/decorators/active-user.decorator';
+import { Auth } from '../../core/decorators/auth.decorator';
+import { RolesEnum } from '../../shared/enums/roles.enum';
+import { ActiveUser } from '../../core/decorators/active-user.decorator';
 import { UserActiveInterface } from '../auth/interfaces/active-user.interface';
 
 @Controller('customers')

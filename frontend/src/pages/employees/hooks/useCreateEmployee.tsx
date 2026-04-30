@@ -1,9 +1,9 @@
-import { type RolesType } from "../../../common/types/roles.type";
-import { catchError } from "../../../common/errors/catch-error";
+import { type RolesType } from "../../../shared/types/role.type";
+import { catchError } from "../../../shared/errors/catch-error";
 import withReactContent from "sweetalert2-react-content";
 import Swal from "sweetalert2";
 import CreateEmployeeForm from "../components/CreateEmployeeForm";
-import { IDENTITY_TYPE } from "../../../common/types/identity-type.type";
+import { IDENTITY_TYPE } from "../../../shared/types/identity-type.type";
 import { createEmployeeSchema } from "../schemas/create-employee.schema";
 import type { EmployeeErrors } from "../interfaces/employee-errors.interface";
 import { employeeService } from "../../../services/employee.service";

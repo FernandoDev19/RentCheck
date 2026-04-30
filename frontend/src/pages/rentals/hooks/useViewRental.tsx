@@ -1,6 +1,6 @@
 import Swal from "sweetalert2";
 import withReactContent from "sweetalert2-react-content";
-import type { Rental } from "../../../models/rental.model";
+import type { Rental } from "../../../shared/types/rental.type";
 import ViewRental from "../components/ViewRental";
 
 const MySwal = withReactContent(Swal);

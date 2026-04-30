@@ -1,0 +1,16 @@
+{
+    "name": "Test Rentador",
+    "nit": "123456789",
+    "address": "Calle 123",
+    "city": "Bogotá",
+    "email": "test@rentador.com",
+    "phone": "3001234567",
+    "password": "password123",
+    "legalRepresentative": "Juan Pérez",
+    "planId": 1,
+    "planExpiresAt": "2026-12-31",
+    "balance": 100000,
+    "lowBalanceThreshold": 10000,
+    "lowBalanceAlertEnabled": true,
+    "status": "active"
+}

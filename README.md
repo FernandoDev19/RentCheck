@@ -45,7 +45,7 @@ Este repositorio es un monorepo que contiene:
 ### 2. Clonar y preparar
 
 ```bash
-git clone https://github.com/TU_USUARIO/rentcheck-mvp.git
+git clone https://github.com/FernandoDev19/RentCheck.git
 cd rentcheck-mvp
 ```
 

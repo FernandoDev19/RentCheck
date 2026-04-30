@@ -1,11 +1,11 @@
 import { useState, useCallback } from "react";
-import PaginatedSelect from "../../../common/components/ui/PaginatedSelect";
-import Label from "../../../common/components/ui/Label";
+import PaginatedSelect from "../../../shared/components/ui/PaginatedSelect";
+import Label from "../../../shared/components/ui/Label";
 import { rentalService } from "../../../services/rental-vehicle.service";
 import { vehicleService } from "../../../services/vehicle.service";
 import { getUser } from "../../dashboard/helpers/user.helper";
-import { ROLES } from "../../../common/types/roles.type";
-import type { Rental } from "../../../models/rental.model";
+import { ROLES } from "../../../shared/types/role.type";
+import type { Rental } from "../../../shared/types/rental.type";
 
 type Props = {
   rental: Rental;

@@ -1,9 +1,9 @@
 import { useState } from "react";
-import type { Rental } from "../../../models/rental.model";
-import type { Branch } from "../../../models/branch.model";
+import type { Rental } from "../../../shared/types/rental.type";
+import type { Branch } from "../../../shared/types/branch.type";
 import { SCORE_FIELDS } from "../../../services/rental-feedback.service";
-import TitleSpan from "../../../common/components/ui/TitleSpan";
-import Paragraph from "../../../common/components/ui/Paragraph";
+import TitleSpan from "../../../shared/components/ui/TitleSpan";
+import Paragraph from "../../../shared/components/ui/Paragraph";
 
 export default function FeedbackForm({ row }: { row: Rental }) {
   const [scores, setScores] = useState<Record<string, number>>({});

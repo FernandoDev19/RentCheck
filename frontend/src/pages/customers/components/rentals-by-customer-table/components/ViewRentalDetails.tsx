@@ -1,14 +1,14 @@
 import { useEffect, useState } from "react";
-import Paragraph from "../../../../../common/components/ui/Paragraph";
-import TitleSpan from "../../../../../common/components/ui/TitleSpan";
-import type { Branch } from "../../../../../models/branch.model";
-import type { Employee } from "../../../../../models/employee.model";
-import type { Renter } from "../../../../../models/renter.model";
+import Paragraph from "../../../../../shared/components/ui/Paragraph";
+import TitleSpan from "../../../../../shared/components/ui/TitleSpan";
+import type { Branch } from "../../../../../shared/types/branch.type";
+import type { Employee } from "../../../../../shared/types/employee.type";
+import type { Renter } from "../../../../../shared/types/renter.type";
 import { getUser } from "../../../../dashboard/helpers/user.helper";
 import { rentalService } from "../../../../../services/rental.service";
-import { catchError } from "../../../../../common/errors/catch-error";
+import { catchError } from "../../../../../shared/errors/catch-error";
 import Swal from "sweetalert2";
-import type { Rental } from "../../../../../models/rental.model";
+import type { Rental } from "../../../../../shared/types/rental.type";
 
 type Props = {
   rentalId: string;

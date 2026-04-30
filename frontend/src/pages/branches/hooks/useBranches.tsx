@@ -1,8 +1,8 @@
 import { useCallback, useEffect, useState } from "react";
-import type { Branch } from "../../../models/branch.model";
-import type { ListResponse } from "../../../common/interfaces/list-response.interface";
+import type { Branch } from "../../../shared/types/branch.type";
+import type { ListResponse } from "../../../shared/types/list-response.type";
 import { branchService } from "../../../services/branch.service";
-import { catchError } from "../../../common/errors/catch-error";
+import { catchError } from "../../../shared/errors/catch-error";
 import withReactContent from "sweetalert2-react-content";
 import Swal from "sweetalert2";
 import ViewBranch from "../components/ViewBranch";

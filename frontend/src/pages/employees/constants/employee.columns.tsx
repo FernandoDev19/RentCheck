@@ -1,7 +1,7 @@
-import type { Column } from "../../../common/components/datatable/types/column.type";
-import type { Branch } from "../../../models/branch.model";
-import type { Employee } from "../../../models/employee.model";
-import type { User } from "../../../models/user.model";
+import type { Column } from "../../../shared/components/datatable/types/column.type";
+import type { Branch } from "../../../shared/types/branch.type";
+import type { Employee } from "../../../shared/types/employee.type";
+import type { User } from "../../../shared/types/user.type";
 
 export const columns: Column<Employee>[] = [
   {

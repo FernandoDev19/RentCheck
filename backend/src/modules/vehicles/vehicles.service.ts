@@ -2,8 +2,8 @@ import {
   BadRequestException,
   ConflictException,
   ForbiddenException,
-  HttpException,
   Injectable,
+  Logger,
   NotFoundException,
   UnauthorizedException,
 } from '@nestjs/common';
@@ -12,15 +12,17 @@ import { Vehicle } from './entities/vehicle.entity';
 import { Brackets, Repository } from 'typeorm';
 import { CreateVehicleDto } from './dto/create-vehicle.dto';
 import { UserActiveInterface } from '../auth/interfaces/active-user.interface';
-import { RolesEnum } from '../../core/enums/roles.enum';
+import { RolesEnum } from '../../shared/enums/roles.enum';
 import { Renter } from '../renters/entities/renter.entity';
 import { RenterStatus } from '../renters/enums/renter-status.enum';
-import { ListResponse } from '../../core/interfaces/list-response';
+import { ListResponse } from '../../shared/interfaces/list-response';
 import { UpdateVehicleDto } from './dto/update-vehicle.dto';
 import { VehicleStatus } from './enums/vehicle-status.enum';
 
 @Injectable()
 export class VehiclesService {
+  private readonly logger = new Logger(VehiclesService.name);
+
   constructor(
     @InjectRepository(Vehicle)
     private readonly vehicleRepository: Repository<Vehicle>,
@@ -29,10 +31,12 @@ export class VehiclesService {
   ) {}
 
   async create(data: CreateVehicleDto, user: UserActiveInterface) {
+    this.logger.log(`Create: ${user.email} - Vehicle: ${data.plate}`);
+
     switch (user.role as RolesEnum) {
       case RolesEnum.OWNER:
         if (!data.branchId) {
-          throw new Error('Branch ID is required for owners');
+          throw new BadRequestException('Branch ID is required for owners');
         }
         break;
     }
@@ -60,7 +64,7 @@ export class VehiclesService {
     });
 
     if (vehicleExists) {
-      throw new Error('Vehicle already exists');
+      throw new ConflictException('Vehicle already exists');
     }
 
     const vehicle = this.vehicleRepository.create({
@@ -80,6 +84,8 @@ export class VehiclesService {
     search: string = '',
     user: UserActiveInterface,
   ): Promise<ListResponse<Vehicle>> {
+    this.logger.log(`FindAll: ${user.email}`);
+
     const qb = this.vehicleRepository
       .createQueryBuilder('vehicle')
       .leftJoinAndSelect('vehicle.branch', 'branch');
@@ -151,6 +157,8 @@ export class VehiclesService {
     user: UserActiveInterface,
     branchId?: string,
   ): Promise<ListResponse<Vehicle>> {
+    this.logger.log(`FindAllAvailable: ${user.email} - Branch: ${branchId}`);
+
     const qb = this.vehicleRepository
       .createQueryBuilder('vehicle')
       .leftJoinAndSelect('vehicle.branch', 'branch')
@@ -251,6 +259,10 @@ export class VehiclesService {
     user: UserActiveInterface,
     branchId?: string,
   ) {
+    this.logger.log(
+      `FindAvailableByDateRange: ${user.email} - Branch: ${branchId}`,
+    );
+
     const start = startDate ? new Date(startDate) : undefined;
     const end = endDate ? new Date(endDate) : undefined;
 
@@ -307,6 +319,10 @@ export class VehiclesService {
     endDate: Date,
     user: UserActiveInterface,
   ) {
+    this.logger.log(
+      `AssertVehicleReservableInRange: ${user.email} - Vehicle: ${vehicleId}`,
+    );
+
     const vehicle = await this.findOne(vehicleId, user);
 
     const dealBreakers = [
@@ -348,31 +364,36 @@ export class VehiclesService {
   }
 
   async findOne(id: string, user: UserActiveInterface) {
+    this.logger.log(`FindOne: ${user.email} - Vehicle: ${id}`);
+
+    let vehicle: Vehicle;
+
     try {
-      const vehicle = await this.vehicleRepository.findOne({
+      vehicle = await this.vehicleRepository.findOne({
         where: { id },
       });
-
-      if (!vehicle) throw new NotFoundException('Vehicle not found');
-
-      if (
-        (user.role as RolesEnum) !== RolesEnum.ADMIN &&
-        (user.role as RolesEnum) !== RolesEnum.OWNER &&
-        vehicle.renterId !== user.renterId
-      )
-        throw new UnauthorizedException('Unauthorized');
-
-      return vehicle;
     } catch (error) {
-      if (error instanceof HttpException) throw error;
-      console.error(error);
-      throw new BadRequestException(
-        error.response || 'Error trying to find vehicle',
-      );
+      this.logger.error('Error trying to find vehicle', error);
+      throw new BadRequestException('Error trying to find vehicle');
     }
+
+    if (!vehicle) throw new NotFoundException('Vehicle not found');
+
+    if (
+      (user.role as RolesEnum) !== RolesEnum.ADMIN &&
+      (user.role as RolesEnum) !== RolesEnum.OWNER &&
+      vehicle.renterId !== user.renterId
+    )
+      throw new UnauthorizedException('Unauthorized');
+
+    this.logger.log(`FindOne: ${user.email} - Vehicle: ${id} - Encontrado`);
+
+    return vehicle;
   }
 
   async update(id: string, data: UpdateVehicleDto, user: UserActiveInterface) {
+    this.logger.log(`Update: ${user.email} - Vehicle: ${id}`);
+
     const vehicle = await this.findOne(id, user);
 
     if (vehicle && data.plate != vehicle.plate && !data.status) {
@@ -391,12 +412,16 @@ export class VehiclesService {
   }
 
   async markAsStolen(id: string) {
+    this.logger.log(`MarkAsStolen: Vehicle: ${id}`);
+
     return await this.vehicleRepository.update(id, {
       status: VehicleStatus.STOLEN,
     });
   }
 
   async rentVehicle(id: string, user: UserActiveInterface) {
+    this.logger.log(`RentVehicle: ${user.email} - Vehicle: ${id}`);
+
     const vehicle = await this.findOne(id, user);
 
     if (
@@ -413,6 +438,8 @@ export class VehiclesService {
   }
 
   async returnVehicle(id: string, user: UserActiveInterface) {
+    this.logger.log(`ReturnVehicle: ${user.email} - Vehicle: ${id}`);
+
     const vehicle = await this.findOne(id, user);
 
     const isVehicleRented = vehicle.status === VehicleStatus.RENTED;
@@ -427,6 +454,8 @@ export class VehiclesService {
   }
 
   async remove(id: string, user: UserActiveInterface) {
+    this.logger.log(`Remove: ${user.email} - Vehicle: ${id}`);
+
     await this.findOne(id, user);
 
     return await this.vehicleRepository.softDelete(id);

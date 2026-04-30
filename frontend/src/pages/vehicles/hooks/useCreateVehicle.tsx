@@ -1,12 +1,12 @@
 import withReactContent from "sweetalert2-react-content";
-import { catchError } from "../../../common/errors/catch-error";
+import { catchError } from "../../../shared/errors/catch-error";
 import { vehicleService } from "../../../services/vehicle.service";
 import VehicleForm from "../components/VehicleForm";
 import Swal from "sweetalert2";
 import { CreateVehicleSchema } from "../schemas/create-vehicle.schema";
 import type { VehicleErrors } from "../interfaces/vehicle-errors.interface";
 import { getUser } from "../../dashboard/helpers/user.helper";
-import { ROLES, type RolesType } from "../../../common/types/roles.type";
+import { ROLES, type RolesType } from "../../../shared/types/role.type";
 
 const userRole: RolesType = getUser().role as RolesType;
 

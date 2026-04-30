@@ -1,22 +1,22 @@
 import { BrowserRouter, Navigate, Route, Routes } from "react-router";
 import Login from "./pages/auth/Login";
-import ProtectedRoute from "./common/ProtectedRoute";
+import ProtectedRoute from "./core/ProtectedRoute";
 import Dashboard from "./pages/dashboard/Dashboard";
-import Header from "./common/layouts/header/Header";
-import { ROLES } from "./common/types/roles.type";
+import Header from "./core/layouts/header/Header";
+import { ROLES } from "./shared/types/role.type";
 import Renters from "./pages/renters/Renters";
 import Unauthorized401 from "./pages/errors/Unauthorized401";
 import Branches from "./pages/branches/Branches";
-import RoleRedirect from "./common/RoleRedirect";
+import RoleRedirect from "./core/RoleRedirect";
 import Employees from "./pages/employees/Employees";
 import Rentals from "./pages/rentals/Rentals";
 import VerifyBiometry from "./pages/verify-biometry/VerifyBiometry";
 import Customers from "./pages/customers/Customers";
 import PendingFeedbacks from "./pages/pending-feedbacks/PendingFeedbacks";
-import { useLoading } from "./common/context/loading-context/hooks/useLoading";
+import { useLoading } from "./core/context/loading-context/hooks/useLoading";
 import { useEffect } from "react";
-import Loader from "./common/components/GlobalLoader";
-import { setupLoadingInterceptor } from "./config/api";
+import Loader from "./shared/components/GlobalLoader";
+import { setupLoadingInterceptor } from "./core/api/api";
 import Vehicles from "./pages/vehicles/Vehicles";
 
 function App() {

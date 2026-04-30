@@ -1,6 +1,6 @@
 import z from "zod";
-import { IDENTITY_TYPE } from "../../../common/types/identity-type.type";
-import { USER_STATUS } from "../../../common/types/user-status.type";
+import { IDENTITY_TYPE } from "../../../shared/types/identity-type.type";
+import { USER_STATUS } from "../../../shared/types/user.type";
 
 export const editEmployeeSchema = z.object({
     name: z.optional(z.string().nonempty().min(3).max(100)),

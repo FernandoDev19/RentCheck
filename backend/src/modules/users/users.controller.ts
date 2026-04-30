@@ -2,8 +2,8 @@ import { Controller, Get, Post, Body, Param, Query, Put } from '@nestjs/common';
 import { UsersService } from './users.service';
 import { CreateUserDto } from './dto/create-user.dto';
 import { UpdateUserDto } from './dto/update-user.dto';
-import { RolesEnum } from '../../core/enums/roles.enum';
-import { Auth } from '../auth/decorators/auth.decorator';
+import { RolesEnum } from '../../shared/enums/roles.enum';
+import { Auth } from '../../core/decorators/auth.decorator';
 
 @Controller('users')
 @Auth(RolesEnum.ADMIN)

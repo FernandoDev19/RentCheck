@@ -1,5 +1,5 @@
-import type { CardField } from "../../../common/components/card-list/CardItem";
-import type { Branch } from "../../../models/branch.model";
+import type { CardField } from "../../../shared/components/card-list/CardItem";
+import type { Branch } from "../../../shared/types/branch.type";
 
 export const BranchesField: CardField<Branch>[] = [
   {

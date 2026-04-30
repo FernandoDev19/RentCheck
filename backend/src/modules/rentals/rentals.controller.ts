@@ -6,13 +6,12 @@ import {
   Param,
   Delete,
   Query,
-  Put,
   ParseUUIDPipe,
 } from '@nestjs/common';
 import { RentalsService } from './rentals.service';
-import { Auth } from '../auth/decorators/auth.decorator';
-import { RolesEnum } from '../../core/enums/roles.enum';
-import { ActiveUser } from '../auth/decorators/active-user.decorator';
+import { Auth } from '../../core/decorators/auth.decorator';
+import { RolesEnum } from '../../shared/enums/roles.enum';
+import { ActiveUser } from '../../core/decorators/active-user.decorator';
 import { UserActiveInterface } from '../auth/interfaces/active-user.interface';
 import { CreateRentalManualDto } from './dto/create-rental-manual.dto';
 import { AssignVehicleDto } from './dto/assign-vehicle.dto';
@@ -117,7 +116,11 @@ export class RentalsController {
     @Body() assignVehicleDto: AssignVehicleDto,
     @ActiveUser() user: UserActiveInterface,
   ) {
-    return this.rentalsService.assignVehicle(id, assignVehicleDto.vehicleId, user);
+    return this.rentalsService.assignVehicle(
+      id,
+      assignVehicleDto.vehicleId,
+      user,
+    );
   }
 
   @Post(':id/return')

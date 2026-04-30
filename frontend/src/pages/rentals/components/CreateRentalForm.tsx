@@ -1,17 +1,17 @@
-import { ROLES } from "../../../common/types/roles.type";
+import { ROLES } from "../../../shared/types/role.type";
 import { useState, useCallback, useEffect } from "react";
 import { branchService } from "../../../services/branch.service";
-import PaginatedSelect from "../../../common/components/ui/PaginatedSelect";
+import PaginatedSelect from "../../../shared/components/ui/PaginatedSelect";
 import { vehicleService } from "../../../services/vehicle.service";
-import type { Customer } from "../../../models/customer.model";
+import type { Customer } from "../../../shared/types/customer.type";
 import type { RentalErrors } from "../interfaces/rental-errors.interface";
-import type { UserActiveInterface } from "../../../common/interfaces/user-active.interface";
+import type { UserActiveType } from "../../../shared/types/user-active.type";
 import { getUser } from "../../dashboard/helpers/user.helper";
-import TitleSpan from "../../../common/components/ui/TitleSpan";
-import Input from "../../../common/components/ui/Input";
-import Label from "../../../common/components/ui/Label";
-import Select from "../../../common/components/ui/Select";
-import { IDENTITY_TYPE } from "../../../common/types/identity-type.type";
+import TitleSpan from "../../../shared/components/ui/TitleSpan";
+import Input from "../../../shared/components/ui/Input";
+import Label from "../../../shared/components/ui/Label";
+import Select from "../../../shared/components/ui/Select";
+import { IDENTITY_TYPE } from "../../../shared/types/identity-type.type";
 
 type Props = {
   customer?: Customer | null;
@@ -32,7 +32,7 @@ export default function CreateRentalForm({
   const [vehiclePrice, setVehiclePrice] = useState<number>(0);
   const [rentalTotalPrice, setRentalTotalPrice] = useState<number>(0);
   const [totalDays, setTotalDays] = useState<number>(0);
-  const user: UserActiveInterface = getUser();
+  const user: UserActiveType = getUser();
   const userRoleOwner = user.role === ROLES.OWNER;
   // En CreateRentalForm agrega estos estados:
   const [selectedVehicleId, setSelectedVehicleId] = useState(
@@ -123,7 +123,7 @@ export default function CreateRentalForm({
     }
 
     handleVehicleId();
-  });
+  }, [prefill?.vehicleId, handleVehicleIdChange]);
 
   return (
     <div className="text-left space-y-4">

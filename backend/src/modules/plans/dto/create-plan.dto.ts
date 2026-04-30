@@ -11,7 +11,7 @@ import {
 
 export class CreatePlanDto {
   @IsString()
-  @Transform(({ value }) => value.trim())
+  @Transform(({ value }) => String(value).trim())
   @IsNotEmpty()
   @MinLength(3)
   name: string;

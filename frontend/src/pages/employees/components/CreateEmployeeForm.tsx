@@ -1,12 +1,12 @@
 import { useState } from "react";
-import Input from "../../../common/components/ui/Input";
-import Label from "../../../common/components/ui/Label";
-import PaginatedSelect from "../../../common/components/ui/PaginatedSelect";
-import Select from "../../../common/components/ui/Select";
-import { IDENTITY_TYPE } from "../../../common/types/identity-type.type";
-import { ROLES, type RolesType } from "../../../common/types/roles.type";
-import { USER_STATUS } from "../../../common/types/user-status.type";
-import type { Employee } from "../../../models/employee.model";
+import Input from "../../../shared/components/ui/Input";
+import Label from "../../../shared/components/ui/Label";
+import PaginatedSelect from "../../../shared/components/ui/PaginatedSelect";
+import Select from "../../../shared/components/ui/Select";
+import { IDENTITY_TYPE } from "../../../shared/types/identity-type.type";
+import { ROLES, type RolesType } from "../../../shared/types/role.type";
+import { USER_STATUS } from "../../../shared/types/user.type";
+import type { Employee } from "../../../shared/types/employee.type";
 import { branchService } from "../../../services/branch.service";
 import type { EmployeeErrors } from "../interfaces/employee-errors.interface";
 

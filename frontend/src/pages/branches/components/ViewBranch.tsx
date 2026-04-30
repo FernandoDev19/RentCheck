@@ -1,10 +1,10 @@
 import { useEffect, useState } from "react";
-import Paragraph from "../../../common/components/ui/Paragraph";
-import TitleSpan from "../../../common/components/ui/TitleSpan";
-import type { Branch } from "../../../models/branch.model";
+import Paragraph from "../../../shared/components/ui/Paragraph";
+import TitleSpan from "../../../shared/components/ui/TitleSpan";
+import type { Branch } from "../../../shared/types/branch.type";
 import { branchService } from "../../../services/branch.service";
 import Swal from "sweetalert2";
-import { catchError } from "../../../common/errors/catch-error";
+import { catchError } from "../../../shared/errors/catch-error";
 
 type Props = {
   branchId: string;

@@ -9,7 +9,7 @@ import {
   IsEmail,
   IsNumber,
 } from 'class-validator';
-import { IdentityTypeEnum } from '../../../core/enums/identity-type.enum';
+import { IdentityTypeEnum } from '../../../shared/enums/identity-type.enum';
 import { CustomerStatusEnum } from '../enums/customer-status.enum';
 
 export class CreateCustomerDto {
@@ -19,7 +19,7 @@ export class CreateCustomerDto {
 
   @IsOptional()
   @IsString()
-  @Transform(({ value }) => value.trim())
+  @Transform(({ value }) => String(value).trim())
   @IsNotEmpty()
   @MinLength(5)
   @MaxLength(15)
@@ -27,7 +27,7 @@ export class CreateCustomerDto {
 
   @IsOptional()
   @IsString()
-  @Transform(({ value }) => value.trim())
+  @Transform(({ value }) => String(value).trim())
   @IsNotEmpty()
   @MinLength(3)
   @MaxLength(60)
@@ -35,7 +35,7 @@ export class CreateCustomerDto {
 
   @IsOptional()
   @IsString()
-  @Transform(({ value }) => value.trim())
+  @Transform(({ value }) => String(value).trim())
   @IsNotEmpty()
   @MinLength(3)
   @MaxLength(60)
@@ -43,7 +43,7 @@ export class CreateCustomerDto {
 
   @IsOptional()
   @IsString()
-  @Transform(({ value }) => value.trim())
+  @Transform(({ value }) => String(value).trim())
   @MinLength(7)
   @MaxLength(15)
   phone?: string;

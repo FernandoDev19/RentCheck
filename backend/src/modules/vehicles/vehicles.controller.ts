@@ -10,9 +10,9 @@ import {
 } from '@nestjs/common';
 import { VehiclesService } from './vehicles.service';
 import { CreateVehicleDto } from './dto/create-vehicle.dto';
-import { Auth } from '../auth/decorators/auth.decorator';
-import { RolesEnum } from '../../core/enums/roles.enum';
-import { ActiveUser } from '../auth/decorators/active-user.decorator';
+import { Auth } from '../../core/decorators/auth.decorator';
+import { RolesEnum } from '../../shared/enums/roles.enum';
+import { ActiveUser } from '../../core/decorators/active-user.decorator';
 import { UserActiveInterface } from '../auth/interfaces/active-user.interface';
 import { UpdateVehicleDto } from './dto/update-vehicle.dto';
 

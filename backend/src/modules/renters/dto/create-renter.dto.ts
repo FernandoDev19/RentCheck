@@ -16,14 +16,14 @@ import { RenterStatus } from '../enums/renter-status.enum';
 
 export class CreateRenterDto {
   @IsString()
-  @Transform(({ value }) => value.trim())
+  @Transform(({ value }) => String(value).trim())
   @IsNotEmpty()
   @MinLength(3)
   @MaxLength(60)
   name: string;
 
   @IsString()
-  @Transform(({ value }) => value.trim())
+  @Transform(({ value }) => String(value).trim())
   @IsNotEmpty()
   @MinLength(5)
   @MaxLength(16)
@@ -51,14 +51,14 @@ export class CreateRenterDto {
   password: string;
 
   @IsString()
-  @Transform(({ value }) => value.trim())
+  @Transform(({ value }) => String(value).trim())
   @IsNotEmpty()
   @MinLength(7)
   @MaxLength(15)
   phone: string;
 
   @IsString()
-  @Transform(({ value }) => value.trim())
+  @Transform(({ value }) => String(value).trim())
   @IsNotEmpty()
   @MinLength(3)
   @MaxLength(60)

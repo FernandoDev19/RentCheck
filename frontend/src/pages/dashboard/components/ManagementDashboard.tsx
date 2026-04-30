@@ -1,6 +1,6 @@
 import { useNavigate } from "react-router";
 import { getUser } from "../helpers/user.helper";
-import { ROLES, type RolesType } from "../../../common/types/roles.type";
+import { ROLES, type RolesType } from "../../../shared/types/role.type";
 import { useSearch } from "../hooks/useSearch";
 import { useVehicleAvailability } from "../../vehicles/hooks/useVehicleAvailability";
 
@@ -17,15 +17,16 @@ export default function ManagementDashboard({ role }: { role: RolesType }) {
       icon: "🔍",
       label: "Buscar Cliente",
       description: "Consulta historial, score y alertas",
-      gradient: "linear-gradient(135deg, #0f172a 0%, #1e293b 100%)",
+      bg: "#fff",
+      border: "#e2e8f0",
       onClick: handleSearch,
     },
     {
       icon: "🚗",
       label: "Ver disponibilidad",
       description: "Consulta qué vehículos estarán disponibles por fecha",
-      color: "from-sky-600 to-sky-800",
-      border: "border-sky-500",
+      bg: "#fff",
+      border: "#e2e8f0",
       onClick: () => openAvailabilityModal(),
     },
     ...(isOwner

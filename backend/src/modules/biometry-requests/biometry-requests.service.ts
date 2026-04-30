@@ -7,34 +7,30 @@ import { InjectRepository } from '@nestjs/typeorm';
 import { BiometryRequest } from './entities/biometry-request.entity';
 import { Repository } from 'typeorm';
 import { UserActiveInterface } from '../auth/interfaces/active-user.interface';
-import { RolesEnum } from '../../core/enums/roles.enum';
-import { ListResponse } from '../../core/interfaces/list-response';
+import { RolesEnum } from '../../shared/enums/roles.enum';
+import { ListResponse } from '../../shared/interfaces/list-response';
 import { StatusBiometryRequest } from './enums/status-biometry-request.enum';
 import { ResultBecomeEnum } from './enums/result-become.enum';
-import { Customer } from '../customers/entities/customer.entity';
-import { CustomerStatusEnum } from '../customers/enums/customer-status.enum';
+import { Logger } from '@nestjs/common';
+import { BiometryRequestsCacheService } from '../../core/cache/services/biometry-requests-cache.service';
 
 @Injectable()
 export class BiometryRequestsService {
+  private readonly logger: Logger = new Logger(BiometryRequestsService.name);
+
   constructor(
     @InjectRepository(BiometryRequest)
     private readonly biometryRequestRepository: Repository<BiometryRequest>,
-    @InjectRepository(Customer)
-    private readonly customerRepository: Repository<Customer>,
+    private readonly biometryRequestsCacheService: BiometryRequestsCacheService,
   ) {}
-
-  // async create(createBiometryRequestDto: CreateBiometryRequestDto) {
-  //   const biometryRequest = this.biometryRequestRepository.create(
-  //     createBiometryRequestDto,
-  //   );
-  //   return await this.biometryRequestRepository.save(biometryRequest);
-  // }
 
   async findAll(
     page: number = 1,
     limit: number = 10,
     user: UserActiveInterface,
   ): Promise<ListResponse<BiometryRequest>> {
+    this.logger.log(`FindAll: ${user.email}`);
+
     let where = {};
 
     if ((user.role as RolesEnum) != RolesEnum.ADMIN) {
@@ -45,7 +41,13 @@ export class BiometryRequestsService {
       where,
       skip: (page - 1) * limit,
       take: limit,
+      cache: {
+        id: this.biometryRequestsCacheService.keys.list,
+        milliseconds: 60000,
+      },
     });
+
+    this.logger.log(`FindAll: ${user.email} - ${total} registros`);
 
     return {
       data,
@@ -60,6 +62,8 @@ export class BiometryRequestsService {
     customerId: string,
     user: UserActiveInterface,
   ): Promise<BiometryRequest> {
+    this.logger.log(`RequestBiometry: ${user.email} - ${customerId}`);
+
     const existing = await this.biometryRequestRepository.findOne({
       where: {
         customerId,
@@ -84,6 +88,12 @@ export class BiometryRequestsService {
       status: StatusBiometryRequest.PENDING,
     });
 
+    this.logger.log(
+      `RequestBiometry: ${user.email} - ${customerId} - Solicitud creada`,
+    );
+
+    await this.biometryRequestsCacheService.invalidateAll();
+
     return await this.biometryRequestRepository.save(biometryRequest);
   }
 
@@ -92,30 +102,30 @@ export class BiometryRequestsService {
     token: string,
     result: ResultBecomeEnum,
   ): Promise<BiometryRequest> {
+    this.logger.log(`SimulateResult: ${token} - ${result}`);
+
     const biometryRequest = await this.biometryRequestRepository.findOne({
       where: { token },
     });
 
-    if (!biometryRequest) throw new NotFoundException('Token inválido');
+    if (!biometryRequest) {
+      this.logger.error(`SimulateResult: ${token} - Token inválido`);
+      throw new NotFoundException('Token inválido');
+    }
     if (biometryRequest.status !== StatusBiometryRequest.PENDING) {
+      this.logger.error(`SimulateResult: ${token} - Solicitud procesada`);
       throw new ConflictException('Esta solicitud ya fue procesada');
     }
 
     biometryRequest.status = StatusBiometryRequest.COMPLETED;
     biometryRequest.result = result;
 
+    this.logger.log(
+      `SimulateResult: ${token} - ${result} - Solicitud procesada`,
+    );
+
+    await this.biometryRequestsCacheService.invalidateAll();
+
     return await this.biometryRequestRepository.save(biometryRequest);
   }
-
-  // findOne(id: number) {
-  //   return `This action returns a #${id} biometryRequest`;
-  // }
-
-  // update(id: number, updateBiometryRequestDto: UpdateBiometryRequestDto) {
-  //   return `This action updates a #${id} biometryRequest`;
-  // }
-
-  // remove(id: number) {
-  //   return `This action removes a #${id} biometryRequest`;
-  // }
 }

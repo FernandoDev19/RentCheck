@@ -2,6 +2,7 @@ import {
   BadRequestException,
   ForbiddenException,
   Injectable,
+  Logger,
   NotFoundException,
   UnauthorizedException,
 } from '@nestjs/common';
@@ -9,18 +10,20 @@ import { InjectRepository } from '@nestjs/typeorm';
 import { Rental } from './entities/rental.entity';
 import { Brackets, In, Repository } from 'typeorm';
 import { UserActiveInterface } from '../auth/interfaces/active-user.interface';
-import { ListResponse } from '../../core/interfaces/list-response';
-import { RolesEnum } from '../../core/enums/roles.enum';
+import { ListResponse } from '../../shared/interfaces/list-response';
+import { RolesEnum } from '../../shared/enums/roles.enum';
 import { CreateRentalManualDto } from './dto/create-rental-manual.dto';
 import { Customer } from '../customers/entities/customer.entity';
 import { RentalStatusEnum } from './enums/rental-status.enum';
 import { VehiclesService } from '../vehicles/vehicles.service';
 import { VehicleStatus } from '../vehicles/enums/vehicle-status.enum';
-import { formatInTimeZone, toZonedTime } from 'date-fns-tz';
+import { formatInTimeZone } from 'date-fns-tz';
 import { ConfigService } from '@nestjs/config';
 
 @Injectable()
 export class RentalsService {
+  private readonly logger = new Logger(RentalsService.name);
+
   constructor(
     @InjectRepository(Rental)
     private readonly rentalRepository: Repository<Rental>,
@@ -56,6 +59,10 @@ export class RentalsService {
     dto: CreateRentalManualDto,
     user: UserActiveInterface,
   ) {
+    this.logger.log(
+      `CreateManualRental: ${user.email} - Cliente: ${dto.identityNumber}`,
+    );
+
     let customer = await this.customerRepository.findOne({
       where: {
         identityNumber: dto.identityNumber,
@@ -110,10 +117,6 @@ export class RentalsService {
     const tz = this.config.get<string>('TZ');
     const now = formatInTimeZone(new Date(), tz, 'yyyy-MM-dd');
 
-    console.log('Now', now);
-    console.log('start', startDate);
-    console.log('dto start', dto.startDate);
-
     if (dto.startDate < now) {
       throw new BadRequestException(
         'La fecha de inicio no puede ser en el pasado',
@@ -158,6 +161,10 @@ export class RentalsService {
       totalPrice: dto.totalPrice,
     });
 
+    this.logger.log(
+      `CreateManualRental: ${user.email} - Renta creada con éxito`,
+    );
+
     return await this.rentalRepository.save(rental);
   }
 
@@ -169,6 +176,8 @@ export class RentalsService {
     search: string = '',
     user: UserActiveInterface,
   ): Promise<ListResponse<Rental>> {
+    this.logger.log(`FindAll: ${user.email}`);
+
     const safeOrderDir =
       String(orderDir).toUpperCase() === 'DESC' ? 'DESC' : 'ASC';
 
@@ -272,6 +281,10 @@ export class RentalsService {
     search: string = '',
     user: UserActiveInterface,
   ): Promise<ListResponse<Rental>> {
+    this.logger.log(
+      `FindAllByCustomer: ${user.email} - Cliente: ${customerId}`,
+    );
+
     if (!user) throw new UnauthorizedException('No hay usuario activo, llave');
 
     const safeOrderDir =
@@ -354,6 +367,8 @@ export class RentalsService {
     search: string = '',
     user: UserActiveInterface,
   ): Promise<ListResponse<Rental>> {
+    this.logger.log(`FindAllPendingFeedback: ${user.email}`);
+
     const safeOrderDir =
       String(orderDir).toUpperCase() === 'DESC' ? 'DESC' : 'ASC';
 
@@ -435,52 +450,56 @@ export class RentalsService {
   }
 
   async findOne(id: string, user: UserActiveInterface) {
+    this.logger.log(`FindOne: ${user.email} - Renta: ${id}`);
+
+    const qb = this.rentalRepository
+      .createQueryBuilder('rental')
+      .leftJoinAndSelect('rental.renter', 'renter')
+      .leftJoinAndSelect('rental.branch', 'branch')
+      .leftJoinAndSelect('rental.employee', 'employee')
+      .leftJoinAndSelect('rental.rentalFeedback', 'rentalFeedback');
+
+    const selectFields = [
+      'rental.id',
+      'renter.id',
+      'renter.name',
+      'branch.id',
+      'branch.name',
+      'employee.id',
+      'employee.name',
+      'rental.rentalStatus',
+      'rental.startDate',
+      'rental.expectedReturnDate',
+      'rental.actualReturnDate',
+      'rentalFeedback.id',
+      'rentalFeedback.score',
+      'rentalFeedback.criticalFlags',
+      'rental.totalPrice',
+    ];
+
+    qb.where('rental.id = :id', { id });
+
+    let rental: Rental;
+
     try {
-      const qb = this.rentalRepository
-        .createQueryBuilder('rental')
-        .leftJoinAndSelect('rental.renter', 'renter')
-        .leftJoinAndSelect('rental.branch', 'branch')
-        .leftJoinAndSelect('rental.employee', 'employee')
-        .leftJoinAndSelect('rental.rentalFeedback', 'rentalFeedback');
-
-      const selectFields = [
-        'rental.id',
-        'renter.id',
-        'renter.name',
-        'branch.id',
-        'branch.name',
-        'employee.id',
-        'employee.name',
-        'rental.rentalStatus',
-        'rental.startDate',
-        'rental.expectedReturnDate',
-        'rental.actualReturnDate',
-        'rentalFeedback.id',
-        'rentalFeedback.score',
-        'rentalFeedback.criticalFlags',
-        'rental.totalPrice',
-      ];
-
-      qb.where('rental.id = :id', { id });
-
-      const rental = await qb.select(selectFields).getOne();
-
-      if (!rental) throw new NotFoundException('Rental not found');
-
-      const isOwnerOfData = rental.renter.id === user.renterId;
-
-      if (!isOwnerOfData) {
-        delete rental.employee;
-        delete rental.branch;
-      }
-
-      return rental;
+      rental = await qb.select(selectFields).getOne();
     } catch (error) {
-      if (error instanceof NotFoundException) {
-        throw error;
-      }
-      throw new BadRequestException(error.response || error);
+      this.logger.error('Error trying to find rental', error);
+      throw new BadRequestException('Error trying to find rental');
     }
+
+    if (!rental) throw new NotFoundException('Rental not found');
+
+    const isOwnerOfData = rental.renter.id === user.renterId;
+
+    if (!isOwnerOfData) {
+      delete rental.employee;
+      delete rental.branch;
+    }
+
+    this.logger.log(`FindOne: ${user.email} - Renta ${id} encontrada`);
+
+    return rental;
   }
 
   async assignVehicle(
@@ -488,6 +507,10 @@ export class RentalsService {
     vehicleId: string,
     user: UserActiveInterface,
   ) {
+    this.logger.log(
+      `AssignVehicle: ${user.email} - Renta: ${rentalId} - Vehículo: ${vehicleId}`,
+    );
+
     // Buscar la renta
     const rental = await this.rentalRepository.findOne({
       where: { id: rentalId },
@@ -552,6 +575,8 @@ export class RentalsService {
   }
 
   async returnRental(id: string, user: UserActiveInterface) {
+    this.logger.log(`ReturnRental: ${user.email} - Renta: ${id}`);
+
     const rental = await this.rentalRepository.findOne({
       where: { id },
       select: [
@@ -579,6 +604,10 @@ export class RentalsService {
       await this.vehicleService.returnVehicle(rental.vehicleId, user);
     }
 
+    this.logger.log(
+      `ReturnRental: ${user.email} - Renta: ${id} devuelta con éxito`,
+    );
+
     return await this.rentalRepository.update(id, {
       rentalStatus: RentalStatusEnum.RETURNED,
       actualReturnDate: new Date(),
@@ -587,6 +616,8 @@ export class RentalsService {
   }
 
   async remove(id: string, user: UserActiveInterface) {
+    this.logger.log(`Remove: ${user.email} - Renta: ${id}`);
+
     const rental = await this.rentalRepository.findOne({
       where: { id },
       select: [

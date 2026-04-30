@@ -1,12 +1,12 @@
 import { useCallback, useEffect, useState } from "react";
 import Swal from "sweetalert2";
 import withReactContent from "sweetalert2-react-content";
-import type { Renter } from "../../../models/renter.model";
-import type { Plan } from "../../../models/plan.model";
+import type { Renter } from "../../../shared/types/renter.type";
+import type { Plan } from "../../../shared/types/plan.type";
 import { planService } from "../../../services/plan.service";
-import type { ListResponse } from "../../../common/interfaces/list-response.interface";
+import type { ListResponse } from "../../../shared/types/list-response.type";
 import { renterService } from "../../../services/renter.service";
-import { catchError } from "../../../common/errors/catch-error";
+import { catchError } from "../../../shared/errors/catch-error";
 import ViewRenter from "../components/ViewRenter";
 import { useNavigate } from "react-router";
 

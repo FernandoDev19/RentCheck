@@ -1,12 +1,12 @@
-import DataTable from "../../common/components/datatable/DataTable";
-import PageHeader from "../../common/components/PageHeader";
-import ButtonActionDataTable from "../../common/components/ui/ButtonActionDataTable";
+import DataTable from "../../shared/components/datatable/DataTable";
+import PageHeader from "../../shared/components/PageHeader";
+import ButtonActionDataTable from "../../shared/components/ui/ButtonActionDataTable";
 import { useCustomerColumns } from "./hooks/useCustomerColumns";
 import { useCustomer } from "./hooks/useCustomer";
-import { screenWidth } from "../../common/helpers/screen-width.helper";
-import CardList from "../../common/components/card-list/CardList";
+import { screenWidth } from "../../shared/helpers/screen-width.helper";
+import CardList from "../../shared/components/card-list/CardList";
 import { useCustomerFields } from "./hooks/useCustomerFields";
-import ButtonCallUp from "../../common/components/ui/ButtonCallUp";
+import ButtonCallUp from "../../shared/components/ui/ButtonCallUp";
 import { User } from "lucide-react";
 import { CUSTOMER_STATUS } from "./interfaces/customer-status.interface";
 

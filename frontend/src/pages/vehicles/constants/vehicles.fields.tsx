@@ -1,4 +1,4 @@
-import type { Vehicle } from "../../../models/Vehicle.model";
+import type { Vehicle } from "../../../shared/types/vehicle.type";
 
 export const cardFields = [
     {

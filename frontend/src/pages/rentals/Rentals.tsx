@@ -1,6 +1,6 @@
-import DataTable from "../../common/components/datatable/DataTable";
-import PageHeader from "../../common/components/PageHeader";
-import ButtonActionDataTable from "../../common/components/ui/ButtonActionDataTable";
+import DataTable from "../../shared/components/datatable/DataTable";
+import PageHeader from "../../shared/components/PageHeader";
+import ButtonActionDataTable from "../../shared/components/ui/ButtonActionDataTable";
 import { useCreateRental } from "./hooks/useCreateRental";
 import { useRentalColumns } from "./hooks/useRentalColumns";
 import { useRentals } from "./hooks/useRentals";
@@ -8,7 +8,7 @@ import { useViewRental } from "./hooks/useViewRental";
 import AssignVehicleModal from "./components/AssignVehicleModal";
 import { useState } from "react";
 import { Info } from "lucide-react";
-import type { Rental } from "../../models/rental.model";
+import type { Rental } from "../../shared/types/rental.type";
 
 
 export default function Rentals() {

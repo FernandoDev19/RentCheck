@@ -2,7 +2,6 @@ import { Transform } from 'class-transformer';
 import {
   IsEmail,
   IsNotEmpty,
-  IsNumber,
   IsString,
   MaxLength,
   MinLength,
@@ -10,7 +9,7 @@ import {
 
 export class RegisterDto {
   @IsString()
-  @Transform(({ value }) => value.trim())
+  @Transform(({ value }) => String(value).trim())
   @IsNotEmpty()
   name: string;
 
@@ -19,7 +18,7 @@ export class RegisterDto {
   email: string;
 
   @IsString()
-  @Transform(({ value }) => value.trim())
+  @Transform(({ value }) => String(value).trim())
   @IsNotEmpty()
   @MinLength(8)
   password: string;

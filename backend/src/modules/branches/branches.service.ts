@@ -1,7 +1,9 @@
 import {
   BadRequestException,
-  HttpException,
+  ConflictException,
+  ForbiddenException,
   Injectable,
+  Logger,
   NotFoundException,
   UnauthorizedException,
 } from '@nestjs/common';
@@ -9,49 +11,125 @@ import { UpdateBranchDto } from './dto/update-branch.dto';
 import { InjectRepository } from '@nestjs/typeorm';
 import { Branch } from './entities/branch.entity';
 import { ILike, Repository } from 'typeorm';
-import { RolesService } from '../roles/roles.service';
 import { UserActiveInterface } from '../auth/interfaces/active-user.interface';
-import { ListResponse } from '../../core/interfaces/list-response';
+import { ListResponse } from '../../shared/interfaces/list-response';
 import { User } from '../users/entities/user.entity';
-import { RolesEnum } from '../../core/enums/roles.enum';
 import { UserStatus } from '../users/enums/user-status.enum';
+import { BranchesCacheService } from '../../core/cache/services/branches-cache.service';
+import { RolesEnum } from '../../shared/enums/roles.enum';
+import { RenterStatus } from '../renters/enums/renter-status.enum';
+import { RegisterBranchDto } from './dto/register-branch.dto';
+import { Role } from '../roles/entities/role.entity';
+import * as bcrypt from 'bcryptjs';
 
 @Injectable()
 export class BranchesService {
+  private readonly logger: Logger = new Logger(BranchesService.name);
+
   constructor(
     @InjectRepository(Branch)
     private readonly branchRepository: Repository<Branch>,
-    private readonly roleService: RolesService,
     @InjectRepository(User)
     private readonly userRepository: Repository<User>,
+    @InjectRepository(Role)
+    private readonly roleRepository: Repository<Role>,
+    private readonly branchesCacheService: BranchesCacheService,
   ) {}
 
-  // async create(createBranchDto: CreateBranchDto) {
-  //   const role = await this.roleService.findOneByName(RolesEnum.MANAGER);
+  async registerBranch(
+    registerBranchDto: RegisterBranchDto,
+    user: UserActiveInterface,
+  ) {
+    this.logger.log(`RegisterBranch: ${user.email}`);
 
-  //   const brachExists = await this.branchRepository.findOne({
-  //     where: [
-  //       { name: createBranchDto.name },
-  //       { phone: createBranchDto.phone },
-  //       { email: createBranchDto.email },
-  //     ],
-  //   });
+    const role = await this.roleRepository.findOne({
+      where: { name: RolesEnum.MANAGER },
+    });
 
-  //   if (brachExists) throw new ConflictException('Branch already exists');
+    const userExist = await this.userRepository.findOne({
+      where: { email: user.email },
+      select: ['id', 'name', 'email', 'renterId'],
+      relations: ['renter', 'renter.plan'],
+    });
 
-  //   const branch = this.branchRepository.create(createBranchDto);
-  //   const savedBranch = await this.branchRepository.save(branch);
+    const branchesCount = await this.branchRepository.count({
+      where: { renterId: userExist.renterId },
+    });
 
-  //   await this.userService.create({
-  //     name: createBranchDto.name,
-  //     email: createBranchDto.email,
-  //     password: await bcrypt.hash(createBranchDto.password, 10),
-  //     roleId: role.id || 3,
-  //     branchId: savedBranch.id,
-  //   });
+    if (!userExist) {
+      this.logger.error(
+        `RegisterBranch: ${user.email} - Usuario no encontrado`,
+      );
+      throw new NotFoundException('User not found');
+    }
 
-  //   return savedBranch;
-  // }
+    if (!userExist.renter) {
+      this.logger.error(
+        `RegisterBranch: ${user.email} - Rentadora no encontrada`,
+      );
+      throw new NotFoundException('Renter not found');
+    }
+
+    if (userExist.renter.status === RenterStatus.SUSPENDED) {
+      this.logger.error(`RegisterBranch: ${user.email} - Cuenta suspendida`);
+      throw new ForbiddenException('Your account is suspended');
+    }
+
+    if (branchesCount >= userExist.renter.plan.max_branches) {
+      this.logger.error(
+        `RegisterBranch: ${user.email} - Límite de sedes alcanzado`,
+      );
+      throw new ForbiddenException(
+        'Has alcanzado el límite de sedes de tu plan ' +
+          userExist.renter.plan.name,
+      );
+    }
+
+    const branchExists = await this.branchRepository.findOne({
+      where: [
+        { name: registerBranchDto.name, renterId: userExist.renterId },
+        { phone: registerBranchDto.phone },
+        { email: registerBranchDto.email },
+      ],
+    });
+
+    if (branchExists) {
+      if (
+        branchExists.name === registerBranchDto.name &&
+        branchExists.renterId === userExist.renterId
+      )
+        throw new ConflictException(
+          'Branch name already exists in your company',
+        );
+      if (branchExists.phone === registerBranchDto.phone)
+        throw new ConflictException('Phone already in use');
+      if (branchExists.email === registerBranchDto.email)
+        throw new ConflictException('Email already in use');
+    }
+
+    const branch = this.branchRepository.create({
+      ...registerBranchDto,
+      renterId: userExist.renterId,
+    });
+    const savedBranch = await this.branchRepository.save(branch);
+
+    this.logger.log(`RegisterBranch: ${user.email} - Sede creada`);
+
+    const userCreate = this.userRepository.create({
+      name: registerBranchDto.name,
+      email: registerBranchDto.email,
+      password: await bcrypt.hash(registerBranchDto.password, 10),
+      roleId: role.id,
+      branchId: savedBranch.id,
+    });
+
+    await this.userRepository.save(userCreate);
+
+    this.logger.log(`RegisterBranch: ${user.email} - Usuario creado`);
+    await this.branchesCacheService.invalidateAll();
+
+    return savedBranch;
+  }
 
   async findAll(
     page: number = 1,
@@ -61,6 +139,8 @@ export class BranchesService {
     search: string = '',
     user: UserActiveInterface,
   ): Promise<ListResponse<Branch>> {
+    this.logger.log(`FindAll: ${user.email}`);
+
     const safeOrderDir =
       String(orderDir).toUpperCase() === 'DESC' ? 'DESC' : 'ASC';
 
@@ -106,7 +186,10 @@ export class BranchesService {
       order: {
         [safeOrderBy]: safeOrderDir,
       },
+      cache: { id: this.branchesCacheService.keys.list, milliseconds: 60000 },
     });
+
+    this.logger.log(`FindAll: ${user.email} - ${total} registros`);
 
     return {
       data,
@@ -124,6 +207,8 @@ export class BranchesService {
     search: string = '',
     renterId: string,
   ): Promise<ListResponse<Branch>> {
+    this.logger.log(`FindAllByRenterId: ${renterId}`);
+
     const safeOrderDir =
       String(orderDir).toUpperCase() === 'DESC' ? 'DESC' : 'ASC';
 
@@ -154,7 +239,13 @@ export class BranchesService {
       order: {
         [safeOrderBy]: safeOrderDir,
       },
+      cache: {
+        id: this.branchesCacheService.keys.listByRenter,
+        milliseconds: 60000,
+      },
     });
+
+    this.logger.log(`FindAllByRenterId: ${renterId} - ${total} registros`);
 
     return {
       data,
@@ -172,6 +263,8 @@ export class BranchesService {
     search: string = '',
     user: UserActiveInterface,
   ): Promise<ListResponse<{ id: string; name: string }>> {
+    this.logger.log(`FindAllNames: ${user.email}`);
+
     const safeOrderDir =
       String(orderDir).toUpperCase() === 'DESC' ? 'DESC' : 'ASC';
 
@@ -186,9 +279,15 @@ export class BranchesService {
 
     qb.orderBy(`branch.${orderBy}`, safeOrderDir)
       .take(limit)
-      .skip((page - 1) * limit);
+      .skip((page - 1) * limit)
+      .cache({
+        id: this.branchesCacheService.keys.listNames,
+        milliseconds: 60000,
+      });
 
     const [data, total] = await qb.getManyAndCount();
+
+    this.logger.log(`FindAllNames: ${user.email} - ${total} registros`);
 
     return {
       data,
@@ -199,8 +298,12 @@ export class BranchesService {
   }
 
   async findOne(id: string, user: UserActiveInterface) {
+    this.logger.log(`FindOne: ${user.email} - ${id}`);
+
+    let branch: Branch;
+
     try {
-      const branch = await this.branchRepository.findOne({
+      branch = await this.branchRepository.findOne({
         select: [
           'id',
           'name',
@@ -215,24 +318,23 @@ export class BranchesService {
         ],
         where: { id },
       });
-
-      if (!branch) throw new NotFoundException('Branch not found');
-
-      if (
-        (user.role as RolesEnum) !== RolesEnum.ADMIN &&
-        (user.role as RolesEnum) !== RolesEnum.OWNER &&
-        branch.renterId !== user.renterId
-      )
-        throw new UnauthorizedException('Unauthorized');
-
-      return branch;
     } catch (error) {
-      if (error instanceof HttpException) throw error;
-      console.error(error);
-      throw new BadRequestException(
-        error.response || 'Error trying to find branch',
-      );
+      this.logger.error(`FindOne: ${user.email} - ${id} - ${error}`);
+      throw new BadRequestException(error);
     }
+
+    if (!branch) throw new NotFoundException('Branch not found');
+
+    if (
+      (user.role as RolesEnum) !== RolesEnum.ADMIN &&
+      (user.role as RolesEnum) !== RolesEnum.OWNER &&
+      branch.renterId !== user.renterId
+    )
+      throw new UnauthorizedException('Unauthorized');
+
+    this.logger.log(`FindOne: ${user.email} - ${id} - Sede encontrada`);
+
+    return branch;
   }
 
   async update(
@@ -240,6 +342,8 @@ export class BranchesService {
     updateBranchDto: UpdateBranchDto,
     user: UserActiveInterface,
   ) {
+    this.logger.log(`Update: ${user.email} - ${id}`);
+
     await this.findOne(id, user);
 
     if (updateBranchDto.name || updateBranchDto.email) {
@@ -255,9 +359,11 @@ export class BranchesService {
             : UserStatus.SUSPENDED,
         },
       );
+
+      this.logger.log(`Update: ${user.email} - ${id} - Usuario actualizado`);
     }
 
-    return await this.branchRepository.update(id, {
+    const branchUpdate = await this.branchRepository.update(id, {
       name: updateBranchDto.name,
       address: updateBranchDto.address,
       city: updateBranchDto.city,
@@ -266,9 +372,16 @@ export class BranchesService {
       email: updateBranchDto.email,
       status: updateBranchDto.status,
     });
+
+    await this.branchesCacheService.invalidateAll();
+
+    this.logger.log(`Update: ${user.email} - ${id} - Sede actualizada`);
+
+    return branchUpdate;
   }
 
   async remove(id: string, user: UserActiveInterface) {
+    this.logger.log(`Remove: ${user.email} - ${id}`);
     await this.findOne(id, user);
 
     await this.update(id, { status: false }, user);
@@ -277,6 +390,12 @@ export class BranchesService {
       branchId: id,
     });
 
-    return await this.branchRepository.softDelete(id);
+    const branchDelete = await this.branchRepository.softDelete(id);
+
+    await this.branchesCacheService.invalidateAll();
+
+    this.logger.log(`Remove: ${user.email} - ${id} - Sede eliminada`);
+
+    return branchDelete;
   }
 }

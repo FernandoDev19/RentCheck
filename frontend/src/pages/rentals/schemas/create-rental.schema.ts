@@ -1,7 +1,7 @@
 import z from "zod";
 import { getUser } from "../../dashboard/helpers/user.helper";
-import { ROLES } from "../../../common/types/roles.type";
-import { RENTAL_STATUS } from "../../../common/types/rental-status.type";
+import { ROLES } from "../../../shared/types/role.type";
+import { RENTAL_STATUS } from "../../../shared/types/rental.type";
 
 const userRoleOwner = getUser().role === ROLES.OWNER;
 

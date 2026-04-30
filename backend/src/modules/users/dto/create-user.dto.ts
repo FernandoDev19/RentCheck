@@ -11,7 +11,7 @@ import {
 
 export class CreateUserDto {
   @IsString()
-  @Transform(({ value }) => value.trim())
+  @Transform(({ value }) => String(value).trim())
   @IsNotEmpty()
   @MinLength(3)
   @MaxLength(60)

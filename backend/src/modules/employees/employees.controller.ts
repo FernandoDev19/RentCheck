@@ -6,25 +6,28 @@ import {
   Delete,
   Query,
   Put,
+  Post,
 } from '@nestjs/common';
 import { EmployeesService } from './employees.service';
 import { UpdateEmployeeDto } from './dto/update-employee.dto';
-import { Auth } from '../auth/decorators/auth.decorator';
-import { RolesEnum } from '../../core/enums/roles.enum';
+import { Auth } from '../../core/decorators/auth.decorator';
+import { RolesEnum } from '../../shared/enums/roles.enum';
 import { UserActiveInterface } from '../auth/interfaces/active-user.interface';
-import { ActiveUser } from '../auth/decorators/active-user.decorator';
+import { ActiveUser } from '../../core/decorators/active-user.decorator';
+import { RegisterEmployeeDto } from './dto/register-employee.dto';
 
 @Controller('employees')
 export class EmployeesController {
   constructor(private readonly employeesService: EmployeesService) {}
 
-  // @Post()
-  // create(
-  //   @Body() createEmployeeDto: CreateEmployeeDto,
-  //   @ActiveUser() user: UserActiveInterface,
-  // ) {
-  //   return this.employeesService.create(createEmployeeDto, user);
-  // }
+  @Post()
+  @Auth(RolesEnum.OWNER, RolesEnum.MANAGER)
+  registerEmployee(
+    @Body() register: RegisterEmployeeDto,
+    @ActiveUser() user: UserActiveInterface,
+  ) {
+    return this.employeesService.registerEmployee(register, user);
+  }
 
   @Get()
   @Auth(RolesEnum.MANAGER, RolesEnum.OWNER)

@@ -1,9 +1,9 @@
-import { Controller, Post, Body, Get, Query } from '@nestjs/common';
+import { Controller, Post, Body } from '@nestjs/common';
 import { RentalFeedbacksService } from './rental-feedbacks.service';
 import { CreateRentalFeedbackDto } from './dto/create-rental-feedback.dto';
-import { Auth } from '../auth/decorators/auth.decorator';
-import { RolesEnum } from '../../core/enums/roles.enum';
-import { ActiveUser } from '../auth/decorators/active-user.decorator';
+import { Auth } from '../../core/decorators/auth.decorator';
+import { RolesEnum } from '../../shared/enums/roles.enum';
+import { ActiveUser } from '../../core/decorators/active-user.decorator';
 import { UserActiveInterface } from '../auth/interfaces/active-user.interface';
 
 @Controller('rental-feedbacks')

@@ -10,7 +10,7 @@ import {
 } from 'typeorm';
 import { Rental } from '../../rentals/entities/rental.entity';
 import { BiometryRequest } from '../../biometry-requests/entities/biometry-request.entity';
-import { IdentityTypeEnum } from '../../../core/enums/identity-type.enum';
+import { IdentityTypeEnum } from '../../../shared/enums/identity-type.enum';
 import { CustomerStatusEnum } from '../enums/customer-status.enum';
 import { User } from '../../users/entities/user.entity';
 

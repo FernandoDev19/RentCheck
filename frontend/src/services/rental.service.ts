@@ -1,6 +1,6 @@
-import type { ListResponse } from "../common/interfaces/list-response.interface";
-import api from "../config/api";
-import type { Rental } from "../models/rental.model";
+import type { ListResponse } from "../shared/types/list-response.type";
+import api from "../core/api/api";
+import type { Rental } from "../shared/types/rental.type";
 import type { CreateRentalManuallyInterface } from "../pages/rentals/interfaces/create-rental-manually.interface";
 
 export const rentalService = {

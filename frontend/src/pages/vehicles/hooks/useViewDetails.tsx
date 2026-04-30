@@ -1,5 +1,5 @@
 import Swal from "sweetalert2";
-import type { Vehicle } from "../../../models/Vehicle.model";
+import type { Vehicle } from "../../../shared/types/vehicle.type";
 import withReactContent from "sweetalert2-react-content";
 
 const MySwal = withReactContent(Swal);

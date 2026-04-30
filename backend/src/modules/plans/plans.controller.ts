@@ -10,8 +10,8 @@ import {
 import { PlansService } from './plans.service';
 import { CreatePlanDto } from './dto/create-plan.dto';
 import { UpdatePlanDto } from './dto/update-plan.dto';
-import { RolesEnum } from '../../core/enums/roles.enum';
-import { Auth } from '../auth/decorators/auth.decorator';
+import { RolesEnum } from '../../shared/enums/roles.enum';
+import { Auth } from '../../core/decorators/auth.decorator';
 
 @Controller('plans')
 export class PlansController {

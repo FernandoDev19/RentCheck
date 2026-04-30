@@ -1,5 +1,5 @@
-import api from "../config/api";
-import type { Plan } from "../models/plan.model";
+import api from "../core/api/api";
+import type { Plan } from "../shared/types/plan.type";
 
 export const planService = {
   getPlans: async (): Promise<Plan[]> => {

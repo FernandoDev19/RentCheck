@@ -1,14 +1,14 @@
 import Swal from "sweetalert2";
 import withReactContent from "sweetalert2-react-content";
-import type { Rental } from "../../../models/rental.model";
-import type { Customer } from "../../../models/customer.model";
+import type { Rental } from "../../../shared/types/rental.type";
+import type { Customer } from "../../../shared/types/customer.type";
 import FeedbackForm from "../components/FeedbackForm";
 import {
   rentalFeedbackService,
   SCORE_FIELDS,
   type CreateFeedbackScore,
 } from "../../../services/rental-feedback.service";
-import { catchError } from "../../../common/errors/catch-error";
+import { catchError } from "../../../shared/errors/catch-error";
 
 export const useCreateFeedback = () => {
   const MySwal = withReactContent(Swal);

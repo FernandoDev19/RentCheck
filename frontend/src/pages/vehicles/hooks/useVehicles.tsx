@@ -1,11 +1,11 @@
 import { useCallback, useEffect, useState } from "react";
-import type { Vehicle } from "../../../models/Vehicle.model";
+import type { Vehicle } from "../../../shared/types/vehicle.type";
 import { vehicleService } from "../../../services/vehicle.service";
-import type { ListResponse } from "../../../common/interfaces/list-response.interface";
-import { catchError } from "../../../common/errors/catch-error";
+import type { ListResponse } from "../../../shared/types/list-response.type";
+import { catchError } from "../../../shared/errors/catch-error";
 import withReactContent from "sweetalert2-react-content";
 import Swal from "sweetalert2";
-import { VEHICLE_STATUS } from "../../../common/types/vehicle-status.type";
+import { VEHICLE_STATUS } from "../../../shared/types/vehicle.type";
 
 const MySwal = withReactContent(Swal);
 

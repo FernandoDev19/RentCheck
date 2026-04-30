@@ -1,10 +1,10 @@
-import Paragraph from "../../../common/components/ui/Paragraph";
-import TitleSpan from "../../../common/components/ui/TitleSpan";
-import type { Renter } from "../../../models/renter.model";
+import Paragraph from "../../../shared/components/ui/Paragraph";
+import TitleSpan from "../../../shared/components/ui/TitleSpan";
+import type { Renter } from "../../../shared/types/renter.type";
 import { renterService } from "../../../services/renter.service";
-import { catchError } from "../../../common/errors/catch-error";
+import { catchError } from "../../../shared/errors/catch-error";
 import Swal from "sweetalert2";
-import ButtonActionDataTable from "../../../common/components/ui/ButtonActionDataTable";
+import ButtonActionDataTable from "../../../shared/components/ui/ButtonActionDataTable";
 import withReactContent from "sweetalert2-react-content";
 import { useEffect, useState } from "react";
 

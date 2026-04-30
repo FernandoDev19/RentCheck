@@ -1,6 +1,7 @@
 import {
   ConflictException,
   Injectable,
+  Logger,
   NotFoundException,
 } from '@nestjs/common';
 import { CreateCustomerDto } from './dto/create-customer.dto';
@@ -8,18 +9,22 @@ import { InjectRepository } from '@nestjs/typeorm';
 import { Customer } from './entities/customer.entity';
 import { Repository } from 'typeorm';
 import { RentalFeedback } from '../rental-feedbacks/entities/rental-feedback.entity';
-import { ListResponse } from '../../core/interfaces/list-response';
+import { ListResponse } from '../../shared/interfaces/list-response';
 import { UserActiveInterface } from '../auth/interfaces/active-user.interface';
-import { RolesEnum } from '../../core/enums/roles.enum';
+import { RolesEnum } from '../../shared/enums/roles.enum';
 import { CustomerStatusEnum } from './enums/customer-status.enum';
+import { CustomersCacheService } from '../../core/cache/services/customers-cache.service';
 
 @Injectable()
 export class CustomersService {
+  private readonly logger: Logger = new Logger(CustomersService.name);
+
   constructor(
     @InjectRepository(Customer)
     private readonly customerRepository: Repository<Customer>,
     @InjectRepository(RentalFeedback)
     private readonly rentalFeedbackRepository: Repository<RentalFeedback>,
+    private readonly customersCacheService: CustomersCacheService,
   ) {}
 
   async create(createCustomerDto: CreateCustomerDto) {
@@ -30,7 +35,11 @@ export class CustomersService {
     if (customerExists) throw new ConflictException('Customer already exists');
 
     const customer = this.customerRepository.create(createCustomerDto);
-    return await this.customerRepository.save(customer);
+    const customerSaved = await this.customerRepository.save(customer);
+
+    await this.customersCacheService.invalidateAll();
+
+    return customerSaved;
   }
 
   async findAll(
@@ -41,6 +50,8 @@ export class CustomersService {
     search: string = '',
     user: UserActiveInterface,
   ): Promise<ListResponse<Customer>> {
+    this.logger.log(`FindAll: ${user.email}`);
+
     const safeOrderDir =
       String(orderDir).toUpperCase() === 'DESC' ? 'DESC' : 'ASC';
 
@@ -116,9 +127,12 @@ export class CustomersService {
     ])
       .orderBy(`customer.${safeOrderBy}`, safeOrderDir)
       .skip((page - 1) * limit)
-      .take(limit);
+      .take(limit)
+      .cache(this.customersCacheService.keys.list, 60 * 60 * 24);
 
     const [data, total] = await qb.getManyAndCount();
+
+    this.logger.log(`FindAll: ${user.email} - ${total} registros`);
 
     return {
       data,
@@ -132,6 +146,10 @@ export class CustomersService {
     identityNumber: string,
     user: UserActiveInterface,
   ) {
+    this.logger.log(
+      `FindOneByIdentityNumber: ${user.email} - ${identityNumber}`,
+    );
+
     const qb = this.customerRepository
       .createQueryBuilder('customer')
       .leftJoinAndSelect('customer.registeredByUser', 'creatorUser')
@@ -203,10 +221,16 @@ export class CustomersService {
       customer.email = customer.email ? '🔒 Privado' : null;
     }
 
+    this.logger.log(
+      `FindOneByIdentityNumber: ${user.email} - ${identityNumber} - Cliente encontrado`,
+    );
+
     return customer;
   }
 
   async findOne(id: string, user: UserActiveInterface) {
+    this.logger.log(`FindOne: ${user.email} - ${id}`);
+
     const parameters: Record<string, any> = { renterId: user.renterId };
 
     switch (user.role as RolesEnum) {
@@ -220,15 +244,22 @@ export class CustomersService {
         break;
     }
 
+    const isStaff =
+      (user.role as RolesEnum) === RolesEnum.MANAGER ||
+      (user.role as RolesEnum) === RolesEnum.EMPLOYEE;
+
+    const isAdmin = (user.role as RolesEnum) === RolesEnum.ADMIN;
+
     const qb = this.customerRepository
       .createQueryBuilder('customer')
       .innerJoin(
         'customer.rentals',
         'securityRental',
-        (user.role as RolesEnum) === RolesEnum.MANAGER ||
-          (user.role as RolesEnum) === RolesEnum.EMPLOYEE
+        isStaff
           ? 'securityRental.branchId = :branchId'
-          : 'securityRental.renterId = :renterId',
+          : isAdmin
+            ? '1 = 1'
+            : 'securityRental.renterId = :renterId',
       )
       .leftJoinAndSelect('customer.registeredByUser', 'creator')
       .leftJoinAndSelect(
@@ -271,12 +302,17 @@ export class CustomersService {
     const customer = await qb.getOne();
 
     if (!customer) {
+      this.logger.error(
+        `FindOne: ${user.email} - ${id} - Cliente no encontrado`,
+      );
       throw new NotFoundException('Cliente no encontrado');
     }
 
     if (customer.rentals) {
       customer.rentals = customer.rentals.slice(0, 5);
     }
+
+    this.logger.log(`FindOne: ${user.email} - ${id} - Cliente encontrado`);
 
     return customer;
   }
@@ -298,6 +334,10 @@ export class CustomersService {
   // }
 
   async recalculateCustomerScore(customerId: string): Promise<number> {
+    this.logger.log(
+      `RecalculateCustomerScore: ${customerId} - Calculando score del cliente`,
+    );
+
     // Obtener todos los feedbacks del cliente
     const feedbacks = await this.rentalFeedbackRepository
       .createQueryBuilder('feedback')
@@ -355,6 +395,10 @@ export class CustomersService {
       generalScore: roundedScore,
       status: status,
     });
+
+    this.logger.log(
+      `RecalculateCustomerScore: ${customerId} - Score del cliente actualizado a ${roundedScore}`,
+    );
 
     return roundedScore;
   }

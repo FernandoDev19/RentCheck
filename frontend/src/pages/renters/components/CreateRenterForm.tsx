@@ -1,9 +1,9 @@
-import Input from "../../../common/components/ui/Input";
-import Label from "../../../common/components/ui/Label";
-import Select from "../../../common/components/ui/Select";
+import Input from "../../../shared/components/ui/Input";
+import Label from "../../../shared/components/ui/Label";
+import Select from "../../../shared/components/ui/Select";
 import type { RenterErrors } from "../interfaces/renter-errors.interface";
-import type { Plan } from "../../../models/plan.model";
-import type { Renter } from "../../../models/renter.model";
+import type { Plan } from "../../../shared/types/plan.type";
+import type { Renter } from "../../../shared/types/renter.type";
 
 type props = {
   plans: Plan[];

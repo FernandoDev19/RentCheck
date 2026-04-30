@@ -4,8 +4,8 @@ import CreateRenterForm from "../components/CreateRenterForm";
 import { createRenterSchema } from "../schemas/create-renter.schema";
 import type { RenterErrors } from "../interfaces/renter-errors.interface";
 import { renterService } from "../../../services/renter.service";
-import { catchError } from "../../../common/errors/catch-error";
-import type { Plan } from "../../../models/plan.model";
+import { catchError } from "../../../shared/errors/catch-error";
+import type { Plan } from "../../../shared/types/plan.type";
 
 const MySwal = withReactContent(Swal);
 

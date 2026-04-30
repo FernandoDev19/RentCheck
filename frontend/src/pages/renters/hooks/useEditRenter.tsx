@@ -3,9 +3,9 @@ import withReactContent from "sweetalert2-react-content";
 import CreateRenterForm from "../components/CreateRenterForm";
 import type { RenterErrors } from "../interfaces/renter-errors.interface";
 import { renterService } from "../../../services/renter.service";
-import { catchError } from "../../../common/errors/catch-error";
-import type { Plan } from "../../../models/plan.model";
-import type { Renter } from "../../../models/renter.model";
+import { catchError } from "../../../shared/errors/catch-error";
+import type { Plan } from "../../../shared/types/plan.type";
+import type { Renter } from "../../../shared/types/renter.type";
 import { editRenterSchema } from "../schemas/edit-renter.schema";
 
 const MySwal = withReactContent(Swal);

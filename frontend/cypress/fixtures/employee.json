@@ -1,0 +1,7 @@
+{
+    "name": "Test Empleado",
+    "email": "test.empleado@rentcheck.com",
+    "password": "password123",
+    "identityType": "CC",
+    "identityNumber": "987654321"
+}

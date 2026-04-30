@@ -1,4 +1,4 @@
-import type { Vehicle } from "../../../models/Vehicle.model";
+import type { Vehicle } from "../../../shared/types/vehicle.type";
 import { STATUS_CONFIG } from "../constants/status-config";
 
 export default function VehicleCard({

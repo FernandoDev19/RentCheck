@@ -1,4 +1,4 @@
-import { ROLES, type RolesType } from "../../common/types/roles.type";
+import { ROLES, type RolesType } from "../../shared/types/role.type";
 import { getUser } from "./helpers/user.helper";
 import EmployeeDashboard from "./components/EmployeeDashboard";
 import ManagementDashboard from "./components/ManagementDashboard";

@@ -1,10 +1,10 @@
 import { useCallback, useEffect, useState } from "react";
-import type { Employee } from "../../../models/employee.model";
+import type { Employee } from "../../../shared/types/employee.type";
 import withReactContent from "sweetalert2-react-content";
 import Swal from "sweetalert2";
-import type { ListResponse } from "../../../common/interfaces/list-response.interface";
+import type { ListResponse } from "../../../shared/types/list-response.type";
 import { employeeService } from "../../../services/employee.service";
-import { catchError } from "../../../common/errors/catch-error";
+import { catchError } from "../../../shared/errors/catch-error";
 import { createEmployeeSchema } from "../schemas/create-employee.schema";
 
 const MySwal = withReactContent(Swal);

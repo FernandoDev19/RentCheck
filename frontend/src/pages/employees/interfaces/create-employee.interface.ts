@@ -1,4 +1,4 @@
-import type { IdentityType } from "../../../common/types/identity-type.type";
+import type { IdentityType } from "../../../shared/types/identity-type.type";
 
 export interface CreateEmployeeInterface {
     name: string;

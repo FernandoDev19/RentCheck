@@ -1,6 +1,6 @@
-import type { ListResponse } from "../common/interfaces/list-response.interface";
-import api from "../config/api";
-import type { Renter } from "../models/renter.model";
+import type { ListResponse } from "../shared/types/list-response.type";
+import api from "../core/api/api";
+import type { Renter } from "../shared/types/renter.type";
 import type { CreateRenterInterface } from "../pages/renters/interfaces/create-renter.interface";
 import type { EditRenterInterface } from "../pages/renters/interfaces/edit-renter.interface";
 

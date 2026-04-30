@@ -1,5 +1,5 @@
 import z from "zod";
-import { TYPE_TRANSMISSION } from "../../../common/types/type-transmission.type";
+import { TYPE_TRANSMISSION } from "../../../shared/types/type-transmission.type";
 
 export const EditVehicleSchema = z.object({
   gamma: z.optional(z.string().nonempty()),

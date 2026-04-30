@@ -1,10 +1,10 @@
 import Swal from "sweetalert2";
 import withReactContent from "sweetalert2-react-content";
-import type { Customer } from "../../../models/customer.model";
+import type { Customer } from "../../../shared/types/customer.type";
 import { useCallback, useEffect, useState } from "react";
-import type { ListResponse } from "../../../common/interfaces/list-response.interface";
+import type { ListResponse } from "../../../shared/types/list-response.type";
 import { customerService } from "../../../services/customer.service";
-import { catchError } from "../../../common/errors/catch-error";
+import { catchError } from "../../../shared/errors/catch-error";
 import RentalsByCustomerTable from "../components/rentals-by-customer-table/RentalsByCustomerTable";
 import ViewCustomer from "../components/ViewCustomer";
 import { useCreateRental } from "../../rentals/hooks/useCreateRental";

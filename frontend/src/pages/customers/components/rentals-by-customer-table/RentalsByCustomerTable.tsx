@@ -1,5 +1,5 @@
-import DataTable from "../../../../common/components/datatable/DataTable";
-import ButtonActionDataTable from "../../../../common/components/ui/ButtonActionDataTable";
+import DataTable from "../../../../shared/components/datatable/DataTable";
+import ButtonActionDataTable from "../../../../shared/components/ui/ButtonActionDataTable";
 import { rentalsByCustomerColumns } from "./constants/rentals-by-customer.columns";
 import { useRentalsByCustomerTable } from "./hooks/useRentalsByCustomerTable";
 import { useViewRentalInfo } from "./hooks/useViewRentalInfo";

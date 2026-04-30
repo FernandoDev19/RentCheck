@@ -1,11 +1,11 @@
-import PageHeader from "../../common/components/PageHeader";
-import DataTable from "../../common/components/datatable/DataTable";
-import CardList from "../../common/components/card-list/CardList";
+import PageHeader from "../../shared/components/PageHeader";
+import DataTable from "../../shared/components/datatable/DataTable";
+import CardList from "../../shared/components/card-list/CardList";
 import { useVehicles } from "./hooks/useVehicles";
-import type { Vehicle } from "../../models/Vehicle.model";
+import type { Vehicle } from "../../shared/types/vehicle.type";
 import { getUser } from "../dashboard/helpers/user.helper";
-import { ROLES } from "../../common/types/roles.type";
-import ButtonActionDataTable from "../../common/components/ui/ButtonActionDataTable";
+import { ROLES } from "../../shared/types/role.type";
+import ButtonActionDataTable from "../../shared/components/ui/ButtonActionDataTable";
 import { Edit, Info, Trash2 } from "lucide-react";
 import { useCreateVehicle } from "./hooks/useCreateVehicle";
 import { useEditVehicle } from "./hooks/useEditVehicle";
@@ -13,7 +13,7 @@ import { useChangeStatus } from "./hooks/useChangeStatus";
 import { columns } from "./constants/vehicles.columns";
 import { cardFields } from "./constants/vehicles.fields";
 import { StatusBadge } from "./helpers/vehicle-status-badge.helper";
-import { VEHICLE_STATUS } from "../../common/types/vehicle-status.type";
+import { VEHICLE_STATUS } from "../../shared/types/vehicle.type";
 import { useVehicleAvailability } from "./hooks/useVehicleAvailability";
 import { useViewDetails } from "./hooks/useViewDetails";
 

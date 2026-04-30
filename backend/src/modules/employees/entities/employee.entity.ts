@@ -15,7 +15,7 @@ import { User } from '../../users/entities/user.entity';
 import { Rental } from '../../rentals/entities/rental.entity';
 import { RentalFeedback } from '../../rental-feedbacks/entities/rental-feedback.entity';
 import { BiometryRequest } from '../../biometry-requests/entities/biometry-request.entity';
-import { IdentityTypeEnum } from '../../../core/enums/identity-type.enum';
+import { IdentityTypeEnum } from '../../../shared/enums/identity-type.enum';
 
 @Entity('employees')
 export class Employee {

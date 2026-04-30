@@ -1,19 +1,20 @@
 import { Body, Controller, Get, Post, UseGuards } from '@nestjs/common';
 import { AuthService } from './auth.service';
 import { LoginDto } from './dto/login.dto';
-import { AuthGuard } from './guards/auth.guard';
-import { ActiveUser } from './decorators/active-user.decorator';
+import { AuthGuard } from '../../core/guards/auth.guard';
+import { ActiveUser } from '../../core/decorators/active-user.decorator';
 import { UserActiveInterface } from './interfaces/active-user.interface';
 import { RegisterDto } from './dto/register.dto';
-import { Auth } from './decorators/auth.decorator';
-import { RolesEnum } from '../../core/enums/roles.enum';
-import { RegisterBranchDto } from './dto/register-branch.dto';
-import { RegisterEmployeeDto } from './dto/register-employee.dto';
-import { RegisterRenterDto } from './dto/register-renter.dto';
+import { Auth } from '../../core/decorators/auth.decorator';
+import { RolesEnum } from '../../shared/enums/roles.enum';
+import { UsersService } from '../users/users.service';
 
 @Controller('auth')
 export class AuthController {
-  constructor(private readonly authService: AuthService) {}
+  constructor(
+    private readonly authService: AuthService,
+    private readonly userService: UsersService,
+  ) {}
 
   @Post('login')
   login(@Body() login: LoginDto) {
@@ -26,33 +27,10 @@ export class AuthController {
     return this.authService.registerAdmin(register);
   }
 
-  @Post('register/renter')
-  registerRenter(@Body() register: RegisterRenterDto) {
-    return this.authService.registerRenter(register);
-  }
-
-  @Post('register/branch')
-  @Auth(RolesEnum.OWNER)
-  registerBranch(
-    @Body() register: RegisterBranchDto,
-    @ActiveUser() user: UserActiveInterface,
-  ) {
-    return this.authService.registerBranch(register, user);
-  }
-
-  @Post('register/employee')
-  @Auth(RolesEnum.OWNER, RolesEnum.MANAGER)
-  registerEmployee(
-    @Body() register: RegisterEmployeeDto,
-    @ActiveUser() user: UserActiveInterface,
-  ) {
-    return this.authService.registerEmployee(register, user);
-  }
-
   @Get('profile')
   @UseGuards(AuthGuard)
   profile(@ActiveUser() user: UserActiveInterface) {
-    return this.authService.profile(user);
+    return this.userService.profile(user);
   }
 
   @Post('verify')

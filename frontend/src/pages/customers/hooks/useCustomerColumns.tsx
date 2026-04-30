@@ -1,5 +1,5 @@
-import type { Column } from "../../../common/components/datatable/types/column.type";
-import type { Customer } from "../../../models/customer.model";
+import type { Column } from "../../../shared/components/datatable/types/column.type";
+import type { Customer } from "../../../shared/types/customer.type";
 import { CUSTOMER_STATUS_COLORS } from "../constants/customer-status-color";
 import { CUSTOMER_STATUS_LABELS } from "../constants/customer-status-label";
 import { useRequestBiometry } from "./useRequestBiometry";

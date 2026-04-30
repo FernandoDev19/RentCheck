@@ -1,7 +1,7 @@
 import z from "zod";
-import { IDENTITY_TYPE } from "../../../common/types/identity-type.type";
+import { IDENTITY_TYPE } from "../../../shared/types/identity-type.type";
 import { getUser } from "../../dashboard/helpers/user.helper";
-import { ROLES } from "../../../common/types/roles.type";
+import { ROLES } from "../../../shared/types/role.type";
 
 const userRoleOwner = getUser().role === ROLES.OWNER;
 

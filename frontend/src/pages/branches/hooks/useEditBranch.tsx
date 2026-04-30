@@ -3,9 +3,9 @@ import withReactContent from "sweetalert2-react-content";
 import CreateBranchForm from "../components/CreateBranchForm";
 import type { BranchErrors } from "../interfaces/branch-errors.interface";
 import { branchService } from "../../../services/branch.service";
-import { catchError } from "../../../common/errors/catch-error";
+import { catchError } from "../../../shared/errors/catch-error";
 import { editBranchSchema } from "../schemas/edit-branch.schema";
-import type { Branch } from "../../../models/branch.model";
+import type { Branch } from "../../../shared/types/branch.type";
 const MySwal = withReactContent(Swal);
 
 export const useEditBranch = () => {

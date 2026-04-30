@@ -1,8 +1,8 @@
 import { useCallback, useState } from "react";
-import type { Vehicle } from "../../../models/Vehicle.model";
+import type { Vehicle } from "../../../shared/types/vehicle.type";
 import { useCreateRental } from "../../rentals/hooks/useCreateRental";
 import { vehicleService } from "../../../services/vehicle.service";
-import { catchError } from "../../../common/errors/catch-error";
+import { catchError } from "../../../shared/errors/catch-error";
 import withReactContent from "sweetalert2-react-content";
 import Swal from "sweetalert2";
 import DatePickerForm from "./DatePickerForm";

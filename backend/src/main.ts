@@ -1,14 +1,11 @@
 import { NestFactory } from '@nestjs/core';
 import { AppModule } from './app.module';
 import * as bodyParser from 'body-parser';
-import { MvpDataService } from './seeders/mvp-data/mvp-data.service';
 import { ValidationPipe } from '@nestjs/common';
+import { GlobalExceptionFilter } from './core/errors/global-exception-filter';
 
 async function bootstrap() {
   const app = await NestFactory.create(AppModule);
-
-  const mvpDataService = app.get(MvpDataService);
-  await mvpDataService.run();
 
   app.useGlobalPipes(
     new ValidationPipe({
@@ -17,6 +14,8 @@ async function bootstrap() {
       transform: true,
     }),
   );
+
+  app.useGlobalFilters(new GlobalExceptionFilter());
 
   app.setGlobalPrefix('api/v1', {
     exclude: ['docs', 'docs-json', 'docs-yaml'],
@@ -39,4 +38,4 @@ async function bootstrap() {
 
   await app.listen(process.env.PORT ?? 3000);
 }
-bootstrap();
+void bootstrap();

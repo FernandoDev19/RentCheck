@@ -8,12 +8,12 @@ import {
   MaxLength,
   MinLength,
 } from 'class-validator';
-import { IdentityTypeEnum } from '../../../core/enums/identity-type.enum';
+import { IdentityTypeEnum } from '../../../shared/enums/identity-type.enum';
 import { UserStatus } from '../../users/enums/user-status.enum';
 
 export class CreateEmployeeDto {
   @IsString()
-  @Transform(({ value }) => value.trim())
+  @Transform(({ value }) => String(value).trim())
   @IsNotEmpty()
   @MinLength(5)
   @MaxLength(100)
@@ -23,7 +23,7 @@ export class CreateEmployeeDto {
   email: string;
 
   @IsString()
-  @Transform(({ value }) => value.trim())
+  @Transform(({ value }) => String(value).trim())
   @IsNotEmpty()
   @MinLength(8, { message: 'Password must be at least 8 characters long' })
   @MaxLength(60)
@@ -39,7 +39,7 @@ export class CreateEmployeeDto {
   identityType?: IdentityTypeEnum;
 
   @IsString()
-  @Transform(({ value }) => value.trim())
+  @Transform(({ value }) => String(value).trim())
   @IsNotEmpty()
   @MinLength(5)
   @MaxLength(15)

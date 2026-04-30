@@ -1,8 +1,8 @@
 import { Edit, Trash2 } from "lucide-react";
-import DataTable from "../../common/components/datatable/DataTable";
-import PageHeader from "../../common/components/PageHeader";
-import ButtonActionDataTable from "../../common/components/ui/ButtonActionDataTable";
-import { ROLES } from "../../common/types/roles.type";
+import DataTable from "../../shared/components/datatable/DataTable";
+import PageHeader from "../../shared/components/PageHeader";
+import ButtonActionDataTable from "../../shared/components/ui/ButtonActionDataTable";
+import { ROLES } from "../../shared/types/role.type";
 import { getUser } from "../dashboard/helpers/user.helper";
 import { columns } from "./constants/employee.columns";
 import { useCreateEmployee } from "./hooks/useCreateEmployee";
@@ -53,7 +53,7 @@ export default function Employees() {
         totalItems={totalItems}
         searchPlaceholder="Buscar empleado..."
         emptyMessage="No hay empleados registrados"
-        createButton={true}
+        createButton={userRole !== ROLES.ADMIN}
         onCreateClick={() => handleCreateClick(loadEmployees)}
         actions={
           userRoleManagerOrOwner

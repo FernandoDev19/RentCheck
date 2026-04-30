@@ -6,17 +6,28 @@ import {
   Delete,
   Put,
   Query,
+  Post,
 } from '@nestjs/common';
 import { BranchesService } from './branches.service';
 import { UpdateBranchDto } from './dto/update-branch.dto';
-import { Auth } from '../auth/decorators/auth.decorator';
-import { RolesEnum } from '../../core/enums/roles.enum';
-import { ActiveUser } from '../auth/decorators/active-user.decorator';
+import { Auth } from '../../core/decorators/auth.decorator';
+import { RolesEnum } from '../../shared/enums/roles.enum';
+import { ActiveUser } from '../../core/decorators/active-user.decorator';
 import { UserActiveInterface } from '../auth/interfaces/active-user.interface';
+import { RegisterBranchDto } from './dto/register-branch.dto';
 
 @Controller('branches')
 export class BranchesController {
   constructor(private readonly branchesService: BranchesService) {}
+
+  @Post()
+  @Auth(RolesEnum.OWNER)
+  registerBranch(
+    @Body() register: RegisterBranchDto,
+    @ActiveUser() user: UserActiveInterface,
+  ) {
+    return this.branchesService.registerBranch(register, user);
+  }
 
   @Get()
   @Auth(RolesEnum.OWNER, RolesEnum.ADMIN)

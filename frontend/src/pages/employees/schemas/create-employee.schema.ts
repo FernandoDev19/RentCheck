@@ -1,5 +1,5 @@
 import z from "zod";
-import { IDENTITY_TYPE } from "../../../common/types/identity-type.type";
+import { IDENTITY_TYPE } from "../../../shared/types/identity-type.type";
 
 export const createEmployeeSchema = z.object({
     name: z.string().nonempty().min(3).max(100),

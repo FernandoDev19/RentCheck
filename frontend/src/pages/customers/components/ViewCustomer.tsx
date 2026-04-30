@@ -1,11 +1,11 @@
 import { useEffect, useState } from "react";
-import ButtonCallUp from "../../../common/components/ui/ButtonCallUp";
-import Paragraph from "../../../common/components/ui/Paragraph";
-import TitleSpan from "../../../common/components/ui/TitleSpan";
-import type { Customer } from "../../../models/customer.model";
+import ButtonCallUp from "../../../shared/components/ui/ButtonCallUp";
+import Paragraph from "../../../shared/components/ui/Paragraph";
+import TitleSpan from "../../../shared/components/ui/TitleSpan";
+import type { Customer } from "../../../shared/types/customer.type";
 import { scoreColor as getScoreColor } from "../../dashboard/helpers/score-color.helper";
 import { customerService } from "../../../services/customer.service";
-import { catchError } from "../../../common/errors/catch-error";
+import { catchError } from "../../../shared/errors/catch-error";
 import Swal from "sweetalert2";
 import {
   CUSTOMER_STATUS,

@@ -1,5 +1,5 @@
-import type { CardField } from "../../../common/components/card-list/CardItem";
-import type { Customer } from "../../../models/customer.model";
+import type { CardField } from "../../../shared/components/card-list/CardItem";
+import type { Customer } from "../../../shared/types/customer.type";
 import { useRequestBiometry } from "./useRequestBiometry";
 
 export const useCustomerFields = (

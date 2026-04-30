@@ -1,14 +1,14 @@
 import { Edit, Info, Trash } from "lucide-react";
-import DataTable from "../../common/components/datatable/DataTable";
-import PageHeader from "../../common/components/PageHeader";
-import ButtonActionDataTable from "../../common/components/ui/ButtonActionDataTable";
+import DataTable from "../../shared/components/datatable/DataTable";
+import PageHeader from "../../shared/components/PageHeader";
+import ButtonActionDataTable from "../../shared/components/ui/ButtonActionDataTable";
 import { columns } from "./constants/renters.column";
 import { useCreateRenter } from "./hooks/useCreateRenter";
 import { useRenters } from "./hooks/useRenters";
 import { useEditRenter } from "./hooks/useEditRenter";
-import { RENTER_STATUS } from "../../common/types/renter-status.type";
+import { RENTER_STATUS } from "../../shared/types/renter.type";
 import { getUser } from "../dashboard/helpers/user.helper";
-import { ROLES } from "../../common/types/roles.type";
+import { ROLES } from "../../shared/types/role.type";
 
 export default function Renters() {
   const {
@@ -58,14 +58,17 @@ export default function Renters() {
         actions={(row) => (
           <div className="flex items-center gap-2">
             <ButtonActionDataTable
+              id={`view-renter-${row.id}`}
               onClick={() => handleView(row)}
               color="indigo"
             >
               <Info size={20} />
             </ButtonActionDataTable>
+
             {userRole === ROLES.ADMIN && (
               <>
                 <ButtonActionDataTable
+                  id={`edit-renter-${row.id}`}
                   onClick={() =>
                     handleEdit({ plans, loadRenters, renterId: row.id })
                   }
@@ -76,6 +79,7 @@ export default function Renters() {
 
                 {row.status !== RENTER_STATUS.SUSPENDED && (
                   <ButtonActionDataTable
+                    id={`delete-renter-${row.id}`}
                     onClick={() => handleDelete(row.id)}
                     color="red"
                   >

@@ -1,9 +1,9 @@
 import withReactContent from "sweetalert2-react-content";
-import type { Rental } from "../../../models/rental.model";
+import type { Rental } from "../../../shared/types/rental.type";
 import Swal from "sweetalert2";
-import { ROLES, type RolesType } from "../../../common/types/roles.type";
+import { ROLES, type RolesType } from "../../../shared/types/role.type";
 import { biometryRequestService } from "../../../services/biometry-request.service";
-import { catchError } from "../../../common/errors/catch-error";
+import { catchError } from "../../../shared/errors/catch-error";
 const MySwal = withReactContent(Swal);
 
 export const useRequestBiometry = () => {

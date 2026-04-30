@@ -4,7 +4,7 @@ import CreateBranchForm from "../components/CreateBranchForm";
 import { createBranchSchema } from "../schemas/create-branch.schema";
 import type { BranchErrors } from "../interfaces/branch-errors.interface";
 import { branchService } from "../../../services/branch.service";
-import { catchError } from "../../../common/errors/catch-error";
+import { catchError } from "../../../shared/errors/catch-error";
 const MySwal = withReactContent(Swal);
 
 export const useCreateBranch = () => {

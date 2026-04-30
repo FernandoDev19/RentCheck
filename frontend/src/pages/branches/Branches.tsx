@@ -1,10 +1,10 @@
 import { useParams } from "react-router";
-import CardList from "../../common/components/card-list/CardList.tsx";
-import DataTable from "../../common/components/datatable/DataTable";
-import PageHeader from "../../common/components/PageHeader";
-import ButtonActionDataTable from "../../common/components/ui/ButtonActionDataTable";
-import ButtonCallUp from "../../common/components/ui/ButtonCallUp.tsx";
-import { screenWidth } from "../../common/helpers/screen-width.helper.ts";
+import CardList from "../../shared/components/card-list/CardList.tsx";
+import DataTable from "../../shared/components/datatable/DataTable";
+import PageHeader from "../../shared/components/PageHeader";
+import ButtonActionDataTable from "../../shared/components/ui/ButtonActionDataTable";
+import ButtonCallUp from "../../shared/components/ui/ButtonCallUp.tsx";
+import { screenWidth } from "../../shared/helpers/screen-width.helper.ts";
 import { branchesColumns } from "./constants/branches.columns.tsx";
 import { BranchesField } from "./constants/branches.fields.tsx";
 import { useBranches } from "./hooks/useBranches";
@@ -12,7 +12,8 @@ import { useCreateBranch } from "./hooks/useCreateBranch.tsx";
 import { useEditBranch } from "./hooks/useEditBranch.tsx";
 import { getUser } from "../dashboard/helpers/user.helper.ts";
 import { Edit, Trash2 } from "lucide-react";
-import { ROLES } from "../../common/types/roles.type.ts";
+import { ROLES } from "../../shared/types/role.type.ts";
+import type { Branch } from "../../shared/types/branch.type.ts";
 
 export default function Branches() {
   const { renterId } = useParams<{ renterId: string | undefined }>();
@@ -60,11 +61,12 @@ export default function Branches() {
           totalItems={totalItems}
           searchPlaceholder="Buscar sede..."
           emptyMessage="No hay sedes registradas"
-          createButton={true}
+          createButton={userRole !== ROLES.ADMIN}
           onCreateClick={() => handleCreateClick(loadBranches)}
-          actions={(row) => (
+          actions={(row: Branch) => (
             <div className="flex items-center gap-2">
               <ButtonActionDataTable
+                id={`view-branch-${row.id}`}
                 onClick={() => handleView(row)}
                 color="indigo"
               >
@@ -73,6 +75,7 @@ export default function Branches() {
               {userRole === ROLES.OWNER && (
                 <>
                   <ButtonActionDataTable
+                    id={`edit-branch-${row.id}`}
                     onClick={() => handleEdit(loadBranches, row.id)}
                     color="green"
                   >
@@ -80,6 +83,7 @@ export default function Branches() {
                   </ButtonActionDataTable>
 
                   <ButtonActionDataTable
+                    id={`delete-branch-${row.id}`}
                     onClick={() => handleDelete(row.id)}
                     color="red"
                   >
@@ -118,10 +122,11 @@ export default function Branches() {
           onSearchChange={handleSearchChange}
           searchPlaceholder="Buscar sede..."
           emptyMessage="No hay sedes registradas"
-          createButton={true}
+          createButton={userRole !== ROLES.ADMIN}
           footer={(c) => (
             <>
               <ButtonCallUp
+                id={`view-branch-${c.id}`}
                 type="button"
                 isLoading={isLoading}
                 onClick={() => handleView(c)}
@@ -131,12 +136,14 @@ export default function Branches() {
               {userRole === ROLES.OWNER && (
                 <>
                   <ButtonActionDataTable
+                    id={`edit-branch-${c.id}`}
                     onClick={() => handleEdit(loadBranches, c.id)}
                     color="green"
                   >
                     <Edit size={16} />
                   </ButtonActionDataTable>
                   <ButtonActionDataTable
+                    id={`delete-branch-${c.id}`}
                     onClick={() => handleDelete(c.id)}
                     color="red"
                   >

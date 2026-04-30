@@ -1,15 +1,15 @@
 import Swal from "sweetalert2";
 import withReactContent from "sweetalert2-react-content";
-import type { Customer } from "../../../models/customer.model";
+import type { Customer } from "../../../shared/types/customer.type";
 import { customerService } from "../../../services/customer.service";
-import { catchError } from "../../../common/errors/catch-error";
+import { catchError } from "../../../shared/errors/catch-error";
 import { createRentalAndCustomerSchema } from "../schemas/create-rental-and-customer.schema";
 import { rentalService } from "../../../services/rental.service";
 import CreateRentalForm from "../components/CreateRentalForm";
 import type { RentalErrors } from "../interfaces/rental-errors.interface";
 import { CUSTOMER_STATUS_LABELS } from "../../customers/constants/customer-status-label";
 import { getUser } from "../../dashboard/helpers/user.helper";
-import { ROLES } from "../../../common/types/roles.type";
+import { ROLES } from "../../../shared/types/role.type";
 import { createRentalSchema } from "../schemas/create-rental.schema";
 
 const MySwal = withReactContent(Swal);

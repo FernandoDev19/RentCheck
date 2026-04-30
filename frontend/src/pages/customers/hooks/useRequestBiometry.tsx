@@ -1,9 +1,9 @@
 import Swal from "sweetalert2";
 import withReactContent from "sweetalert2-react-content";
-import type { Customer } from "../../../models/customer.model";
-import { ROLES, type RolesType } from "../../../common/types/roles.type";
+import type { Customer } from "../../../shared/types/customer.type";
+import { ROLES, type RolesType } from "../../../shared/types/role.type";
 import { biometryRequestService } from "../../../services/biometry-request.service";
-import { catchError } from "../../../common/errors/catch-error";
+import { catchError } from "../../../shared/errors/catch-error";
 
 const MySwal = withReactContent(Swal);
 

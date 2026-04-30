@@ -13,7 +13,7 @@ export class LoginDto {
   email: string;
 
   @IsString()
-  @Transform(({ value }) => value.trim())
+  @Transform(({ value }) => String(value).trim())
   @IsNotEmpty()
   @MinLength(6)
   password: string;

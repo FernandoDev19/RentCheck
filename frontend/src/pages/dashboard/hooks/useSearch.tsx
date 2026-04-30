@@ -1,14 +1,14 @@
 import { useState } from "react";
 import Swal from "sweetalert2";
 import withReactContent from "sweetalert2-react-content";
-import type { Customer } from "../../../models/customer.model";
+import type { Customer } from "../../../shared/types/customer.type";
 import { customerService } from "../../../services/customer.service";
 import RentalsByCustomerTable from "../../customers/components/rentals-by-customer-table/RentalsByCustomerTable";
 import ViewCustomer from "../../customers/components/ViewCustomer";
 import { useCreateRental } from "../../rentals/hooks/useCreateRental";
 import { CUSTOMER_STATUS } from "../../customers/interfaces/customer-status.interface";
 import { CUSTOMER_STATUS_LABELS } from "../../customers/constants/customer-status-label";
-import { catchError } from "../../../common/errors/catch-error";
+import { catchError } from "../../../shared/errors/catch-error";
 
 const MySwal = withReactContent(Swal);
 

@@ -1,6 +1,6 @@
-import type { Column } from "../../../common/components/datatable/types/column.type";
-import type { Branch } from "../../../models/branch.model";
-import type { Vehicle } from "../../../models/Vehicle.model";
+import type { Column } from "../../../shared/components/datatable/types/column.type";
+import type { Branch } from "../../../shared/types/branch.type";
+import type { Vehicle } from "../../../shared/types/vehicle.type";
 import { StatusBadge } from "../helpers/vehicle-status-badge.helper";
 
 export const columns: Column<Vehicle>[] = [

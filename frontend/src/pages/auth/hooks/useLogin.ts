@@ -4,7 +4,7 @@ import { authService } from "../../../services/auth.service";
 import Swal from "sweetalert2";
 import withReactContent from "sweetalert2-react-content";
 import { useNavigate } from "react-router";
-import { catchError } from "../../../common/errors/catch-error";
+import { catchError } from "../../../shared/errors/catch-error";
 
 const MySwal = withReactContent(Swal);
 

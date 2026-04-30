@@ -1,7 +1,7 @@
-import Input from "../../../common/components/ui/Input";
-import Label from "../../../common/components/ui/Label";
-import Select from "../../../common/components/ui/Select";
-import type { Branch } from "../../../models/branch.model";
+import Input from "../../../shared/components/ui/Input";
+import Label from "../../../shared/components/ui/Label";
+import Select from "../../../shared/components/ui/Select";
+import type { Branch } from "../../../shared/types/branch.type";
 import type { BranchErrors } from "../interfaces/branch-errors.interface";
 
 type Props = {

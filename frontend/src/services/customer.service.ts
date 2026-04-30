@@ -1,6 +1,6 @@
-import type { ListResponse } from "../common/interfaces/list-response.interface";
-import api from "../config/api";
-import type { Customer } from "../models/customer.model";
+import type { ListResponse } from "../shared/types/list-response.type";
+import api from "../core/api/api";
+import type { Customer } from "../shared/types/customer.type";
 
 export const customerService = {
   findByIdentity: async (identity: string) => {

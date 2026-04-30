@@ -1,5 +1,5 @@
-import type { UserActiveInterface } from "../common/interfaces/user-active.interface";
-import api from "../config/api";
+import type { UserActiveType } from "../shared/types/user-active.type";
+import api from "../core/api/api";
 
 export interface LoginDataInterface {
   email: string;
@@ -46,7 +46,7 @@ export const authService = {
     }
   },
 
-  async getProfile(): Promise<UserActiveInterface | null> {
+  async getProfile(): Promise<UserActiveType | null> {
     const response = await api.get("/auth/profile");
     return response.data;
   },

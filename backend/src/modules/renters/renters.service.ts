@@ -2,6 +2,7 @@ import {
   BadRequestException,
   ConflictException,
   Injectable,
+  Logger,
   NotFoundException,
 } from '@nestjs/common';
 import { CreateRenterDto } from './dto/create-renter.dto';
@@ -11,14 +12,16 @@ import { Renter } from './entities/renter.entity';
 import { ILike, Repository } from 'typeorm';
 import { UsersService } from '../users/users.service';
 import { RolesService } from '../roles/roles.service';
-import { RolesEnum } from '../../core/enums/roles.enum';
-import { ListResponse } from '../../core/interfaces/list-response';
+import { RolesEnum } from '../../shared/enums/roles.enum';
+import { ListResponse } from '../../shared/interfaces/list-response';
 import { RenterStatus } from './enums/renter-status.enum';
 import { User } from '../users/entities/user.entity';
 import { UserStatus } from '../users/enums/user-status.enum';
 
 @Injectable()
 export class RentersService {
+  private readonly logger = new Logger(RentersService.name);
+
   constructor(
     @InjectRepository(Renter)
     private readonly renterRepository: Repository<Renter>,
@@ -29,6 +32,8 @@ export class RentersService {
   ) {}
 
   async create(createRenterDto: CreateRenterDto) {
+    this.logger.log(`Create: ${createRenterDto.email}`);
+
     const role = await this.roleService.findOneByName(RolesEnum.OWNER);
 
     const renterExists = await this.renterRepository.findOne({
@@ -58,6 +63,10 @@ export class RentersService {
       renterId: savedRenter.id,
     });
 
+    this.logger.log(
+      `Create: ${createRenterDto.email} - Rentadora creada con éxito`,
+    );
+
     return savedRenter;
   }
 
@@ -68,6 +77,8 @@ export class RentersService {
     orderDir: string = 'DESC',
     search: string = '',
   ): Promise<ListResponse<Renter>> {
+    this.logger.log(`FindAll`);
+
     const safeOrderDir =
       String(orderDir).toUpperCase() === 'DESC' ? 'DESC' : 'ASC';
 
@@ -120,8 +131,12 @@ export class RentersService {
   }
 
   async findOne(id: string) {
+    this.logger.log(`FindOne: ${id}`);
+
+    let renter: Renter;
+
     try {
-      const renter = await this.renterRepository
+      renter = await this.renterRepository
         .createQueryBuilder('renter')
         .leftJoinAndSelect('renter.plan', 'plan')
         .leftJoinAndSelect('renter.user', 'user')
@@ -151,18 +166,21 @@ export class RentersService {
         ])
         .where('renter.id = :id', { id })
         .getOne();
-
-      if (!renter) throw new NotFoundException('Renter not found');
-
-      return renter;
     } catch (error) {
-      throw new BadRequestException(
-        error.response || 'Error trying to find user',
-      );
+      this.logger.error('Error trying to find renter', error);
+      throw new BadRequestException('Error trying to find renter');
     }
+
+    if (!renter) throw new NotFoundException('Renter not found');
+
+    this.logger.log(`FindOne: ${id} - Rentadora encontrada`);
+
+    return renter;
   }
 
   async update(id: string, updateRenterDto: UpdateRenterDto) {
+    this.logger.log(`Update: ${id}`);
+
     const renter = await this.findOne(id);
 
     await this.renterRepository.update(id, {
@@ -191,10 +209,14 @@ export class RentersService {
       });
     }
 
+    this.logger.log(`Update: ${id} - Rentadora actualizada`);
+
     return renter;
   }
 
   async remove(id: string) {
+    this.logger.log(`Remove: ${id}`);
+
     const renter = await this.renterRepository.findOne({
       where: { id },
       select: ['id', 'status'],
@@ -210,6 +232,9 @@ export class RentersService {
     user.status = UserStatus.SUSPENDED;
 
     await this.userRepository.save(user);
+
+    this.logger.log(`Remove: ${id} - Rentadora eliminada lógicamente`);
+
     return await this.renterRepository.save(renter);
   }
 }

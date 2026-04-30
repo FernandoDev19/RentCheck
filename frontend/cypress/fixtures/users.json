@@ -1,0 +1,20 @@
+{
+    "admin": {
+        "name": "Admin RentCheck",
+        "renterId": null,
+        "employeeId": null,
+        "branchId": null,
+        "roleId": 1,
+        "status": "active"
+    },
+    "invalidUser": {
+        "name": "Admin RentCheck",
+        "email": "admin@admin.com",
+        "password": "12345678",
+        "renterId": null,
+        "employeeId": null,
+        "branchId": null,
+        "roleId": 1,
+        "status": "active"
+    }
+}

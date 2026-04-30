@@ -1,8 +1,8 @@
 import withReactContent from "sweetalert2-react-content";
-import type { Vehicle } from "../../../models/Vehicle.model";
+import type { Vehicle } from "../../../shared/types/vehicle.type";
 import { STATUS_CONFIG } from "../constants/status-config";
 import { vehicleService } from "../../../services/vehicle.service";
-import { catchError } from "../../../common/errors/catch-error";
+import { catchError } from "../../../shared/errors/catch-error";
 import Swal from "sweetalert2";
 
 const MySwal = withReactContent(Swal);

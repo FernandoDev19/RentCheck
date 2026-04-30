@@ -1,6 +1,6 @@
-import type { ListResponse } from "../common/interfaces/list-response.interface";
-import api from "../config/api";
-import type { Vehicle } from "../models/Vehicle.model";
+import type { ListResponse } from "../shared/types/list-response.type";
+import api from "../core/api/api";
+import type { Vehicle } from "../shared/types/vehicle.type";
 
 interface GetAllParams {
   page?: number;

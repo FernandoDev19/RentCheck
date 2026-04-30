@@ -1,4 +1,4 @@
-import api from "../config/api";
+import api from "../core/api/api";
 
 export interface CreateFeedbackScore {
   damageToCar: number;

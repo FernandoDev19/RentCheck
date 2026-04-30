@@ -1,5 +1,5 @@
-import type { Column } from "../../../common/components/datatable/types/column.type";
-import type { Renter } from "../../../models/renter.model";
+import type { Column } from "../../../shared/components/datatable/types/column.type";
+import type { Renter } from "../../../shared/types/renter.type";
 
 export const columns: Column<Renter>[] = [
     { key: "name", label: "Nombre" },

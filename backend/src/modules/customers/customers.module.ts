@@ -4,12 +4,12 @@ import { CustomersController } from './customers.controller';
 import { TypeOrmModule } from '@nestjs/typeorm';
 import { Customer } from './entities/customer.entity';
 import { RentalFeedback } from '../rental-feedbacks/entities/rental-feedback.entity';
-import { AuthModule } from '../auth/auth.module';
+import { CacheModule } from '../../core/cache/cache.module';
 
 @Module({
   controllers: [CustomersController],
   providers: [CustomersService],
-  imports: [TypeOrmModule.forFeature([Customer, RentalFeedback]), AuthModule],
+  imports: [TypeOrmModule.forFeature([Customer, RentalFeedback]), CacheModule],
   exports: [CustomersService],
 })
 export class CustomersModule {}

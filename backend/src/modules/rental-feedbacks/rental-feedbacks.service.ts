@@ -2,6 +2,7 @@ import {
   BadRequestException,
   ForbiddenException,
   Injectable,
+  Logger,
   NotFoundException,
 } from '@nestjs/common';
 import { CreateRentalFeedbackDto } from './dto/create-rental-feedback.dto';
@@ -13,10 +14,11 @@ import { UserActiveInterface } from '../auth/interfaces/active-user.interface';
 import { Rental } from '../rentals/entities/rental.entity';
 import { RenterStatus } from '../renters/enums/renter-status.enum';
 import { VehiclesService } from '../vehicles/vehicles.service';
-import { VehicleStatus } from '../vehicles/enums/vehicle-status.enum';
 
 @Injectable()
 export class RentalFeedbacksService {
+  private readonly logger: Logger = new Logger(RentalFeedbacksService.name);
+
   constructor(
     @InjectRepository(RentalFeedback)
     private readonly rentalFeedbackRepository: Repository<RentalFeedback>,
@@ -30,15 +32,27 @@ export class RentalFeedbacksService {
     createRentalFeedbackDto: CreateRentalFeedbackDto,
     user: UserActiveInterface,
   ) {
+    this.logger.log(
+      `Create: ${user.email} - Rental: ${createRentalFeedbackDto.rentalId}`,
+    );
+
     const rental = await this.rentalRepository.findOne({
       select: ['id', 'customerId', 'renter', 'vehicle'],
       where: { id: createRentalFeedbackDto.rentalId },
       relations: ['renter', 'vehicle'],
     });
 
-    if (!rental) throw new NotFoundException('La renta no existe');
+    if (!rental) {
+      this.logger.error(
+        `Create: ${createRentalFeedbackDto.rentalId} - Renta no existe`,
+      );
+      throw new NotFoundException('La renta no existe');
+    }
 
     if (rental.renter.status === RenterStatus.SUSPENDED) {
+      this.logger.error(
+        `Create: ${createRentalFeedbackDto.rentalId} - Rentadora suspendida`,
+      );
       throw new ForbiddenException('Rentadora suspendida');
     }
 
@@ -47,6 +61,9 @@ export class RentalFeedbacksService {
     });
 
     if (existingFeedback) {
+      this.logger.error(
+        `Create: ${createRentalFeedbackDto.rentalId} - Ya calificada`,
+      );
       throw new BadRequestException('Ya se ha calificado esta renta');
     }
 
@@ -68,6 +85,8 @@ export class RentalFeedbacksService {
     ) {
       await this.vehicleService.markAsStolen(rental.vehicle.id);
     }
+
+    this.logger.log(`Create: ${user.email} - Feedback guardado con éxito`);
 
     return savedFeedback;
   }

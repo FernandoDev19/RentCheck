@@ -1,6 +1,6 @@
-import DataTable from "../../common/components/datatable/DataTable";
-import PageHeader from "../../common/components/PageHeader";
-import ButtonActionDataTable from "../../common/components/ui/ButtonActionDataTable";
+import DataTable from "../../shared/components/datatable/DataTable";
+import PageHeader from "../../shared/components/PageHeader";
+import ButtonActionDataTable from "../../shared/components/ui/ButtonActionDataTable";
 import { useViewRental } from "../rentals/hooks/useViewRental";
 import { columns } from "./constants/pending-feedbacks.columns";
 import { useCreateFeedback } from "./hooks/useCreateFeedback";

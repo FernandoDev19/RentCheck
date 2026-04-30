@@ -1,10 +1,10 @@
 import { useCallback, useEffect, useState } from "react";
 import Swal from "sweetalert2";
 import withReactContent from "sweetalert2-react-content";
-import type { Rental } from "../../../models/rental.model";
-import type { ListResponse } from "../../../common/interfaces/list-response.interface";
+import type { Rental } from "../../../shared/types/rental.type";
+import type { ListResponse } from "../../../shared/types/list-response.type";
 import { rentalService } from "../../../services/rental.service";
-import { catchError } from "../../../common/errors/catch-error";
+import { catchError } from "../../../shared/errors/catch-error";
 const MySwal = withReactContent(Swal);
 
 export const usePendingFeedbacks = () => {

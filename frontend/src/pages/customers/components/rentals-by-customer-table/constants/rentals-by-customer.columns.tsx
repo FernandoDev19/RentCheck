@@ -1,9 +1,9 @@
-import type { Column } from "../../../../../common/components/datatable/types/column.type";
-import type { Branch } from "../../../../../models/branch.model";
-import type { Rental } from "../../../../../models/rental.model";
-import type { Renter } from "../../../../../models/renter.model";
-import type { Vehicle } from "../../../../../models/Vehicle.model";
+import type { Column } from "../../../../../shared/components/datatable/types/column.type";
+import type { Branch } from "../../../../../shared/types/branch.type";
+import type { Rental } from "../../../../../shared/types/rental.type";
+import type { Renter } from "../../../../../shared/types/renter.type";
 import { getUser } from "../../../../dashboard/helpers/user.helper";
+import type { Vehicle } from "../../../../../shared/types/vehicle.type";
 
 const user = getUser();
 

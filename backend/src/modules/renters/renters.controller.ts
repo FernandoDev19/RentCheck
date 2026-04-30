@@ -11,8 +11,8 @@ import {
 import { RentersService } from './renters.service';
 import { CreateRenterDto } from './dto/create-renter.dto';
 import { UpdateRenterDto } from './dto/update-renter.dto';
-import { Auth } from '../auth/decorators/auth.decorator';
-import { RolesEnum } from '../../core/enums/roles.enum';
+import { Auth } from '../../core/decorators/auth.decorator';
+import { RolesEnum } from '../../shared/enums/roles.enum';
 
 @Controller('renters')
 @Auth(RolesEnum.ADMIN)

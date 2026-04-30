@@ -1,6 +1,6 @@
-import Label from "../../common/components/ui/Label";
-import Input from "../../common/components/ui/Input";
-import ButtonCallUp from "../../common/components/ui/ButtonCallUp";
+import Label from "../../shared/components/ui/Label";
+import Input from "../../shared/components/ui/Input";
+import ButtonCallUp from "../../shared/components/ui/ButtonCallUp";
 import { useLogin } from "./hooks/useLogin";
 
 export default function Login() {
@@ -32,7 +32,6 @@ export default function Login() {
                 id="email"
                 name="email"
                 type="email"
-                required
                 value={email}
                 onChange={(e) => setEmail(e.target.value)}
                 className={errors?.email ? "bg-red-400/20 border border-red-600" : ""}
@@ -49,7 +48,6 @@ export default function Login() {
                 id="password"
                 name="password"
                 type="password"
-                required
                 value={password}
                 onChange={(e) => setPassword(e.target.value)}
                 className={errors?.password ? "bg-red-400/20 border border-red-600" : ""}

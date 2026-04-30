@@ -1,9 +1,9 @@
 import { useEffect, useState } from "react";
-import type { Rental } from "../../../../../models/rental.model";
+import type { Rental } from "../../../../../shared/types/rental.type";
 import { rentalService } from "../../../../../services/rental.service";
 import withReactContent from "sweetalert2-react-content";
 import Swal from "sweetalert2";
-import { catchError } from "../../../../../common/errors/catch-error";
+import { catchError } from "../../../../../shared/errors/catch-error";
 
 const MySwal = withReactContent(Swal);
 

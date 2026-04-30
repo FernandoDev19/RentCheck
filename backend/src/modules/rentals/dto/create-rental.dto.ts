@@ -42,18 +42,18 @@ export class CreateRentalDto {
   totalPrice: number;
 
   @IsString()
-  @Transform(({ value }) => value.trim())
+  @Transform(({ value }) => String(value).trim())
   @IsNotEmpty()
   startDate: string;
 
   @IsString()
-  @Transform(({ value }) => value.trim())
+  @Transform(({ value }) => String(value).trim())
   @IsNotEmpty()
   expectedReturnDate: string;
 
   @IsOptional()
   @IsString()
-  @Transform(({ value }) => value.trim())
+  @Transform(({ value }) => String(value).trim())
   @IsNotEmpty()
   actualReturnDate?: string;
 

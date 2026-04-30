@@ -1,6 +1,6 @@
-import type { ListResponse } from "../common/interfaces/list-response.interface";
-import api from "../config/api";
-import type { Employee } from "../models/employee.model";
+import type { ListResponse } from "../shared/types/list-response.type";
+import api from "../core/api/api";
+import type { Employee } from "../shared/types/employee.type";
 import type { CreateEmployeeInterface } from "../pages/employees/interfaces/create-employee.interface";
 import type { EditEmployeeInterface } from "../pages/employees/interfaces/edit-employee.interface";
 
@@ -36,7 +36,7 @@ export const employeeService = {
   },
   
   createEmployee: async (data: CreateEmployeeInterface) => {
-    const response = await api.post("/auth/register/employee", data);
+    const response = await api.post("/employees", data);
     return response.data;
   }
 };

@@ -1,6 +1,6 @@
-import type { ListResponse } from "../common/interfaces/list-response.interface";
-import api from "../config/api";
-import type { Branch } from "../models/branch.model";
+import type { ListResponse } from "../shared/types/list-response.type";
+import api from "../core/api/api";
+import type { Branch } from "../shared/types/branch.type";
 import type { EditBranchInterface } from "../pages/branches/interfaces/edit-branch.interface";
 
 export const branchService = {
@@ -80,7 +80,7 @@ export const branchService = {
   },
 
   createBranch: async (branch: Branch): Promise<Branch> => {
-    const response = await api.post("/auth/register/branch", branch);
+    const response = await api.post("/branches", branch);
     return response.data;
   },
 };

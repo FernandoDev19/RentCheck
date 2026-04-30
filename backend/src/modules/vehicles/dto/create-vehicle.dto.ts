@@ -1,4 +1,4 @@
-import { Transform, Type } from 'class-transformer';
+import { Transform } from 'class-transformer';
 import {
   IsArray,
   IsEnum,
@@ -10,7 +10,6 @@ import {
   MaxLength,
   Min,
   MinLength,
-  ValidateNested,
 } from 'class-validator';
 import { VehicleStatus } from '../enums/vehicle-status.enum';
 import { TypeTransmissionEnum } from '../enums/type-transmission.enum';
@@ -25,7 +24,7 @@ export class CreateVehicleDto {
   @IsNotEmpty()
   @MinLength(3)
   @MaxLength(20)
-  @Transform(({ value }) => value.toUpperCase())
+  @Transform(({ value }) => String(value).toUpperCase())
   plate: string;
 
   @IsString()

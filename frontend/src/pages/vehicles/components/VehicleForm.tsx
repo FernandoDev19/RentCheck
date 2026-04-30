@@ -1,13 +1,13 @@
 import { useState } from "react";
-import Input from "../../../common/components/ui/Input";
-import Label from "../../../common/components/ui/Label";
-import PaginatedSelect from "../../../common/components/ui/PaginatedSelect";
-import { ROLES, type RolesType } from "../../../common/types/roles.type";
-import type { Vehicle } from "../../../models/Vehicle.model";
+import Input from "../../../shared/components/ui/Input";
+import Label from "../../../shared/components/ui/Label";
+import PaginatedSelect from "../../../shared/components/ui/PaginatedSelect";
+import { ROLES, type RolesType } from "../../../shared/types/role.type";
+import type { Vehicle } from "../../../shared/types/vehicle.type";
 import { branchService } from "../../../services/branch.service";
 import type { VehicleErrors } from "../interfaces/vehicle-errors.interface";
-import Select from "../../../common/components/ui/Select";
-import { TYPE_TRANSMISSION } from "../../../common/types/type-transmission.type";
+import Select from "../../../shared/components/ui/Select";
+import { TYPE_TRANSMISSION } from "../../../shared/types/type-transmission.type";
 
 type Props = {
   errors?: VehicleErrors;

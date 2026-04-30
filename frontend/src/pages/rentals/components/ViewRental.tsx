@@ -1,7 +1,7 @@
-import ButtonActionDataTable from "../../../common/components/ui/ButtonActionDataTable";
-import type { Rental } from "../../../models/rental.model";
-import type { User } from "../../../models/user.model";
-import type { Vehicle } from "../../../models/Vehicle.model";
+import ButtonActionDataTable from "../../../shared/components/ui/ButtonActionDataTable";
+import type { Rental } from "../../../shared/types/rental.type";
+import type { User } from "../../../shared/types/user.type";
+import type { Vehicle } from "../../../shared/types/vehicle.type";
 import { useCustomer } from "../../customers/hooks/useCustomer";
 import {
   RENTAL_STATUS_COLORS,

@@ -1,10 +1,10 @@
-import type { Column } from "../../../common/components/datatable/types/column.type";
-import ButtonActionDataTable from "../../../common/components/ui/ButtonActionDataTable";
-import type { Branch } from "../../../models/branch.model";
-import type { Customer } from "../../../models/customer.model";
-import type { Employee } from "../../../models/employee.model";
-import type { Rental } from "../../../models/rental.model";
-import type { Vehicle } from "../../../models/Vehicle.model";
+import type { Column } from "../../../shared/components/datatable/types/column.type";
+import ButtonActionDataTable from "../../../shared/components/ui/ButtonActionDataTable";
+import type { Branch } from "../../../shared/types/branch.type";
+import type { Customer } from "../../../shared/types/customer.type";
+import type { Employee } from "../../../shared/types/employee.type";
+import type { Rental } from "../../../shared/types/rental.type";
+import type { Vehicle } from "../../../shared/types/vehicle.type";
 import { RENTAL_STATUS_COLORS, RENTAL_STATUS_LABELS } from "./useRentals";
 import { useRequestBiometry } from "./useRequestBiometry";
 
