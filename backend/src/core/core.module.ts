@@ -61,7 +61,7 @@ import { CacheModule } from './cache/cache.module';
           Vehicle,
           User,
         ],
-        synchronize: config.get('NODE_ENV', { infer: true }) === 'development',
+        synchronize: true,
       }),
     }),
     MvpDataModule,
