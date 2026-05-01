@@ -2,6 +2,7 @@ import { useState, useEffect } from "react";
 import { useNavigate } from "react-router";
 import { Home, Menu } from "lucide-react";
 import Sidebar from "./components/Sidebar";
+import NotificationBell from "./components/NotificationBell";
 
 export default function Header() {
   const [isScrolled, setIsScrolled] = useState(false);
@@ -51,7 +52,8 @@ export default function Header() {
             </div>
 
             {/* Desktop Actions */}
-            <div className="flex items-center space-x-3">
+            <div className="flex items-center space-x-1">
+              <NotificationBell />
               <button
                 onClick={() => setIsMobileMenuOpen(!isMobileMenuOpen)}
                 className="p-2 rounded-lg hover:bg-primary-foreground/10 transition-colors"

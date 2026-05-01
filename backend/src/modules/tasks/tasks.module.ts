@@ -6,6 +6,8 @@ import { Vehicle } from '../vehicles/entities/vehicle.entity';
 import { Renter } from '../renters/entities/renter.entity';
 import { BiometryRequest } from '../biometry-requests/entities/biometry-request.entity';
 import { Notification } from '../notifications/entities/notification.entity';
+import { RentalFeedback } from '../rental-feedbacks/entities/rental-feedback.entity';
+import { Plan } from '../plans/entities/plan.entity';
 
 @Module({
   providers: [TasksService],
@@ -16,6 +18,8 @@ import { Notification } from '../notifications/entities/notification.entity';
       BiometryRequest,
       Renter,
       Notification,
+      RentalFeedback,
+      Plan,
     ]),
   ],
 })
