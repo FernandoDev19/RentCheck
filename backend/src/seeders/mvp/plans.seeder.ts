@@ -6,8 +6,8 @@ export async function PlansSeeder(PlanRepository: Repository<Plan>) {
   const plans: CreatePlanDto[] = [
     {
       name: 'Free',
-      max_users: 1,
-      max_branches: 1,
+      max_users: 5,
+      max_branches: 2,
       advanced_reports_enabled: false,
       email_alerts_enabled: false,
       priority_support: false,

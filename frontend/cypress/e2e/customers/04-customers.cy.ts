@@ -93,7 +93,7 @@ describe("Customers", () => {
         });
       });
 
-      it("should open the customer detail modal when clicking 'Ver info'", () => {
+      it("should open the customer detail modal and show reputation summary", () => {
         cy.intercept("GET", "**/api/v1/customers*").as("getCustomers");
         cy.intercept("GET", "**/api/v1/customers/*").as("getCustomerDetail");
 
@@ -115,18 +115,54 @@ describe("Customers", () => {
 
           cy.wait("@getCustomerDetail");
 
-          // Modal should open with customer info
+          // Modal should open
           cy.get('div[class*="swal2-container"]').should("be.visible");
 
-          // Customer detail fields
-          cy.get('input[id="swal-generalScore"]').should("exist");
-          cy.get('input[id="swal-status"]').should("exist");
-          cy.get('input[id="swal-biometries"]').should("exist");
-          cy.get('input[id="swal-rentals"]').should("exist");
+          // Verify Reputation section
+          cy.contains("Reputación").should("be.visible");
+          cy.contains("Score general").should("be.visible");
+          cy.contains("Estado").should("be.visible");
 
-          // Verify details and close
+          // Verify Biometry status
+          cy.contains("Última biometría").should("be.visible");
+
+          // Verify Rental History summary
+          cy.contains("Historial de rentas").should("be.visible");
+          
+          // Check for the "Ver historial de rentas" button
+          cy.get('button[id="btn-ver-rentas"]').should("exist");
+
+          // Close
           cy.get(".swal2-close").click();
         });
+      });
+
+      it("should show 'Sin historial calificado' if customer has no feedback", () => {
+        // Mock a customer with no rentals/feedback
+        cy.intercept("GET", "**/api/v1/customers/*", {
+            statusCode: 200,
+            body: {
+                id: "no-history-id",
+                name: "Nuevo",
+                lastName: "Cliente",
+                identityNumber: "999888",
+                status: "normal",
+                generalScore: 5,
+                rentals: [],
+                biometryRequests: []
+            }
+        }).as("getEmptyCustomer");
+
+        cy.visit(`${basePath}/customers`);
+        
+        // We trigger the modal manually or find a way to click it. 
+        // Since we mocked the detail, we just need to click ANY "Ver info" 
+        // but we'll intercept that specific ID.
+        cy.contains("Ver info").first().click({ force: true });
+        
+        cy.wait("@getEmptyCustomer");
+        cy.contains("Sin historial calificado").should("be.visible");
+        cy.get(".swal2-close").click();
       });
 
       it("should display customer status badge in the table", () => {

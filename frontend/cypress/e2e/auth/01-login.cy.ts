@@ -21,15 +21,23 @@ type UsersFixture = {
 
 describe("Login", () => {
   let users: UsersFixture;
-  const urlBase = `${Cypress.env("apiUrl")}/auth/login`;
+  let urlBase: string;
 
   before(() => {
+    cy.env<{ apiUrl: string }>(["apiUrl"]).then((v) => {
+      urlBase = `${v.apiUrl}/auth/login`;
+    });
     cy.fixture("users").then((data) => {
       users = data;
     });
   });
 
   beforeEach(() => {
+    cy.clearAllLocalStorage();
+    cy.visit("/login");
+  });
+
+  after(() => {
     cy.clearAllLocalStorage();
     cy.visit("/login");
   });
@@ -67,11 +75,10 @@ describe("Login", () => {
   it("Should render error when invalid password", () => {
     cy.intercept("POST", urlBase).as("login2");
 
-    const { ADMIN_EMAIL: email } = Cypress.env() as {
-      ADMIN_EMAIL: string;
-      ADMIN_PASSWORD: string;
-    };
-    cy.get('input[type="email"]').type(email);
+    cy.env<{ ADMIN_EMAIL: string }>(["ADMIN_EMAIL"]).then((v) => {
+      cy.get('input[type="email"]').type(v.ADMIN_EMAIL);
+    });
+
     cy.get('input[type="password"]').type(users.invalidUser.password);
     cy.get('button[type="submit"]').click();
 
@@ -84,13 +91,14 @@ describe("Login", () => {
   });
 
   it("Should allow access to Dashboard when admin valid credentials", () => {
-    const { ADMIN_EMAIL: email, ADMIN_PASSWORD: password } = Cypress.env() as {
-      ADMIN_EMAIL: string;
-      ADMIN_PASSWORD: string;
-    };
+    cy.env<{ ADMIN_EMAIL: string; ADMIN_PASSWORD: string }>([
+      "ADMIN_EMAIL",
+      "ADMIN_PASSWORD",
+    ]).then((v) => {
+      cy.get('input[type="email"]').type(v.ADMIN_EMAIL);
+      cy.get('input[type="password"]').type(v.ADMIN_PASSWORD);
+    });
 
-    cy.get('input[type="email"]').type(email);
-    cy.get('input[type="password"]').type(password);
     cy.get('button[type="submit"]').click();
 
     cy.contains("¡Bienvenido!").should("exist");

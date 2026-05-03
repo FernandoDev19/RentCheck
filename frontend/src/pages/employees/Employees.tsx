@@ -62,12 +62,14 @@ export default function Employees() {
                   {userRoleManagerOrOwner && (
                     <>
                       <ButtonActionDataTable
+                        id={`edit-employee-${r.id}`}
                         onClick={() => handleEdit(loadEmployees, r)}
                         color="green"
                       >
                         <Edit size={16} />
                       </ButtonActionDataTable>
                       <ButtonActionDataTable
+                        id={`delete-employee-${r.id}`}
                         onClick={() => handleDelete(r.id)}
                         color="red"
                       >

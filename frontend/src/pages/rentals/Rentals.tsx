@@ -10,10 +10,20 @@ import { useState } from "react";
 import { Info } from "lucide-react";
 import type { Rental } from "../../shared/types/rental.type";
 
-
 export default function Rentals() {
-
-  const { rentals, limit, totalItems, totalPages, page, setPage, handleSearchChange, handleSortChange, handleReturn, handleDelete, loadRentals } = useRentals();
+  const {
+    rentals,
+    limit,
+    totalItems,
+    totalPages,
+    page,
+    setPage,
+    handleSearchChange,
+    handleSortChange,
+    handleReturn,
+    handleDelete,
+    loadRentals,
+  } = useRentals();
   const { columns } = useRentalColumns(loadRentals);
   const { handleCreateClick } = useCreateRental();
   const { handleViewDetails } = useViewRental();
@@ -49,13 +59,13 @@ export default function Rentals() {
         actions={(row) => {
           const isInDebt =
             row.rentalStatus === "active" || row.rentalStatus === "late";
-          const canAssignVehicle = 
-            (row.rentalStatus === "active" || row.rentalStatus === "pending");
+          const canAssignVehicle =
+            row.rentalStatus === "active" || row.rentalStatus === "pending";
 
           return (
             <div className="flex items-center gap-2">
-              {/* El botón nuevo: Siempre visible para todos */}
               <ButtonActionDataTable
+                id={`view-rental-${row.id}`}
                 onClick={() => handleViewDetails(row)}
                 color="indigo"
               >
@@ -65,6 +75,7 @@ export default function Rentals() {
               {/* Botón de Asignar Vehículo */}
               {canAssignVehicle && (
                 <ButtonActionDataTable
+                  id={`assign-vehicle-${row.id}`}
                   onClick={() => {
                     setSelectedRental(row);
                     setShowAssignModal(true);
@@ -78,6 +89,7 @@ export default function Rentals() {
               {/* Botón de Devolución */}
               {isInDebt && (
                 <ButtonActionDataTable
+                  id={`return-rental-${row.id}`}
                   onClick={() => handleReturn(row)}
                   color="green"
                 >
@@ -87,6 +99,7 @@ export default function Rentals() {
 
               {/* Botón de Cancelar */}
               <ButtonActionDataTable
+                id={`cancel-rental-${row.id}`}
                 onClick={() => handleDelete(row)}
                 disabled={!isInDebt && row.rentalStatus !== "pending"}
                 color="red"
@@ -98,7 +111,7 @@ export default function Rentals() {
           );
         }}
       />
-      
+
       {/* Modal para asignar vehículo */}
       {showAssignModal && selectedRental && (
         <AssignVehicleModal
