@@ -64,6 +64,10 @@ export class BiometryRequestsService {
   ): Promise<BiometryRequest> {
     this.logger.log(`RequestBiometry: ${user.email} - ${customerId}`);
 
+    if (!customerId) {
+      throw new ConflictException('El ID del cliente es requerido');
+    }
+
     const existing = await this.biometryRequestRepository.findOne({
       where: {
         customerId,

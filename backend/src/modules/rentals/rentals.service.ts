@@ -232,6 +232,9 @@ export class RentalsService {
         'cancelledByUser.name',
         'biometryRequests.id',
         'biometryRequests.status',
+        'biometryRequests.result',
+        'biometryRequests.token',
+        'biometryRequests.createdAt',
         'rental.totalPrice',
       ]);
 
@@ -406,6 +409,11 @@ export class RentalsService {
         'rental.startDate',
         'rental.expectedReturnDate',
         'rental.rentalStatus',
+        'biometryRequests.id',
+        'biometryRequests.status',
+        'biometryRequests.result',
+        'biometryRequests.token',
+        'biometryRequests.createdAt',
       ])
       .where('feedback.id IS NULL')
       .andWhere('rental.rentalStatus = :status', {

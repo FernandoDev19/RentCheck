@@ -237,14 +237,21 @@ export class UsersService {
         return employee;
       }
       case RolesEnum.ADMIN: {
-        const admin = await this.userRepository.findOne({
-          where: { email },
-          select: ['id', 'name', 'email', 'role'],
-        });
+        const admin = await this.userRepository
+          .createQueryBuilder('a')
+          .innerJoinAndSelect('a.role', 'role')
+          .select(['a.id', 'a.name', 'a.email', 'role.name'])
+          .where('a.email = :email', { email })
+          .getOne();
+
+        if (!admin) return null;
 
         this.logger.log(`Admin found: ${JSON.stringify(admin)}`);
 
-        return admin;
+        return {
+          ...admin,
+          role: admin.role.name,
+        };
       }
       default: {
         const user = await this.userRepository.findOne({

@@ -11,36 +11,34 @@ export interface AuthResponseInterface {
 }
 
 export const authService = {
-  async login(credentials: LoginDataInterface): Promise<AuthResponseInterface> {
+  async login(credentials: LoginDataInterface): Promise<void> {
     const response = await api.post("/auth/login", credentials);
-    const { accessToken } = response.data;
-
-    localStorage.removeItem("user");
-    localStorage.removeItem("token");
-    localStorage.setItem("token", accessToken);
-
-    return { accessToken };
+    
+    // El backend ahora setea la cookie automáticamente.
+    // Solo actualizamos el user si viniera en la respuesta, o limpiamos la cache anterior
+    if (response.data.ok) {
+      localStorage.setItem("user", JSON.stringify(response.data.user));
+    }
   },
 
-  logout() {
-    localStorage.removeItem("token");
-    localStorage.removeItem("user");
+  async logout(): Promise<boolean> {
+    const response = await api.post("/auth/logout");
+    if (response.data.ok) {
+      localStorage.removeItem("user");
+    }
+    return response.data.ok;
   },
 
   async isAuthenticated(): Promise<boolean> {
-    const token = localStorage.getItem("token");
-    if (!token) return false;
-
     try {
       const response = await api.post("/auth/verify");
 
-      if(localStorage.getItem("user") === null) {
-        localStorage.setItem("user", JSON.stringify(response.data.user))
+      if (response.data && response.data.user) {
+        localStorage.setItem("user", JSON.stringify(response.data.user));
       }
 
       return true;
-    } catch (error) {
-      localStorage.removeItem("token");
+    } catch {
       localStorage.removeItem("user");
       return false;
     }

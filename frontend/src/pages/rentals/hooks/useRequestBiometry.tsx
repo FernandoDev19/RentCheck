@@ -120,7 +120,7 @@ export const useRequestBiometry = () => {
     if (!isConfirmed) return;
 
     try {
-      const biometry = await biometryRequestService.request(row.customerId);
+      const biometry = await biometryRequestService.request(row.customer.id);
 
       const verifyLink = `${window.location.origin}/verify/${biometry.token}`;
 

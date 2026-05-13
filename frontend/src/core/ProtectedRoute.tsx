@@ -32,12 +32,11 @@ export default function ProtectedRoute({ allowedRoles, children }: Props) {
     }
   })();
 
-  if (
-    userRole === "" ||
-    !allowedRoles.includes(
-      userRole
-    )
-  ) {
+  if (userRole === "") {
+    return <Navigate to="/login" replace />;
+  }
+
+  if (!allowedRoles.includes(userRole)) {
     return <Navigate to="/unauthorized" replace />;
   }
 

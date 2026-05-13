@@ -9,9 +9,9 @@ import { RolesEnum } from '../../shared/enums/roles.enum';
 export class NotificationsController {
   constructor(private readonly notificationsService: NotificationsService) {}
 
-  @Get()
+  @Get('unread')
   @Auth(...Object.values(RolesEnum))
-  findAll(@ActiveUser() user: UserActiveInterface) {
+  findAllUnread(@ActiveUser() user: UserActiveInterface) {
     return this.notificationsService.findAllUnread(user);
   }
 

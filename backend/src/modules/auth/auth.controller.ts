@@ -1,4 +1,5 @@
-import { Body, Controller, Get, Post, UseGuards } from '@nestjs/common';
+import { Response } from 'express';
+import { Body, Controller, Get, Post, Res, UseGuards } from '@nestjs/common';
 import { AuthService } from './auth.service';
 import { LoginDto } from './dto/login.dto';
 import { AuthGuard } from '../../core/guards/auth.guard';
@@ -17,8 +18,32 @@ export class AuthController {
   ) {}
 
   @Post('login')
-  login(@Body() login: LoginDto) {
-    return this.authService.login(login);
+  async login(
+    @Body() login: LoginDto,
+    @Res({ passthrough: true }) res: Response,
+  ) {
+    const authResponse = await this.authService.login(login);
+    const { accessToken } = authResponse;
+
+    res.cookie('access_token', accessToken, {
+      httpOnly: true,
+      secure: process.env.NODE_ENV === 'production',
+      sameSite: process.env.NODE_ENV === 'production' ? 'strict' : 'lax',
+      maxAge: 1000 * 60 * 60 * 24,
+    });
+
+    return { ok: true };
+  }
+
+  @Post('logout')
+  @UseGuards(AuthGuard)
+  logout(@Res({ passthrough: true }) res: Response) {
+    res.clearCookie('access_token', {
+      httpOnly: true,
+      secure: process.env.NODE_ENV === 'production',
+      sameSite: process.env.NODE_ENV === 'production' ? 'strict' : 'lax',
+    });
+    return { ok: true };
   }
 
   @Post('register/admin')

@@ -59,6 +59,8 @@ export default function NotificationBell() {
   const dropdownRef = useRef<HTMLDivElement>(null);
 
   const fetchNotifications = useCallback(async () => {
+    if (!localStorage.getItem("user")) return; 
+    
     try {
       const data = await notificationService.getUnread();
       setNotifications(data);

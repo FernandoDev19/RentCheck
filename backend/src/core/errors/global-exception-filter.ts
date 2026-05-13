@@ -18,6 +18,8 @@ export class GlobalExceptionFilter implements ExceptionFilter {
         .json(exception.getResponse());
     }
 
+    console.error('Unhandled exception:', exception);
+
     return response.status(500).json({
       message: 'Internal server error',
     });

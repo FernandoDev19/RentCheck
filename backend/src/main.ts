@@ -3,6 +3,7 @@ import { AppModule } from './app.module';
 import * as bodyParser from 'body-parser';
 import { ValidationPipe } from '@nestjs/common';
 import { GlobalExceptionFilter } from './core/errors/global-exception-filter';
+import cookieParser from 'cookie-parser';
 
 async function bootstrap() {
   const app = await NestFactory.create(AppModule);
@@ -16,6 +17,8 @@ async function bootstrap() {
   );
 
   app.useGlobalFilters(new GlobalExceptionFilter());
+
+  app.use(cookieParser());
 
   app.setGlobalPrefix('api/v1', {
     exclude: ['docs', 'docs-json', 'docs-yaml'],
