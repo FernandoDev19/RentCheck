@@ -106,4 +106,65 @@ describe("Login", () => {
 
     cy.url().should("include", "/adm/dashboard");
   });
+
+  it("Should allow access to Dashboard when Owner valid credentials", () => {
+    cy.env<{
+      RENTER_CREDENTIALS: {
+        email: string;
+        password: string;
+        redirectTo: string;
+      };
+    }>(["RENTER_CREDENTIALS"]).then((v) => {
+      cy.get('input[type="email"]').type(v.RENTER_CREDENTIALS.email);
+      cy.get('input[type="password"]').type(v.RENTER_CREDENTIALS.password);
+    });
+
+    cy.get('button[type="submit"]').click();
+
+    cy.contains("¡Bienvenido!").should("exist");
+    cy.contains("Inicio de sesión exitoso").should("exist");
+
+    cy.url().should("include", "/owner/dashboard");
+  });
+
+  it("Should allow access to Dashboard when Manager valid credentials", () => {
+    cy.env<{
+      MANAGER_CREDENTIALS: {
+        email: string;
+        password: string;
+        redirectTo: string;
+      };
+    }>(["MANAGER_CREDENTIALS"]).then((v) => {
+      cy.get('input[type="email"]').type(v.MANAGER_CREDENTIALS.email);
+      cy.get('input[type="password"]').type(v.MANAGER_CREDENTIALS.password);
+    });
+
+    cy.get('button[type="submit"]').click();
+
+    cy.contains("¡Bienvenido!").should("exist");
+    cy.contains("Inicio de sesión exitoso").should("exist");
+
+    cy.url().should("include", "/manager/dashboard");
+  });
+
+    it("Should allow access to Dashboard when Employee valid credentials", () => {
+    cy.env<{
+      EMPLOYEE_CREDENTIALS: {
+        email: string;
+        password: string;
+        redirectTo: string;
+      };
+    }>(["EMPLOYEE_CREDENTIALS"]).then((v) => {
+      cy.get('input[type="email"]').type(v.EMPLOYEE_CREDENTIALS.email);
+      cy.get('input[type="password"]').type(v.EMPLOYEE_CREDENTIALS.password);
+    });
+
+    cy.get('button[type="submit"]').click();
+
+    cy.contains("¡Bienvenido!").should("exist");
+    cy.contains("Inicio de sesión exitoso").should("exist");
+
+    cy.url().should("include", "/employee/dashboard");
+  });
+
 });
