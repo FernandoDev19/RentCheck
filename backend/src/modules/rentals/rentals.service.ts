@@ -134,18 +134,19 @@ export class RentalsService {
         ? RentalStatusEnum.ACTIVE
         : RentalStatusEnum.PENDING;
 
-    const vehicle = await this.vehicleService.findOne(dto.vehicleId, user);
+    if (dto.vehicleId) {
+      const vehicle = await this.vehicleService.findOne(dto.vehicleId, user);
+      if (vehicle) {
+        await this.vehicleService.assertVehicleReservableInRange(
+          vehicle.id,
+          startDate,
+          expectedReturnDate,
+          user,
+        );
 
-    if (vehicle) {
-      await this.vehicleService.assertVehicleReservableInRange(
-        vehicle.id,
-        startDate,
-        expectedReturnDate,
-        user,
-      );
-
-      if (initialStatus === RentalStatusEnum.ACTIVE) {
-        await this.vehicleService.rentVehicle(vehicle.id, user);
+        if (initialStatus === RentalStatusEnum.ACTIVE) {
+          await this.vehicleService.rentVehicle(vehicle.id, user);
+        }
       }
     }
 

@@ -21,15 +21,23 @@ type UsersFixture = {
 
 describe("Login", () => {
   let users: UsersFixture;
-  const urlBase = `${Cypress.env("apiUrl")}/auth/login`;
+  let urlBase: string;
 
   before(() => {
+    cy.env<{ apiUrl: string }>(["apiUrl"]).then((v) => {
+      urlBase = `${v.apiUrl}/auth/login`;
+    });
     cy.fixture("users").then((data) => {
       users = data;
     });
   });
 
   beforeEach(() => {
+    cy.clearAllLocalStorage();
+    cy.visit("/login");
+  });
+
+  after(() => {
     cy.clearAllLocalStorage();
     cy.visit("/login");
   });
@@ -67,11 +75,10 @@ describe("Login", () => {
   it("Should render error when invalid password", () => {
     cy.intercept("POST", urlBase).as("login2");
 
-    const { ADMIN_EMAIL: email } = Cypress.env() as {
-      ADMIN_EMAIL: string;
-      ADMIN_PASSWORD: string;
-    };
-    cy.get('input[type="email"]').type(email);
+    cy.env<{ ADMIN_EMAIL: string }>(["ADMIN_EMAIL"]).then((v) => {
+      cy.get('input[type="email"]').type(v.ADMIN_EMAIL);
+    });
+
     cy.get('input[type="password"]').type(users.invalidUser.password);
     cy.get('button[type="submit"]').click();
 
@@ -84,13 +91,14 @@ describe("Login", () => {
   });
 
   it("Should allow access to Dashboard when admin valid credentials", () => {
-    const { ADMIN_EMAIL: email, ADMIN_PASSWORD: password } = Cypress.env() as {
-      ADMIN_EMAIL: string;
-      ADMIN_PASSWORD: string;
-    };
+    cy.env<{ ADMIN_EMAIL: string; ADMIN_PASSWORD: string }>([
+      "ADMIN_EMAIL",
+      "ADMIN_PASSWORD",
+    ]).then((v) => {
+      cy.get('input[type="email"]').type(v.ADMIN_EMAIL);
+      cy.get('input[type="password"]').type(v.ADMIN_PASSWORD);
+    });
 
-    cy.get('input[type="email"]').type(email);
-    cy.get('input[type="password"]').type(password);
     cy.get('button[type="submit"]').click();
 
     cy.contains("¡Bienvenido!").should("exist");
@@ -98,4 +106,65 @@ describe("Login", () => {
 
     cy.url().should("include", "/adm/dashboard");
   });
+
+  it("Should allow access to Dashboard when Owner valid credentials", () => {
+    cy.env<{
+      RENTER_CREDENTIALS: {
+        email: string;
+        password: string;
+        redirectTo: string;
+      };
+    }>(["RENTER_CREDENTIALS"]).then((v) => {
+      cy.get('input[type="email"]').type(v.RENTER_CREDENTIALS.email);
+      cy.get('input[type="password"]').type(v.RENTER_CREDENTIALS.password);
+    });
+
+    cy.get('button[type="submit"]').click();
+
+    cy.contains("¡Bienvenido!").should("exist");
+    cy.contains("Inicio de sesión exitoso").should("exist");
+
+    cy.url().should("include", "/owner/dashboard");
+  });
+
+  it("Should allow access to Dashboard when Manager valid credentials", () => {
+    cy.env<{
+      MANAGER_CREDENTIALS: {
+        email: string;
+        password: string;
+        redirectTo: string;
+      };
+    }>(["MANAGER_CREDENTIALS"]).then((v) => {
+      cy.get('input[type="email"]').type(v.MANAGER_CREDENTIALS.email);
+      cy.get('input[type="password"]').type(v.MANAGER_CREDENTIALS.password);
+    });
+
+    cy.get('button[type="submit"]').click();
+
+    cy.contains("¡Bienvenido!").should("exist");
+    cy.contains("Inicio de sesión exitoso").should("exist");
+
+    cy.url().should("include", "/manager/dashboard");
+  });
+
+    it("Should allow access to Dashboard when Employee valid credentials", () => {
+    cy.env<{
+      EMPLOYEE_CREDENTIALS: {
+        email: string;
+        password: string;
+        redirectTo: string;
+      };
+    }>(["EMPLOYEE_CREDENTIALS"]).then((v) => {
+      cy.get('input[type="email"]').type(v.EMPLOYEE_CREDENTIALS.email);
+      cy.get('input[type="password"]').type(v.EMPLOYEE_CREDENTIALS.password);
+    });
+
+    cy.get('button[type="submit"]').click();
+
+    cy.contains("¡Bienvenido!").should("exist");
+    cy.contains("Inicio de sesión exitoso").should("exist");
+
+    cy.url().should("include", "/employee/dashboard");
+  });
+
 });

@@ -32,9 +32,9 @@ temp/
 .env
 
 # Cypress
-cypress/screenshots/
-cypress/videos/
-cypress.env.json
+frontend/cypress/screenshots/
+frontend/cypress/videos/
+frontend/cypress.env.json
 
 RentCheck_Enero_30_2026.pptx.docx
 /temp_docx

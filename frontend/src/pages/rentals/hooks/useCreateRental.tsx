@@ -213,7 +213,8 @@ export const useCreateRental = () => {
         ? (document.getElementById('swal-branch') as HTMLSelectElement)?.value
         : undefined;
         const vehicleId = (document.getElementById("swal-vehicle") as HTMLInputElement)?.value || prefill?.vehicleId || undefined;
-        const totalPrice = Number((document.getElementById('swal-totalPrice') as HTMLInputElement)?.value);
+        const totalPriceValue = (document.getElementById('swal-totalPrice') as HTMLInputElement)?.value;
+        const totalPrice = totalPriceValue ? Number(totalPriceValue) : 0;
 
         let result;
         
