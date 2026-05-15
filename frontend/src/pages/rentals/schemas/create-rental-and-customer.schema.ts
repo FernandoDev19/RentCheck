@@ -23,5 +23,5 @@ export const createRentalAndCustomerSchema = z.object({
     ? z.string().min(36, "La sede es obligatoria")
     : z.string().optional(),
   vehicleId: z.optional(z.string().min(36).max(36)),
-  totalPrice: z.number().max(999999999)
+  totalPrice: z.number().optional().default(0)
 });

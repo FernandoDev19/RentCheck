@@ -30,7 +30,7 @@ export async function FakeRentersSeeder(
         nit: Math.random().toString(36).substring(2, 9),
         phone: Math.random().toPrecision(15).substring(2, 12),
         legalRepresentative: 'Representante Legal ' + i,
-        planId: Number((Math.random() * 2 + 1).toFixed()),
+        planId: 3,
         balance: Number(Math.random().toPrecision(15).substring(2, 7)),
         lowBalanceThreshold: Number(
           Math.random().toPrecision(15).substring(2, 5),

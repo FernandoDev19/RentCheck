@@ -14,7 +14,7 @@ export class RegisterEmployeeDto {
   @IsString()
   @Transform(({ value }) => String(value).trim())
   @IsNotEmpty()
-  @MinLength(5)
+  @MinLength(4)
   @MaxLength(100)
   name: string;
 

@@ -91,6 +91,14 @@ export default function CreateRentalForm({
 
   const handleVehicleIdChange = useCallback(
     async (vehicleId: string) => {
+      if (!vehicleId) {
+        setTotalDays(0);
+        setVehiclePrice(0);
+        setRentalTotalPrice(0);
+        setSelectedVehicleId("");
+        return;
+      }
+
       const calculateDays = () => {
         if (!startDate || !expectedReturnDate) return 0;
 
@@ -104,15 +112,23 @@ export default function CreateRentalForm({
         return days <= 0 ? 1 : days;
       };
 
-      const vehicle = await vehicleService.getOne(vehicleId);
+      try {
+        const vehicle = await vehicleService.getOne(vehicleId);
 
-      const price = vehicle.rentalPriceByDay;
-      const days = calculateDays();
+        const price = vehicle.rentalPriceByDay;
+        const days = calculateDays();
 
-      setTotalDays(days);
-      setSelectedVehicleId(vehicleId);
-      setVehiclePrice(price);
-      setRentalTotalPrice(price * days);
+        setTotalDays(days);
+        setSelectedVehicleId(vehicleId);
+        setVehiclePrice(price);
+        setRentalTotalPrice(price * days);
+      } catch (error) {
+        console.error("Error fetching vehicle details:", error);
+        setTotalDays(0);
+        setVehiclePrice(0);
+        setRentalTotalPrice(0);
+        setSelectedVehicleId("");
+      }
     },
     [startDate, expectedReturnDate],
   );
