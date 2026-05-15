@@ -24,14 +24,11 @@ describe("Notifications", () => {
   // ─────────────────────────────────────────────────────────────────────────
   describe("Owner (Renter)", () => {
     beforeEach(() => {
-      cy.clearAllCookies();
-      cy.clearAllLocalStorage();
-      cy.clearAllSessionStorage();
-
       cy.login({
         email: rc.email,
         password: rc.password,
         redirectTo: rc.redirectTo,
+        skipRedirect: true, // Evitamos el visit automático para controlar cuándo ocurre la carga
       });
     });
 
@@ -41,18 +38,23 @@ describe("Notifications", () => {
     });
 
     it("should open the notifications dropdown when clicking the bell", () => {
-      cy.intercept("GET", "**/api/v1/notifications*").as("getNotifications");
+      // Interceptamos antes del visit
+      cy.intercept("GET", "**/api/v1/notifications/unread").as("getNotifications");
 
       cy.visit("/owner/dashboard");
+      
+      // Esperamos a que carguen las notificaciones (aunque sean vacías)
+      cy.wait("@getNotifications");
 
       cy.get('button[id="notification-bell-btn"]').click();
 
-      cy.wait(500);
+      // El dropdown debe ser visible. Usamos un selector más específico si es posible, 
+      // o verificamos que el contenedor del dropdown exista.
+      cy.get('button[id="notification-bell-btn"]').parent().within(() => {
+        cy.get("ul").should("be.visible");
+      });
 
-      // Dropdown should be visible
-      cy.get('ul').should("be.visible");
-
-      // Either shows notifications or empty state
+      // Verificamos que tenga contenido o estado vacío
       cy.get("body").then(($body) => {
         const text = $body.text();
         const hasEmpty = text.includes("Sin notificaciones");
@@ -63,7 +65,7 @@ describe("Notifications", () => {
     });
 
     it("should show empty state when no notifications exist", () => {
-      cy.intercept("GET", "**/api/v1/notifications*", {
+      cy.intercept("GET", "**/api/v1/notifications/unread", {
         statusCode: 200,
         body: [],
       }).as("emptyNotifications");
@@ -72,106 +74,99 @@ describe("Notifications", () => {
 
       cy.get('button[id="notification-bell-btn"]').click();
       cy.wait("@emptyNotifications");
-      cy.wait(300);
-
+      
       cy.contains("Sin notificaciones pendientes").should("be.visible");
     });
 
     it("should show notification items when they exist", () => {
-      cy.intercept("GET", "**/api/v1/notifications*", {
+      const mockNotifs = [
+        {
+          id: "notif-1",
+          renterId: "renter-1",
+          type: "low_balance",
+          payload: {
+            message: "Saldo bajo: $10.000",
+          },
+          read: false,
+          createdAt: new Date().toISOString(),
+        },
+        {
+          id: "notif-2",
+          renterId: "renter-1",
+          type: "late_rental",
+          payload: {
+            message: "Una renta venció.",
+          },
+          read: false,
+          createdAt: new Date().toISOString(),
+        },
+      ];
+
+      cy.intercept("GET", "**/api/v1/notifications/unread", {
         statusCode: 200,
-        body: [
-          {
-            id: "notif-1",
-            renterId: "renter-1",
-            branchId: null,
-            employeeId: null,
-            type: "low_balance",
-            payload: {
-              message: "Saldo bajo: $10.000 (umbral configurado: $50.000).",
-              balance: 10000,
-              threshold: 50000,
-            },
-            read: false,
-            createdAt: new Date().toISOString(),
-          },
-          {
-            id: "notif-2",
-            renterId: "renter-1",
-            branchId: null,
-            employeeId: null,
-            type: "late_rental",
-            payload: {
-              message: "Una renta venció sin ser devuelta.",
-              rentalId: "rental-1",
-            },
-            read: false,
-            createdAt: new Date().toISOString(),
-          },
-        ],
+        body: mockNotifs,
       }).as("mockNotifications");
 
       cy.visit("/owner/dashboard");
-
-      cy.get('button[id="notification-bell-btn"]').click();
+      
+      // Esperamos a que el componente cargue los datos mockeados
       cy.wait("@mockNotifications");
-      cy.wait(300);
 
-      // Badge should show count
+      // El badge debe mostrar el conteo
       cy.get('button[id="notification-bell-btn"]').within(() => {
         cy.get("span").contains("2").should("be.visible");
       });
 
-      // Notification content visible
+      cy.get('button[id="notification-bell-btn"]').click();
+
+      // El contenido de la notificación debe ser visible
       cy.contains("Saldo bajo").should("be.visible");
+      cy.contains("Una renta venció").should("be.visible");
     });
 
     it("should mark a single notification as read when clicking the X", () => {
-      cy.intercept("GET", "**/api/v1/notifications*", {
+      const mockNotif = {
+        id: "notif-dismiss",
+        renterId: "renter-1",
+        type: "feedback_pending",
+        payload: { message: "Feedback pendiente de prueba" },
+        read: false,
+        createdAt: new Date().toISOString(),
+      };
+
+      cy.intercept("GET", "**/api/v1/notifications/unread", {
         statusCode: 200,
-        body: [
-          {
-            id: "notif-dismiss",
-            renterId: "renter-1",
-            branchId: null,
-            employeeId: null,
-            type: "feedback_pending",
-            payload: { message: "La renta fue devuelta y no tiene feedback." },
-            read: false,
-            createdAt: new Date().toISOString(),
-          },
-        ],
+        body: [mockNotif],
       }).as("mockSingleNotif");
 
       cy.intercept("PATCH", "**/api/v1/notifications/notif-dismiss/read", {
         statusCode: 200,
-        body: {},
+        body: { ok: true },
       }).as("markRead");
 
       cy.visit("/owner/dashboard");
+      cy.wait("@mockSingleNotif");
 
       cy.get('button[id="notification-bell-btn"]').click();
-      cy.wait("@mockSingleNotif");
-      cy.wait(300);
 
+      // Forzamos el click porque el botón solo es visible al hacer hover (CSS group-hover)
       cy.get('button[id="notification-read-notif-dismiss"]').click({ force: true });
 
-      cy.wait("@markRead").then(({ response }) => {
-        expect(response!.statusCode).to.eq(200);
-      });
+      cy.wait("@markRead");
+      
+      // La notificación debería desaparecer de la lista (el componente la filtra)
+      cy.contains("Feedback pendiente de prueba").should("not.exist");
     });
 
     it("should mark all notifications as read when clicking 'Marcar todas'", () => {
-      cy.intercept("GET", "**/api/v1/notifications*", {
+      cy.intercept("GET", "**/api/v1/notifications/unread", {
         statusCode: 200,
         body: [
           {
             id: "notif-a",
             renterId: "renter-1",
-            branchId: null,
-            employeeId: null,
             type: "plan_expiring_soon",
-            payload: { message: 'Tu plan "Basic" vence en 7 días.' },
+            payload: { message: "Plan vence pronto" },
             read: false,
             createdAt: new Date().toISOString(),
           },
@@ -180,20 +175,23 @@ describe("Notifications", () => {
 
       cy.intercept("PATCH", "**/api/v1/notifications/read-all", {
         statusCode: 200,
-        body: {},
+        body: { ok: true },
       }).as("markAllRead");
 
       cy.visit("/owner/dashboard");
+      cy.wait("@mockNotifMarkAll");
 
       cy.get('button[id="notification-bell-btn"]').click();
-      cy.wait("@mockNotifMarkAll");
-      cy.wait(300);
+      
+      cy.get('button[id="notification-mark-all-read"]').click();
 
-      cy.get('button[id="notification-mark-all-read"]').click({ force: true });
-
-      cy.wait("@markAllRead").then(({ response }) => {
-        expect(response!.statusCode).to.eq(200);
-      });
+      cy.wait("@markAllRead");
+      
+      // El dropdown se cierra según el código de NotificationBell.tsx
+      cy.get('ul').should("not.exist");
+      
+      // El badge de la campana debería desaparecer
+      cy.get('button[id="notification-bell-btn"]').find("span").should("not.exist");
     });
   });
 
@@ -202,7 +200,7 @@ describe("Notifications", () => {
   // ─────────────────────────────────────────────────────────────────────────
   describe("Admin RentCheck", () => {
     beforeEach(() => {
-      cy.login();
+      cy.login({ skipRedirect: true });
     });
 
     it("should display the notification bell in the admin header", () => {
@@ -211,18 +209,18 @@ describe("Notifications", () => {
     });
 
     it("should open dropdown and show empty or notifications", () => {
-      cy.intercept("GET", "**/api/v1/notifications*").as("getAdminNotifications");
+      cy.intercept("GET", "**/api/v1/notifications/unread").as("getAdminNotifications");
 
       cy.visit("/adm/dashboard");
+      cy.wait("@getAdminNotifications");
 
       cy.get('button[id="notification-bell-btn"]').click();
-      cy.wait(500);
-
+      
       cy.get("body").then(($body) => {
-        expect(
-          $body.text().includes("Sin notificaciones") ||
-          $body.find('[id^="notification-read-"]').length > 0
-        ).to.be.true;
+        const text = $body.text();
+        const hasEmpty = text.includes("Sin notificaciones");
+        const hasItems = $body.find('[id^="notification-read-"]').length > 0;
+        expect(hasEmpty || hasItems).to.be.true;
       });
     });
   });
@@ -232,14 +230,11 @@ describe("Notifications", () => {
   // ─────────────────────────────────────────────────────────────────────────
   describe("Employee", () => {
     beforeEach(() => {
-      cy.clearAllCookies();
-      cy.clearAllLocalStorage();
-      cy.clearAllSessionStorage();
-
       cy.login({
         email: ec.email,
         password: ec.password,
         redirectTo: ec.redirectTo,
+        skipRedirect: true,
       });
     });
 
@@ -249,14 +244,17 @@ describe("Notifications", () => {
     });
 
     it("should open and close the notification dropdown", () => {
+      cy.intercept("GET", "**/api/v1/notifications/unread").as("getEmployeeNotifications");
+      
       cy.visit("/employee/dashboard");
+      cy.wait("@getEmployeeNotifications");
 
       cy.get('button[id="notification-bell-btn"]').click();
-      cy.wait(300);
+      cy.get("ul").should("be.visible");
 
-      // Close by clicking somewhere else
+      // Cerrar haciendo click fuera (en el main)
       cy.get("main").click({ force: true });
-      cy.wait(300);
+      cy.get("ul").should("not.exist");
     });
   });
-});
+});
