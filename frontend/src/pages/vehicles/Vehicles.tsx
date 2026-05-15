@@ -66,6 +66,7 @@ export default function Vehicles() {
             </ButtonActionDataTable>
           )}
           <ButtonActionDataTable
+            id={`delete-vehicle-${row.plate}`}
             onClick={() => handleDelete(row)}
             color="red"
             disabled={row.status === VEHICLE_STATUS.RENTED}
