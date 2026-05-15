@@ -7,13 +7,12 @@ import { catchError } from "../../../shared/errors/catch-error";
 const MySwal = withReactContent(Swal);
 
 export const useRequestBiometry = () => {
-  const userRole = JSON.parse(localStorage.getItem("user")!).role as RolesType;
-  const canRequestBiometry =
-    userRole === ROLES.EMPLOYEE ||
-    userRole === ROLES.MANAGER ||
-    userRole === ROLES.OWNER;
-
   const handleRequestBiometry = async (row: Rental, loadRentals: () => Promise<void> | void) => {
+    const userRole = JSON.parse(localStorage.getItem("user")!).role as RolesType;
+    const canRequestBiometry =
+      userRole === ROLES.EMPLOYEE ||
+      userRole === ROLES.MANAGER ||
+      userRole === ROLES.OWNER;
     const biometries = row.customer?.biometryRequests ?? [];
     const last = [...biometries].sort(
       (a, b) =>

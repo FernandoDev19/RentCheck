@@ -3,14 +3,12 @@ import { catchError } from "../../../shared/errors/catch-error";
 import { vehicleService } from "../../../services/vehicle.service";
 import VehicleForm from "../components/VehicleForm";
 import Swal from "sweetalert2";
-import { CreateVehicleSchema } from "../schemas/create-vehicle.schema";
+import { getCreateVehicleSchema } from "../schemas/create-vehicle.schema";
 import type { VehicleErrors } from "../interfaces/vehicle-errors.interface";
 import { getUser } from "../../dashboard/helpers/user.helper";
 import { ROLES, type RolesType } from "../../../shared/types/role.type";
 
-const userRole: RolesType = getUser().role as RolesType;
-
-const getVehicleFormValues = () => ({
+const getVehicleFormValues = (userRole: RolesType) => ({
   gamma: (document.getElementById('v-gamma') as HTMLInputElement).value.trim() || undefined,
   plate: (document.getElementById("v-plate") as HTMLInputElement).value
     .trim()
@@ -40,6 +38,7 @@ const MySwal = withReactContent(Swal);
 export const useCreateVehicle = () => {
 
   const handleCreate = async (loadVehicles: () => Promise<void> | void) => {
+    const userRole: RolesType = getUser().role as RolesType;
     const { isConfirmed, value } = await MySwal.fire({
       title: "➕ Nuevo vehículo",
       html: <VehicleForm userRole={userRole} />,
@@ -50,9 +49,9 @@ export const useCreateVehicle = () => {
       confirmButtonColor: "#4f46e5",
       focusConfirm: false,
       preConfirm: () => {
-        const currentValues = getVehicleFormValues();
+        const currentValues = getVehicleFormValues(userRole);
 
-        const result = CreateVehicleSchema.safeParse(currentValues);
+        const result = getCreateVehicleSchema().safeParse(currentValues);
 
         if (!result.success) {
           const errorObj: VehicleErrors = {};

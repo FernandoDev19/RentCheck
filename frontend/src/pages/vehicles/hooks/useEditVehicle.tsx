@@ -5,13 +5,11 @@ import VehicleForm from "../components/VehicleForm";
 import Swal from "sweetalert2";
 import type { VehicleErrors } from "../interfaces/vehicle-errors.interface";
 import type { Vehicle } from "../../../shared/types/vehicle.type";
-import { EditVehicleSchema } from "../schemas/edit-vehicle.schema";
+import { getEditVehicleSchema } from "../schemas/edit-vehicle.schema";
 import { getUser } from "../../dashboard/helpers/user.helper";
 import { ROLES, type RolesType } from "../../../shared/types/role.type";
 
-const userRole: RolesType = getUser().role as RolesType;
-
-const getVehicleFormValues = () => ({
+const getVehicleFormValues = (userRole: RolesType) => ({
   gamma:
     (document.getElementById("v-gamma") as HTMLInputElement).value.trim() ||
     undefined,
@@ -47,6 +45,7 @@ export const useEditVehicle = () => {
     loadVehicles: () => Promise<void> | void,
     vehicle: Vehicle,
   ) => {
+    const userRole: RolesType = getUser().role as RolesType;
     const { isConfirmed, value } = await MySwal.fire({
       title: `✏️ Editar — ${vehicle.plate}`,
       html: <VehicleForm vehicle={vehicle} userRole={userRole} />,
@@ -57,9 +56,9 @@ export const useEditVehicle = () => {
       confirmButtonColor: "#4f46e5",
       focusConfirm: false,
       preConfirm: () => {
-        const currentValues = getVehicleFormValues();
+        const currentValues = getVehicleFormValues(userRole);
 
-        const result = EditVehicleSchema.safeParse(currentValues);
+        const result = getEditVehicleSchema().safeParse(currentValues);
 
         if (!result.success) {
           const errorObj: VehicleErrors = {};

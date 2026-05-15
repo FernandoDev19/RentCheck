@@ -3,23 +3,22 @@ import withReactContent from "sweetalert2-react-content";
 import type { Customer } from "../../../shared/types/customer.type";
 import { customerService } from "../../../services/customer.service";
 import { catchError } from "../../../shared/errors/catch-error";
-import { createRentalAndCustomerSchema } from "../schemas/create-rental-and-customer.schema";
+import { getCreateRentalAndCustomerSchema } from "../schemas/create-rental-and-customer.schema";
 import { rentalService } from "../../../services/rental.service";
 import CreateRentalForm from "../components/CreateRentalForm";
 import type { RentalErrors } from "../interfaces/rental-errors.interface";
 import { CUSTOMER_STATUS_LABELS } from "../../customers/constants/customer-status-label";
 import { getUser } from "../../dashboard/helpers/user.helper";
 import { ROLES } from "../../../shared/types/role.type";
-import { createRentalSchema } from "../schemas/create-rental.schema";
+import { getCreateRentalSchema } from "../schemas/create-rental.schema";
 
 const MySwal = withReactContent(Swal);
 
 export const useCreateRental = () => {
 
-  const user = getUser();
-  const userRoleOwner = user.role === ROLES.OWNER;
-
   const handleCreateClick = async (loadRentals: () => Promise<void> | void, identityNumber?: string, prefill?: { vehicleId?: string; startDate?: string; endDate?: string }) => {
+    const user = getUser();
+    const userRoleOwner = user.role === ROLES.OWNER;
     let idData = identityNumber;
     
     if (!idData) {
@@ -219,7 +218,7 @@ export const useCreateRental = () => {
         let result;
         
         if (!existingCustomer) {
-          result = createRentalAndCustomerSchema.safeParse({
+          result = getCreateRentalAndCustomerSchema().safeParse({
             name,
             lastName,
             identityType,
@@ -233,7 +232,7 @@ export const useCreateRental = () => {
             totalPrice
           });
         }else {
-          result = createRentalSchema.safeParse({
+          result = getCreateRentalSchema().safeParse({
             identityNumber,
             startDate,
             expectedReturnDate,
