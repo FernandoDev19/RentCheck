@@ -136,6 +136,7 @@ export class AuthService {
 
     const payload: UserActiveInterface = {
       sub: userExist.id,
+      name: userExist.name,
       email: userExist.email,
       role: userExist.role.name,
       renterId,
