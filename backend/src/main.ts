@@ -24,18 +24,30 @@ async function bootstrap() {
     exclude: ['docs', 'docs-json', 'docs-yaml'],
   });
 
-  const origins = (JSON.parse(process.env.CORS_ORIGIN || '[]') as string[]) || [
-    'http://localhost:5173',
-    'http://localhost:4200',
+  const corsOrigin = process.env.CORS_ORIGIN;
+  let origins: string[] | string = [
+    "http://localhost:5173",
+    "http://localhost:4200",
   ];
+
+  if (corsOrigin) {
+    try {
+      origins = JSON.parse(corsOrigin);
+    } catch {
+      origins = corsOrigin.split(",").map((o) => o.trim());
+    }
+  }
 
   // Configuración de CORS
   app.enableCors({
     origin: origins,
-    allowedHeaders: 'Content-Type, Authorization',
+    allowedHeaders: "Content-Type, Authorization",
     credentials: true,
-    methods: ['GET', 'POST', 'PUT', 'PATCH', 'DELETE', 'OPTIONS'],
+    methods: ["GET", "POST", "PUT", "PATCH", "DELETE", "OPTIONS"],
   });
+
+  const expressApp = app.getHttpAdapter().getInstance();
+  expressApp.set("trust proxy", 1);
 
   app.use(bodyParser.json());
 

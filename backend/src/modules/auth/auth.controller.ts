@@ -32,7 +32,10 @@ export class AuthController {
       maxAge: 1000 * 60 * 60 * 24,
     });
 
-    return { ok: true };
+    return {
+      ok: true,
+      user: authResponse.user,
+    };
   }
 
   @Post('logout')
