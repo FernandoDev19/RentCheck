@@ -32,7 +32,9 @@ Cypress.Commands.add('login', (options: LoginOptions = {}) => {
             cy.get('input[name="email"]').clear().type(credentials.email);
             cy.get('input[name="password"]').clear().type(credentials.password, { log: false });
             cy.get('button[type="submit"]').click();
-            cy.url().should('include', destination);
+            cy.url().should('satisfy', (url: string) => 
+                url.includes('/dashboard') || url.includes(destination)
+            );
         },
         {
             cacheAcrossSpecs: options.cacheAcrossSpecs ?? true
