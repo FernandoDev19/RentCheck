@@ -35,6 +35,7 @@ export class AuthController {
     return {
       ok: true,
       user: authResponse.user,
+      accessToken: authResponse.accessToken,
     };
   }
 

@@ -14,10 +14,12 @@ export const authService = {
   async login(credentials: LoginDataInterface): Promise<void> {
     const response = await api.post("/auth/login", credentials);
     
-    // El backend ahora setea la cookie automáticamente.
-    // Solo actualizamos el user si viniera en la respuesta, o limpiamos la cache anterior
     if (response.data.ok) {
       localStorage.setItem("user", JSON.stringify(response.data.user));
+      // Guardamos el token como fallback si las cookies fallan
+      if (response.data.accessToken) {
+        localStorage.setItem("token", response.data.accessToken);
+      }
     }
   },
 
@@ -25,6 +27,7 @@ export const authService = {
     const response = await api.post("/auth/logout");
     if (response.data.ok) {
       localStorage.removeItem("user");
+      localStorage.removeItem("token");
     }
     return response.data.ok;
   },
