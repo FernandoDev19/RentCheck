@@ -273,7 +273,7 @@ export class CustomersService {
         'rentals.rentalStatus IN (:...status)',
         { status: ['returned', 'late', 'cancelled'] },
       )
-      .innerJoinAndSelect('rentals.rentalFeedback', 'rentalFeedback')
+      .leftJoinAndSelect('rentals.rentalFeedback', 'rentalFeedback')
       .leftJoinAndSelect('rentals.renter', 'renter')
       .setParameters(parameters);
 
