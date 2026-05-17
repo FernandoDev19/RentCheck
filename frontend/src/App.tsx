@@ -1,23 +1,20 @@
 import { BrowserRouter, Navigate, Route, Routes } from "react-router";
+import { useEffect } from "react";
 import Login from "./pages/auth/Login";
 import ProtectedRoute from "./core/ProtectedRoute";
-import Dashboard from "./pages/dashboard/Dashboard";
-import Header from "./core/layouts/header/Header";
-import { ROLES } from "./shared/types/role.type";
-import Renters from "./pages/renters/Renters";
 import Unauthorized401 from "./pages/errors/Unauthorized401";
-import Branches from "./pages/branches/Branches";
 import RoleRedirect from "./core/RoleRedirect";
-import Employees from "./pages/employees/Employees";
-import Rentals from "./pages/rentals/Rentals";
 import VerifyBiometry from "./pages/verify-biometry/VerifyBiometry";
-import Customers from "./pages/customers/Customers";
-import PendingFeedbacks from "./pages/pending-feedbacks/PendingFeedbacks";
-import { useLoading } from "./core/context/loading-context/hooks/useLoading";
-import { useEffect } from "react";
 import Loader from "./shared/components/GlobalLoader";
+import { useLoading } from "./core/context/loading-context/hooks/useLoading";
 import { setupLoadingInterceptor } from "./core/api/api";
-import Vehicles from "./pages/vehicles/Vehicles";
+import { ROLES } from "./shared/types/role.type";
+
+// Modular Routes
+import AdminRoutes from "./core/routes/AdminRoutes";
+import OwnerRoutes from "./core/routes/OwnerRoutes";
+import ManagerRoutes from "./core/routes/ManagerRoutes";
+import EmployeeRoutes from "./core/routes/EmployeeRoutes";
 
 function App() {
   const { setLoading } = useLoading();
@@ -28,136 +25,32 @@ function App() {
       <Loader />
       <BrowserRouter>
         <Routes>
+          {/* Public and Common Routes */}
           <Route path="/verify/:token" element={<VerifyBiometry />} />
-          <Route path="/login" element={<Login />}></Route>
-          <Route path="/unauthorized" element={<Unauthorized401 />}></Route>
+          <Route path="/login" element={<Login />} />
+          <Route path="/unauthorized" element={<Unauthorized401 />} />
 
           <Route
             path="/"
             element={
               <ProtectedRoute
-                allowedRoles={[ROLES.ADMIN, ROLES.OWNER, ROLES.MANAGER, ROLES.EMPLOYEE]}
+                allowedRoles={[
+                  ROLES.ADMIN,
+                  ROLES.OWNER,
+                  ROLES.MANAGER,
+                  ROLES.EMPLOYEE,
+                ]}
               >
                 <RoleRedirect />
               </ProtectedRoute>
             }
           />
 
-          <Route
-            path="/adm/*"
-            element={
-              <ProtectedRoute allowedRoles={[ROLES.ADMIN]}>
-                <Header />
-                <main className="p-4">
-                  <Routes>
-                    <Route
-                      path="/"
-                      element={<Navigate to="/adm/dashboard" replace />}
-                    />
-                    <Route path="/dashboard" element={<Dashboard />} />
-                    <Route path="/branches" element={<Branches />} />
-                    <Route path="/branches/:renterId" element={<Branches />} />
-                    <Route path="/customers" element={<Customers />} />
-                    <Route path="/employees" element={<Employees />} />
-                    <Route path="/vehicles" element={<Vehicles />} />
-                    <Route path="/renters" element={<Renters />} />
-                  </Routes>
-                </main>
-              </ProtectedRoute>
-            }
-          />
-
-          <Route
-            path="/owner/*"
-            element={
-              <ProtectedRoute allowedRoles={[ROLES.OWNER]}>
-                <Header />
-                <main className="p-4">
-                  <Routes>
-                    <Route
-                      path="/"
-                      element={<Navigate to="/owner/dashboard" replace />}
-                    />
-                    <Route path="/dashboard" element={<Dashboard />} />
-                    <Route path="/branches" element={<Branches />} />
-                    <Route path="/rentals" element={<Rentals />} />
-                    <Route path="/feedbacks" element={<PendingFeedbacks />} />
-                    <Route path="/employees" element={<Employees />} />
-                    <Route path="/customers" element={<Customers />} />
-                    <Route path="/vehicles" element={<Vehicles />} />
-                    <Route path="/*" element={ <Navigate to="/owner/dashboard" /> } />
-                  </Routes>
-                </main>
-              </ProtectedRoute>
-            }
-          />
-
-          <Route
-            path="/manager/*"
-            element={
-              <ProtectedRoute allowedRoles={[ROLES.MANAGER]}>
-                <Header />
-                <main className="p-4">
-                  <Routes>
-                    <Route
-                      path="/"
-                      element={<Navigate to="/manager/dashboard" replace />}
-                    />
-                    <Route path="/dashboard" element={<Dashboard />} />
-                    <Route path="/employees" element={<Employees />} />
-                    <Route path="/rentals" element={<Rentals />} />
-                    <Route path="/feedbacks" element={<PendingFeedbacks />} />
-                    <Route path="/customers" element={<Customers />} />
-                    <Route path="/vehicles" element={<Vehicles />} />
-                    <Route path="/*" element={ <Navigate to="/manager/dashboard" /> } />
-                  </Routes>
-                </main>
-              </ProtectedRoute>
-            }
-          />
-
-          <Route
-            path="/employee/*"
-            element={
-              <ProtectedRoute allowedRoles={[ROLES.EMPLOYEE]}>
-                <Header />
-                <main className="p-4">
-                  <Routes>
-                    <Route
-                      path="/"
-                      element={<Navigate to="/employee/dashboard" replace />}
-                    />
-                    <Route path="/dashboard" element={<Dashboard />} />
-                    <Route path="/rentals" element={<Rentals />} />
-                    <Route path="/feedbacks" element={<PendingFeedbacks />} />
-                    <Route path="/customers" element={<Customers />} />
-                    <Route path="/vehicles" element={<Vehicles />} />
-                    <Route path="/*" element={ <Navigate to="/employee/dashboard" /> } />
-                  </Routes>
-                </main>
-              </ProtectedRoute>
-            }
-          />
-
-          {/* <Route
-            path="/renter/*"
-            element={
-              <ProtectedRoute
-                allowedRoles={[ROLES.OWNER]}
-              >
-                <Header />
-                <main className="p-4">
-                  <Routes>
-                    <Route
-                      path="/"
-                      element={<Navigate to="/renter/branches" replace />}
-                    />
-                    <Route path="/branches" element={<Branches />} />
-                  </Routes>
-                </main>
-              </ProtectedRoute>
-            }
-          ></Route> */}
+          {/* Routes */}
+          <Route path="/adm/*" element={<AdminRoutes />} />
+          <Route path="/owner/*" element={<OwnerRoutes />} />
+          <Route path="/manager/*" element={<ManagerRoutes />} />
+          <Route path="/employee/*" element={<EmployeeRoutes />} />
 
           <Route path="*" element={<Navigate to="/" replace />} />
         </Routes>

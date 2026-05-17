@@ -1,6 +1,8 @@
 import DataTable from "../../shared/components/datatable/DataTable";
 import PageHeader from "../../shared/components/PageHeader";
 import ButtonActionDataTable from "../../shared/components/ui/ButtonActionDataTable";
+import { ROLES } from "../../shared/types/role.type";
+import { getUser } from "../dashboard/helpers/user.helper";
 import { useViewRental } from "../rentals/hooks/useViewRental";
 import { columns } from "./constants/pending-feedbacks.columns";
 import { useCreateFeedback } from "./hooks/useCreateFeedback";
@@ -20,6 +22,9 @@ export default function PendingFeedbacks() {
   const { handleFeedback } = useCreateFeedback();
 
   const { handleViewDetails } = useViewRental();
+
+  const user = getUser();
+  const isAdmin = user.role === ROLES.ADMIN;
 
   return (
     <div className="w-full">
@@ -48,13 +53,19 @@ export default function PendingFeedbacks() {
         emptyMessage="No hay rentas pendientes de feedback 🎉"
         actions={(row) => (
           <div className="flex items-center gap-2">
+            {!isAdmin && (
+              <ButtonActionDataTable
+                id={`feedback-rental-${row.id}`}
+                disabled={!isAdmin}
+                onClick={() => handleFeedback(row, loadRentals)}
+                color="indigo"
+              >
+                ✍️ Dar feedback
+              </ButtonActionDataTable>
+            )}
+
             <ButtonActionDataTable
-              onClick={() => handleFeedback(row, loadRentals)}
-              color="indigo"
-            >
-              ✍️ Dar feedback
-            </ButtonActionDataTable>
-            <ButtonActionDataTable
+              id={`view-rental-${row.id}`}
               onClick={() => handleViewDetails(row)}
               color="indigo"
             >

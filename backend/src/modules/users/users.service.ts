@@ -15,6 +15,7 @@ import * as bcrypt from 'bcryptjs';
 import { RolesEnum } from '../../shared/enums/roles.enum';
 import { RolesService } from '../roles/roles.service';
 import { UserActiveInterface } from '../auth/interfaces/active-user.interface';
+import { ListResponse } from '../../shared/interfaces/list-response';
 
 @Injectable()
 export class UsersService {
@@ -46,29 +47,35 @@ export class UsersService {
     return await this.userRepository.save(user);
   }
 
-  async findAll(page: number = 1, limit: number = 10, role?: RolesEnum) {
-    this.logger.log(`Finding all users: ${page} ${limit} ${role}`);
+  async findAll(
+    page: number = 1,
+    limit: number = 10,
+    role?: RolesEnum,
+  ): Promise<ListResponse<User>> {
+    this.logger.log(`Finding all users: page=${page}, limit=${limit}, role=${role}`);
 
-    const roleExist = await this.rolesService.findOneByName(role);
+    const queryBuilder = this.userRepository
+      .createQueryBuilder('user')
+      .leftJoinAndSelect('user.role', 'role');
 
     if (role) {
-      const users = await this.userRepository.find({
-        where: { role: roleExist },
-        take: limit,
-        skip: (page - 1) * limit,
-      });
-
-      return users;
+      const roleExist = await this.rolesService.findOneByName(role);
+      queryBuilder.where('user.roleId = :roleId', { roleId: roleExist.id });
     }
 
-    const users = await this.userRepository.find({
-      take: limit,
-      skip: (page - 1) * limit,
-    });
+    const [data, total] = await queryBuilder
+      .skip((page - 1) * limit)
+      .take(limit)
+      .getManyAndCount();
 
-    this.logger.log(`Users found: ${users.length}`);
+    this.logger.log(`Users found: ${total}`);
 
-    return users;
+    return {
+      data,
+      total,
+      page,
+      lastPage: Math.ceil(total / limit),
+    };
   }
 
   async findOne(id: string) {

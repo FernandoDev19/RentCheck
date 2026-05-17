@@ -9,6 +9,8 @@ import AssignVehicleModal from "./components/AssignVehicleModal";
 import { useState } from "react";
 import { Info } from "lucide-react";
 import type { Rental } from "../../shared/types/rental.type";
+import { getUser } from "../dashboard/helpers/user.helper";
+import { ROLES } from "../../shared/types/role.type";
 
 export default function Rentals() {
   const {
@@ -29,6 +31,9 @@ export default function Rentals() {
   const { handleViewDetails } = useViewRental();
   const [selectedRental, setSelectedRental] = useState<Rental | null>();
   const [showAssignModal, setShowAssignModal] = useState(false);
+
+  const user = getUser();
+  const isAdmin = user.role === ROLES.ADMIN;
 
   return (
     <div className="w-full">
@@ -54,7 +59,7 @@ export default function Rentals() {
         totalItems={totalItems}
         searchPlaceholder="Buscar renta..."
         emptyMessage="No hay rentas registradas"
-        createButton={true}
+        createButton={!isAdmin}
         onCreateClick={() => handleCreateClick(loadRentals)}
         actions={(row) => {
           const isInDebt =
@@ -73,7 +78,7 @@ export default function Rentals() {
               </ButtonActionDataTable>
 
               {/* Botón de Asignar Vehículo */}
-              {canAssignVehicle && (
+              {!isAdmin && canAssignVehicle && (
                 <ButtonActionDataTable
                   id={`assign-vehicle-${row.id}`}
                   onClick={() => {
@@ -87,7 +92,7 @@ export default function Rentals() {
               )}
 
               {/* Botón de Devolución */}
-              {isInDebt && (
+              {!isAdmin && isInDebt && (
                 <ButtonActionDataTable
                   id={`return-rental-${row.id}`}
                   onClick={() => handleReturn(row)}
@@ -98,15 +103,17 @@ export default function Rentals() {
               )}
 
               {/* Botón de Cancelar */}
-              <ButtonActionDataTable
-                id={`cancel-rental-${row.id}`}
-                onClick={() => handleDelete(row)}
-                disabled={!isInDebt && row.rentalStatus !== "pending"}
-                color="red"
-                className="disabled:cursor-not-allowed"
-              >
-                Cancelar
-              </ButtonActionDataTable>
+              {!isAdmin && (
+                <ButtonActionDataTable
+                  id={`cancel-rental-${row.id}`}
+                  onClick={() => handleDelete(row)}
+                  disabled={!isInDebt && row.rentalStatus !== "pending"}
+                  color="red"
+                  className="disabled:cursor-not-allowed"
+                >
+                  Cancelar
+                </ButtonActionDataTable>
+              )}
             </div>
           );
         }}
