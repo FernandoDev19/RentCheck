@@ -28,6 +28,35 @@ describe("Customers", () => {
             cy.visit("/owner/customers");
             cy.url().should("include", "/unauthorized");
         });
+
+        it("should allow admin to permanently delete a customer", () => {
+            cy.intercept("GET", "**/api/v1/customers*").as("getCustomers");
+            cy.intercept("DELETE", "**/api/v1/customers/*/hard").as("hardDeleteCustomer");
+
+            cy.visit("/adm/customers");
+
+            cy.wait("@getCustomers").then(({ response }) => {
+                const customers = response!.body.data;
+                if (!customers || customers.length === 0) {
+                    cy.log("No customers exist; skipping hard delete test");
+                    return;
+                }
+
+                // Click "Eliminar" button on the first row
+                cy.contains("Eliminar").first().scrollIntoView().click({ force: true });
+
+                // Confirm SweetAlert
+                cy.get('div[class*="swal2-container"]').should("be.visible");
+                cy.contains("Eliminar permanentemente").should("be.visible");
+                cy.contains("Sí, eliminar definitivamente").click();
+
+                // Wait for the DELETE request to complete
+                cy.wait("@hardDeleteCustomer").its("response.statusCode").should("eq", 200);
+
+                // Success alert should appear and close
+                cy.contains("Eliminado").should("be.visible");
+            });
+        });
     });
 
     // ─────────────────────────────────────────────────────────────────────────

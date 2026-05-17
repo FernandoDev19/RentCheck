@@ -27,9 +27,14 @@ export const customerService = {
 
     return response.data;
   },
-  
+
   findOne: async (id: string) => {
     const response = await api.get(`/customers/${id}`);
     return response.data;
-  }
+  },
+
+  hardDelete: async (id: string) => {
+    const response = await api.delete(`/customers/${id}/hard`);
+    return response.data;
+  },
 };

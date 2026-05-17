@@ -1,4 +1,4 @@
-import { Edit, Info, Trash } from "lucide-react";
+import { Edit, Info, Trash, Trash2 } from "lucide-react";
 import DataTable from "../../shared/components/datatable/DataTable";
 import PageHeader from "../../shared/components/PageHeader";
 import ButtonActionDataTable from "../../shared/components/ui/ButtonActionDataTable";
@@ -24,6 +24,7 @@ export default function Renters() {
     handleSortChange,
     handleView,
     handleDelete,
+    handleHardDelete,
   } = useRenters();
   const { handleCreateClick } = useCreateRenter();
   const { handleEdit } = useEditRenter();
@@ -86,6 +87,15 @@ export default function Renters() {
                     <Trash size={16} />
                   </ButtonActionDataTable>
                 )}
+
+                <ButtonActionDataTable
+                  id={`hard-delete-renter-${row.id}`}
+                  onClick={() => handleHardDelete(row.id, row.name)}
+                  color="red"
+                  className="!bg-red-900 hover:!bg-red-800"
+                >
+                  <Trash2 size={16} />
+                </ButtonActionDataTable>
               </>
             )}
           </div>

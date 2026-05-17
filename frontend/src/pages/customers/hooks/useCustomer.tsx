@@ -84,11 +84,39 @@ export const useCustomer = () => {
     });
   };
 
+  const handleHardDeleteCustomer = async (row: Customer) => {
+    const { isConfirmed } = await MySwal.fire({
+      title: "⚠️ Eliminar permanentemente",
+      html: `<p>Esto eliminará definitivamente a <strong>${row.name} ${row.lastName}</strong> junto a todas sus rentas, feedbacks y biometrías.</p><p style="color:#dc2626;font-weight:600;">Esta acción NO se puede deshacer.</p>`,
+      icon: "warning",
+      showCancelButton: true,
+      confirmButtonText: "🗑️ Sí, eliminar definitivamente",
+      cancelButtonText: "Cancelar",
+      confirmButtonColor: "#dc2626",
+    });
+
+    if (!isConfirmed) return;
+
+    try {
+      await customerService.hardDelete(row.id);
+      await MySwal.fire({
+        title: "Eliminado",
+        text: "El cliente fue eliminado permanentemente.",
+        icon: "success",
+        confirmButtonColor: "#0f172a",
+      });
+      await loadCustomers();
+    } catch (error) {
+      await catchError(error, MySwal, "Error al eliminar el cliente");
+    }
+  };
+
   return {
     customers,
     totalItems,
     totalPages,
     handleViewInfo,
+    handleHardDeleteCustomer,
     handleSortChange,
     handleSearchChange,
     loadCustomers,

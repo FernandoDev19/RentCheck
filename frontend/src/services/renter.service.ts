@@ -43,4 +43,9 @@ export const renterService = {
     const response = await api.delete(`/renters/${id}`);
     return response.data;
   },
+
+  async hardDelete(id: string) {
+    const response = await api.delete(`/renters/${id}/hard`);
+    return response.data;
+  },
 };

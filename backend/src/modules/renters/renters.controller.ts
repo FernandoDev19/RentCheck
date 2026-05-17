@@ -49,4 +49,9 @@ export class RentersController {
   remove(@Param('id') id: string) {
     return this.rentersService.remove(id);
   }
+
+  @Delete(':id/hard')
+  hardDelete(@Param('id') id: string) {
+    return this.rentersService.hardDelete(id);
+  }
 }

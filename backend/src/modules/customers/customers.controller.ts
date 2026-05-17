@@ -1,4 +1,4 @@
-import { Controller, Get, Param, Query } from '@nestjs/common';
+import { Controller, Delete, Get, Param, Query } from '@nestjs/common';
 import { CustomersService } from './customers.service';
 import { Auth } from '../../core/decorators/auth.decorator';
 import { RolesEnum } from '../../shared/enums/roles.enum';
@@ -39,6 +39,12 @@ export class CustomersController {
   @Auth(...Object.values(RolesEnum))
   findOne(@Param('id') id: string, @ActiveUser() user: UserActiveInterface) {
     return this.customersService.findOne(id, user);
+  }
+
+  @Delete(':id/hard')
+  @Auth(RolesEnum.ADMIN)
+  hardDelete(@Param('id') id: string) {
+    return this.customersService.hardDelete(id);
   }
 
   @Get('/identity/:identity')

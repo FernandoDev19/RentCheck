@@ -303,6 +303,34 @@ describe("Renters", () => {
 
       cy.contains("Eliminado").should("be.visible");
       cy.contains("Rentadora eliminada correctamente").should("be.visible");
+    });
+
+    it("should permanently delete a renter (hard delete)", () => {
+      cy.intercept("DELETE", `${apiUrl}/*/hard`).as("hardDeleteRenter");
+
+      cy.visit("/adm/renters");
+
+      // The renter is suspended, so the normal delete button is gone but the hard delete button is visible
+      cy.get(`[id="hard-delete-renter-${createdId}"]`)
+        .scrollIntoView()
+        .should("be.visible")
+        .click();
+
+      cy.url().should("include", `/adm/renters`);
+
+      cy.wait(1000);
+
+      cy.get(
+        'div[class="swal2-container swal2-center swal2-backdrop-show"]',
+      ).should("be.visible");
+      cy.contains("Eliminar permanentemente").should("be.visible");
+      cy.contains("Sí, eliminar permanentemente").click();
+
+      cy.wait("@hardDeleteRenter").its("response.statusCode").should("eq", 200);
+
+      cy.wait(1000);
+      cy.contains("Eliminado").should("be.visible");
+      cy.contains("La rentadora fue eliminada permanentemente.").should("be.visible");
 
       cy.task("db:reset");
     });

@@ -7,7 +7,7 @@ import {
 import { CreateCustomerDto } from './dto/create-customer.dto';
 import { InjectRepository } from '@nestjs/typeorm';
 import { Customer } from './entities/customer.entity';
-import { Repository } from 'typeorm';
+import { DataSource, Repository } from 'typeorm';
 import { RentalFeedback } from '../rental-feedbacks/entities/rental-feedback.entity';
 import { ListResponse } from '../../shared/interfaces/list-response';
 import { UserActiveInterface } from '../auth/interfaces/active-user.interface';
@@ -25,6 +25,7 @@ export class CustomersService {
     @InjectRepository(RentalFeedback)
     private readonly rentalFeedbackRepository: Repository<RentalFeedback>,
     private readonly customersCacheService: CustomersCacheService,
+    private readonly dataSource: DataSource,
   ) {}
 
   async create(createCustomerDto: CreateCustomerDto) {
@@ -332,6 +333,43 @@ export class CustomersService {
 
   //   return await this.customerRepository.delete(id);
   // }
+
+  async hardDelete(id: string): Promise<{ message: string }> {
+    this.logger.log(`HardDelete: ${id}`);
+
+    const customer = await this.customerRepository.findOne({ where: { id } });
+    if (!customer) throw new NotFoundException('Cliente no encontrado');
+
+    await this.dataSource.transaction(async (manager) => {
+      // 1. Biometrías del cliente
+      await manager.query(
+        `DELETE FROM biometry_requests WHERE customer_id = $1`,
+        [id],
+      );
+
+      // 2. Feedbacks de sus rentas
+      await manager.query(
+        `DELETE FROM rental_feedbacks WHERE rental_id IN (
+          SELECT id FROM rentals WHERE customer_id = $1
+        )`,
+        [id],
+      );
+
+      // 3. Las rentas (soft delete column -> hard delete)
+      await manager.query(
+        `DELETE FROM rentals WHERE customer_id = $1`,
+        [id],
+      );
+
+      // 4. El cliente
+      await manager.query(`DELETE FROM customers WHERE id = $1`, [id]);
+    });
+
+    await this.customersCacheService.invalidateAll();
+
+    this.logger.log(`HardDelete: ${id} - Cliente eliminado permanentemente`);
+    return { message: 'Cliente eliminado permanentemente' };
+  }
 
   async recalculateCustomerScore(customerId: string): Promise<number> {
     this.logger.log(

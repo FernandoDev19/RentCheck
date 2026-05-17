@@ -9,6 +9,8 @@ import { useCustomerFields } from "./hooks/useCustomerFields";
 import ButtonCallUp from "../../shared/components/ui/ButtonCallUp";
 import { User } from "lucide-react";
 import { CUSTOMER_STATUS } from "./interfaces/customer-status.interface";
+import { getUser } from "../dashboard/helpers/user.helper";
+import { ROLES } from "../../shared/types/role.type";
 
 export default function Customers() {
   const {
@@ -21,11 +23,13 @@ export default function Customers() {
     totalPages,
     totalItems,
     handleViewInfo,
+    handleHardDeleteCustomer,
     loadCustomers,
   } = useCustomer();
 
   const { columns } = useCustomerColumns(loadCustomers);
   const { customerFields } = useCustomerFields(loadCustomers);
+  const userRole = getUser().role;
 
   return (
     <div className="w-full">
@@ -60,6 +64,14 @@ export default function Customers() {
               >
                 Ver info
               </ButtonActionDataTable>
+              {userRole === ROLES.ADMIN && (
+                <ButtonActionDataTable
+                  onClick={() => handleHardDeleteCustomer(row)}
+                  color="red"
+                >
+                  Eliminar
+                </ButtonActionDataTable>
+              )}
             </div>
           )}
         />
@@ -90,13 +102,25 @@ export default function Customers() {
           searchPlaceholder="Buscar cliente..."
           emptyMessage="No hay clientes registrados"
           footer={(c) => (
-            <ButtonCallUp
-              type="button"
-              isLoading={false}
-              onClick={() => handleViewInfo(c)}
-            >
-              Ver detalle
-            </ButtonCallUp>
+            <div className="flex flex-col gap-2 w-full">
+              <ButtonCallUp
+                type="button"
+                isLoading={false}
+                onClick={() => handleViewInfo(c)}
+              >
+                Ver detalle
+              </ButtonCallUp>
+              {userRole === ROLES.ADMIN && (
+                <ButtonCallUp
+                  type="button"
+                  isLoading={false}
+                  onClick={() => handleHardDeleteCustomer(c)}
+                  className="!bg-red-600 hover:!bg-red-700"
+                >
+                  Eliminar permanentemente
+                </ButtonCallUp>
+              )}
+            </div>
           )}
         />
       )}

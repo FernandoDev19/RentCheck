@@ -105,7 +105,7 @@ export const useRenters = () => {
         cancelButtonText: "Cancelar",
       });
 
-      if(result.isConfirmed) {
+      if (result.isConfirmed) {
         await renterService.delete(renterId);
         MySwal.fire({
           title: "Eliminado",
@@ -115,10 +115,42 @@ export const useRenters = () => {
           showConfirmButton: false,
         });
         loadRenters();
-      };
-
+      }
     } catch (error) {
       await catchError(error, MySwal, "Error al eliminar la rentadora");
+    }
+  };
+
+  const handleHardDelete = async (renterId: string, name: string) => {
+    try {
+      const result = await MySwal.fire({
+        title: "⚠️ Eliminar permanentemente",
+        html: `<p>Esto eliminará definitivamente la rentadora <strong>${name}</strong> junto a todas sus sedes, vehículos, rentas, empleados, biometrías y notificaciones.</p><p style="color:#dc2626;font-weight:600;">Esta acción NO se puede deshacer.</p>`,
+        icon: "warning",
+        showCancelButton: true,
+        confirmButtonColor: "#dc2626",
+        cancelButtonColor: "#3085d6",
+        confirmButtonText: "🗑️ Sí, eliminar permanentemente",
+        cancelButtonText: "Cancelar",
+      });
+
+      if (result.isConfirmed) {
+        await renterService.hardDelete(renterId);
+        MySwal.fire({
+          title: "Eliminado",
+          icon: "success",
+          text: "La rentadora fue eliminada permanentemente.",
+          timer: 2000,
+          showConfirmButton: false,
+        });
+        loadRenters();
+      }
+    } catch (error) {
+      await catchError(
+        error,
+        MySwal,
+        "Error al eliminar la rentadora permanentemente",
+      );
     }
   };
 
@@ -135,6 +167,7 @@ export const useRenters = () => {
     handleSearchChange,
     handleView,
     handleDelete,
+    handleHardDelete,
     loadRenters,
   };
 };

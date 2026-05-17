@@ -9,7 +9,7 @@ import { CreateRenterDto } from './dto/create-renter.dto';
 import { UpdateRenterDto } from './dto/update-renter.dto';
 import { InjectRepository } from '@nestjs/typeorm';
 import { Renter } from './entities/renter.entity';
-import { ILike, Repository } from 'typeorm';
+import { ILike, DataSource, Repository } from 'typeorm';
 import { UsersService } from '../users/users.service';
 import { RolesService } from '../roles/roles.service';
 import { RolesEnum } from '../../shared/enums/roles.enum';
@@ -29,6 +29,7 @@ export class RentersService {
     private readonly roleService: RolesService,
     @InjectRepository(User)
     private readonly userRepository: Repository<User>,
+    private readonly dataSource: DataSource,
   ) {}
 
   async create(createRenterDto: CreateRenterDto) {
@@ -236,5 +237,110 @@ export class RentersService {
     this.logger.log(`Remove: ${id} - Rentadora eliminada lógicamente`);
 
     return await this.renterRepository.save(renter);
+  }
+
+  async hardDelete(id: string): Promise<{ message: string }> {
+    this.logger.log(`HardDelete: ${id}`);
+
+    const renter = await this.renterRepository.findOne({ where: { id } });
+    if (!renter) throw new NotFoundException('Rentadora no encontrada');
+
+    await this.dataSource.transaction(async (manager) => {
+      // 0. Desvincular clientes registrados por usuarios de esta rentadora
+      await manager.query(
+        `UPDATE customers 
+         SET registered_by_user_id = NULL 
+         WHERE registered_by_user_id IN (
+           SELECT id FROM users WHERE renter_id = $1
+           UNION
+           SELECT id FROM users WHERE employee_id IN (
+             SELECT id FROM employees WHERE branch_id IN (
+               SELECT id FROM branches WHERE renter_id = $1
+             )
+           )
+           UNION
+           SELECT id FROM users WHERE branch_id IN (
+             SELECT id FROM branches WHERE renter_id = $1
+           )
+         )`,
+        [id],
+      );
+
+      // 1. Notificaciones de la rentadora
+      await manager.query(
+        `DELETE FROM notifications WHERE "renterId" = $1`,
+        [id],
+      );
+
+      // 2. Biometrías asociadas a la rentadora
+      await manager.query(
+        `DELETE FROM biometry_requests WHERE renter_id = $1`,
+        [id],
+      );
+
+      // 3. Feedbacks de rentas de la rentadora
+      await manager.query(
+        `DELETE FROM rental_feedbacks WHERE rental_id IN (
+          SELECT id FROM rentals WHERE renter_id = $1
+        )`,
+        [id],
+      );
+
+      // 4. Rentas de la rentadora
+      await manager.query(
+        `DELETE FROM rentals WHERE renter_id = $1`,
+        [id],
+      );
+
+      // 5. Vehículos de la rentadora
+      await manager.query(
+        `DELETE FROM vehicles WHERE renter_id = $1`,
+        [id],
+      );
+
+      // 6. Usuarios de los employees (branch managers & employees)
+      await manager.query(
+        `DELETE FROM users WHERE employee_id IN (
+          SELECT id FROM employees WHERE branch_id IN (
+            SELECT id FROM branches WHERE renter_id = $1
+          )
+        )`,
+        [id],
+      );
+
+      // 7. Empleados de las sedes de la rentadora
+      await manager.query(
+        `DELETE FROM employees WHERE branch_id IN (
+          SELECT id FROM branches WHERE renter_id = $1
+        )`,
+        [id],
+      );
+
+      // 8. Usuarios manager de las sedes
+      await manager.query(
+        `DELETE FROM users WHERE branch_id IN (
+          SELECT id FROM branches WHERE renter_id = $1
+        )`,
+        [id],
+      );
+
+      // 9. Sedes de la rentadora
+      await manager.query(
+        `DELETE FROM branches WHERE renter_id = $1`,
+        [id],
+      );
+
+      // 10. Usuario owner de la rentadora
+      await manager.query(
+        `DELETE FROM users WHERE renter_id = $1`,
+        [id],
+      );
+
+      // 11. La rentadora
+      await manager.query(`DELETE FROM renters WHERE id = $1`, [id]);
+    });
+
+    this.logger.log(`HardDelete: ${id} - Rentadora eliminada permanentemente`);
+    return { message: 'Rentadora eliminada permanentemente' };
   }
 }
