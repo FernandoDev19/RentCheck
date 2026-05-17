@@ -8,6 +8,8 @@ import { useCreateRental } from "../../rentals/hooks/useCreateRental";
 import { CUSTOMER_STATUS } from "../../customers/interfaces/customer-status.interface";
 import { CUSTOMER_STATUS_LABELS } from "../../customers/constants/customer-status-label";
 import { catchError } from "../../../shared/errors/catch-error";
+import { getUser } from "../helpers/user.helper";
+import { ROLES } from "../../../shared/types/role.type";
 
 const MySwal = withReactContent(Swal);
 
@@ -49,20 +51,32 @@ export const useSearch = () => {
       }
     }
 
+    const user = getUser();
+    const isAdmin = user?.role === ROLES.ADMIN;
+
     if (!customer) {
       setSearching(false);
-      const { isConfirmed } = await MySwal.fire({
-        title: "Cliente no encontrado",
-        text: "Este cliente no tiene historial en RentCheck. ¿Deseas crear una nueva renta para este cliente?",
-        icon: "question",
-        showCancelButton: true,
-        confirmButtonText: "Crear renta",
-        cancelButtonText: "Cancelar",
-        confirmButtonColor: "#0f172a",
-      });
+      if (isAdmin) {
+        await MySwal.fire({
+          title: "Cliente no encontrado",
+          text: "Este cliente no tiene historial en RentCheck.",
+          icon: "info",
+          confirmButtonColor: "#0f172a",
+        });
+      } else {
+        const { isConfirmed } = await MySwal.fire({
+          title: "Cliente no encontrado",
+          text: "Este cliente no tiene historial en RentCheck. ¿Deseas crear una nueva renta para este cliente?",
+          icon: "question",
+          showCancelButton: true,
+          confirmButtonText: "Crear renta",
+          cancelButtonText: "Cancelar",
+          confirmButtonColor: "#0f172a",
+        });
 
-      if (isConfirmed) {
-        await handleCreateClick(() => {}, identityNumber);
+        if (isConfirmed) {
+          await handleCreateClick(() => {}, identityNumber);
+        }
       }
       return;
     }
@@ -142,12 +156,14 @@ export const useSearch = () => {
       await MySwal.fire({
         title: "Resultado de búsqueda",
         html: <ViewCustomer customer={customer} />,
-        showConfirmButton: true,
+        showConfirmButton: !isAdmin,
         confirmButtonText: "Crear renta",
         showCloseButton: true,
         width: 580,
         preConfirm: async () => {
-          await handleCreateClick(() => {}, identityNumber);
+          if (!isAdmin) {
+            await handleCreateClick(() => {}, identityNumber);
+          }
           return true;
         },
       });

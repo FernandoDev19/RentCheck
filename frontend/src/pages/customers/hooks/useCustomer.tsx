@@ -7,6 +7,8 @@ import { customerService } from "../../../services/customer.service";
 import { catchError } from "../../../shared/errors/catch-error";
 import ViewCustomer from "../components/ViewCustomer";
 import { useCreateRental } from "../../rentals/hooks/useCreateRental";
+import { getUser } from "../../dashboard/helpers/user.helper";
+import { ROLES } from "../../../shared/types/role.type";
 
 const MySwal = withReactContent(Swal);
 
@@ -63,15 +65,20 @@ export const useCustomer = () => {
   };
 
   const handleViewInfo = (row: Customer) => {
+    const user = getUser();
+    const isAdmin = user?.role === ROLES.ADMIN;
+
     MySwal.fire({
       title: "Detalle del cliente",
       html: <ViewCustomer customerId={row.id} />,
-      showConfirmButton: true,
+      showConfirmButton: !isAdmin,
       confirmButtonText: "Crear Renta",
       showCloseButton: true,
       width: 580,
       preConfirm: async () => {
-        await handleCreateClick(() => {}, row.identityNumber);
+        if (!isAdmin) {
+          await handleCreateClick(() => {}, row.identityNumber);
+        }
         return true;
       },
     });
