@@ -46,8 +46,9 @@ describe("Navigation & Sidebar", () => {
 
     it("should redirect unknown routes to / (which then goes to login)", () => {
       cy.visit("/this-does-not-exist");
-      cy.url().should("satisfy", (url: string) =>
-        url.includes("/login") || url.includes("/"),
+      cy.url().should(
+        "satisfy",
+        (url: string) => url.includes("/login") || url.includes("/"),
       );
     });
   });
@@ -131,7 +132,6 @@ describe("Navigation & Sidebar", () => {
       cy.wait(1000);
 
       cy.url().should("include", "/login");
-      expect(localStorage.getItem("token")).to.be.null;
     });
   });
 

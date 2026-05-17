@@ -7,7 +7,7 @@
     "dev": "vite",
     "build": "tsc -b && vite build",
     "cy:open": "cypress open",
-    "cy:run": "cypress run",
+    "cy:run": "cypress run --record --key 6b760b31-d258-41b6-be5d-7b050de4687d",
     "lint": "eslint .",
     "preview": "vite preview"
   },

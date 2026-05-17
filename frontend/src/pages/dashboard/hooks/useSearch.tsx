@@ -3,7 +3,6 @@ import Swal from "sweetalert2";
 import withReactContent from "sweetalert2-react-content";
 import type { Customer } from "../../../shared/types/customer.type";
 import { customerService } from "../../../services/customer.service";
-import RentalsByCustomerTable from "../../customers/components/rentals-by-customer-table/RentalsByCustomerTable";
 import ViewCustomer from "../../customers/components/ViewCustomer";
 import { useCreateRental } from "../../rentals/hooks/useCreateRental";
 import { CUSTOMER_STATUS } from "../../customers/interfaces/customer-status.interface";
@@ -44,18 +43,28 @@ export const useSearch = () => {
 
     try {
       customer = await customerService.findByIdentity(identityNumber);
-    } catch (e) {
-      await catchError(e, MySwal, "Error al buscar cliente");
+    } catch (e: any) {
+      if (e.response?.status !== 404) {
+        await catchError(e, MySwal, "Error al buscar cliente");
+      }
     }
 
     if (!customer) {
       setSearching(false);
-      return MySwal.fire({
+      const { isConfirmed } = await MySwal.fire({
         title: "Cliente no encontrado",
-        text: "Este cliente no tiene historial en RentCheck",
-        icon: "info",
+        text: "Este cliente no tiene historial en RentCheck. ¿Deseas crear una nueva renta para este cliente?",
+        icon: "question",
+        showCancelButton: true,
+        confirmButtonText: "Crear renta",
+        cancelButtonText: "Cancelar",
         confirmButtonColor: "#0f172a",
       });
+
+      if (isConfirmed) {
+        await handleCreateClick(() => {}, identityNumber);
+      }
+      return;
     }
 
     try {
@@ -70,22 +79,22 @@ export const useSearch = () => {
               const flags = rental?.rentalFeedback!.criticalFlags;
               return flags.vehicleTheft || flags.impersonation;
             }) ?? [];
-  
+
         const flagLabels: Record<string, string> = {
           vehicleTheft: "🚗 Robo de vehículo",
           impersonation: "🪪 Suplantación de identidad",
         };
-  
+
         const flagSummary: Record<
           string,
           { count: number; cities: Set<string> }
         > = {};
-  
+
         for (const rental of rentalsWithCriticalFlags) {
           const flags = rental?.rentalFeedback!.criticalFlags;
           const city =
-            rental.branch?.city ?? rental.renter?.city ?? rental.renter.name ?? "Ciudad desconocida";
-  
+            rental.branch?.city ?? rental.renter?.city ?? "Ciudad desconocida";
+
           for (const [key, active] of Object.entries(flags)) {
             if (!active) continue;
             if (!flagSummary[key])
@@ -94,7 +103,7 @@ export const useSearch = () => {
             flagSummary[key].cities.add(city);
           }
         }
-  
+
         const flagsHtml = Object.entries(flagSummary)
           .map(
             ([key, { count, cities }]) => `
@@ -110,57 +119,43 @@ export const useSearch = () => {
             `,
           )
           .join("");
-  
+
         // Mostrar advertencia ANTES del swal de crear renta
-        await MySwal.fire({
-          title: "⚠️ Cliente en alerta",
-          html: `
-            <p style="color:#6b7280; margin-bottom:12px; font-size:13px;">
-              Estado: <strong style="color:#dc2626">${CUSTOMER_STATUS_LABELS[customer.status]}</strong>
-              — reportado en <strong>${rentalsWithCriticalFlags.length}</strong> ${rentalsWithCriticalFlags.length === 1 ? "renta" : "rentas"}
-            </p>
-            <ul style="text-align:left; list-style:none; padding:12px 16px; margin:0;
-              background:#fee2e2; border-radius:8px; color:#dc2626;">
-              ${flagsHtml}
-            </ul>
-          `,
-          icon: "warning",
-        });
+        if (rentalsWithCriticalFlags.length > 0) {
+          await MySwal.fire({
+            title: "⚠️ Cliente en alerta",
+            html: `
+              <p style="color:#6b7280; margin-bottom:12px; font-size:13px;">
+                Estado: <strong style="color:#dc2626">${CUSTOMER_STATUS_LABELS[customer.status] || customer.status}</strong>
+                — reportado en <strong>${rentalsWithCriticalFlags.length}</strong> ${rentalsWithCriticalFlags.length === 1 ? "renta" : "rentas"}
+              </p>
+              <ul style="text-align:left; list-style:none; padding:12px 16px; margin:0;
+                background:#fee2e2; border-radius:8px; color:#dc2626;">
+                ${flagsHtml || "<li>⚠️ Registros de alerta sin detalles específicos</li>"}
+              </ul>
+            `,
+            icon: "warning",
+          });
+        }
       }
-  
+
       await MySwal.fire({
         title: "Resultado de búsqueda",
         html: <ViewCustomer customer={customer} />,
         showConfirmButton: true,
         confirmButtonText: "Crear renta",
         showCloseButton: true,
-        width: 540,
-        didOpen: () => {
-          document
-            .getElementById("btn-ver-rentas")
-            ?.addEventListener("click", () => {
-              MySwal.close();
-              MySwal.fire({
-                title: `Historial — ${customer.name} ${customer.lastName}`,
-                html: <RentalsByCustomerTable customerId={customer.id} />,
-                showConfirmButton: false,
-                showCloseButton: true,
-                width: 780,
-              });
-            });
-        },
+        width: 580,
         preConfirm: async () => {
           await handleCreateClick(() => {}, identityNumber);
           return true;
         },
       });
     } catch (error) {
-      console.error('Error', error);
+      console.error("Error", error);
     } finally {
       setSearching(false);
     }
-
-
   };
 
   return {

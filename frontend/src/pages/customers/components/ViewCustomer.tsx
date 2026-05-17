@@ -11,12 +11,15 @@ import {
   CUSTOMER_STATUS,
   type CustomerStatus,
 } from "../interfaces/customer-status.interface";
-import { useViewRentalInfo } from "./rentals-by-customer-table/hooks/useViewRentalInfo";
+import ViewRentalDetails from "./rentals-by-customer-table/components/ViewRentalDetails";
+import RentalsByCustomerTable from "./rentals-by-customer-table/RentalsByCustomerTable";
 
 type Props = {
   customerId?: string;
   customer?: Customer;
 };
+
+type View = "profile" | "rentals" | "rental-detail";
 
 const CUSTOMER_STATUS_LABELS: Record<string, string> = {
   normal: "Normal",
@@ -26,10 +29,10 @@ const CUSTOMER_STATUS_LABELS: Record<string, string> = {
 
 export default function ViewCustomer({ customerId, customer: initialCustomer }: Props) {
   const [customer, setCustomer] = useState<Customer | undefined>(initialCustomer);
-  const { handleViewRentalInfo } = useViewRentalInfo();
+  const [view, setView] = useState<View>("profile");
+  const [selectedRentalId, setSelectedRentalId] = useState<string | null>(null);
 
   useEffect(() => {
-    // Si ya tenemos el customer o no hay customerId, no hacemos nada
     if (customer || !customerId) return;
 
     const fetchCustomer = async () => {
@@ -43,6 +46,48 @@ export default function ViewCustomer({ customerId, customer: initialCustomer }: 
     fetchCustomer();
   }, [customerId, customer]);
 
+  const goToRentalDetail = (rentalId: string) => {
+    setSelectedRentalId(rentalId);
+    setView("rental-detail");
+  };
+
+  // ── Vista: Detalle de una renta específica ─────────────────────────────────
+  if (view === "rental-detail" && selectedRentalId) {
+    return (
+      <div className="text-left text-sm" style={{ lineHeight: "1.8" }}>
+        <button
+          type="button"
+          onClick={() => setView("rentals")}
+          className="flex items-center gap-1 text-xs text-indigo-600 font-semibold mb-4 hover:underline"
+        >
+          ← Volver al historial de rentas
+        </button>
+        <ViewRentalDetails rentalId={selectedRentalId} />
+      </div>
+    );
+  }
+
+  // ── Vista: Historial de rentas ─────────────────────────────────────────────
+  if (view === "rentals") {
+    const id = customer?.id ?? customerId ?? "";
+    return (
+      <div className="text-left text-sm" style={{ lineHeight: "1.8" }}>
+        <button
+          type="button"
+          onClick={() => setView("profile")}
+          className="flex items-center gap-1 text-xs text-indigo-600 font-semibold mb-4 hover:underline"
+        >
+          ← Volver al perfil del cliente
+        </button>
+        <RentalsByCustomerTable
+          customerId={id}
+          onViewRental={goToRentalDetail}
+        />
+      </div>
+    );
+  }
+
+  // ── Vista: Perfil principal del cliente ────────────────────────────────────
   const scoreColor =
     (customer?.generalScore as number) >= 4
       ? "!text-green-500"
@@ -195,7 +240,6 @@ export default function ViewCustomer({ customerId, customer: initialCustomer }: 
               scores.length
             : 0;
 
-          // 1. Extraemos las flags críticas
           const flags = r.rentalFeedback!.criticalFlags;
           const activeFlags = [];
           if (flags?.vehicleTheft) activeFlags.push("🚗 ROBO");
@@ -204,9 +248,9 @@ export default function ViewCustomer({ customerId, customer: initialCustomer }: 
           return (
             <div
               key={r.id}
-              onClick={() => handleViewRentalInfo(r.id)}
+              onClick={() => goToRentalDetail(r.id)}
               className={`flex justify-between items-center hover:bg-neutral-100 cursor-pointer bg-[#f9fafb] rounded-lg py-2 px-3 text-xs mb-2 border border-l-4`}
-              style={{ borderLeftColor: activeFlags.length > 0 ? '#dc2626' : getScoreColor(avg) }} // Usamos style para asegurar que el color pegue
+              style={{ borderLeftColor: activeFlags.length > 0 ? '#dc2626' : getScoreColor(avg) }}
             >
               <div className="flex flex-col">
                 <span
@@ -227,14 +271,14 @@ export default function ViewCustomer({ customerId, customer: initialCustomer }: 
                 <span className="block text-[11px] text-[#4f46e5] font-semibold">
                   {r.renter?.name || "Rentadora"}
                 </span>
-
-                {/* 2. LÓGICA DE NOTA O FLAG */}
                 <span
                   className={`text-[10px] font-medium ${activeFlags.length > 0 ? "text-red-600 uppercase font-bold" : "text-[#9ca3af] italic"}`}
                 >
                   {r.rentalFeedback!.comments?.substring(0, 20) || "Sin comentario"}
                 </span>
               </div>
+
+              <span className="ml-3 text-slate-300 text-xs">›</span>
             </div>
           );
         })
@@ -245,7 +289,13 @@ export default function ViewCustomer({ customerId, customer: initialCustomer }: 
         </p>
       )}
 
-      <ButtonCallUp id="btn-ver-rentas" type="button" isLoading={false}>
+      {/* El botón ahora navega internamente en lugar de abrir un nuevo SweetAlert */}
+      <ButtonCallUp
+        id="btn-ver-rentas"
+        type="button"
+        isLoading={false}
+        onClick={() => setView("rentals")}
+      >
         📋 Ver historial de rentas
       </ButtonCallUp>
 

@@ -6,11 +6,21 @@ import { useViewRentalInfo } from "./hooks/useViewRentalInfo";
 
 export default function RentalsByCustomerTable({
   customerId,
+  onViewRental,
 }: {
   customerId: string;
+  onViewRental?: (rentalId: string) => void;
 }) {
   const { rentals, limit, page, setPage, totalPages, totalItems, handleSearchChange, handleSortChange } = useRentalsByCustomerTable(customerId);
   const { handleViewRentalInfo } = useViewRentalInfo();
+
+  const handleView = (rentalId: string) => {
+    if (onViewRental) {
+      onViewRental(rentalId);
+    } else {
+      handleViewRentalInfo(rentalId);
+    }
+  };
 
   return (
     <DataTable
@@ -31,7 +41,7 @@ export default function RentalsByCustomerTable({
       searchPlaceholder="Buscar renta..."
       emptyMessage="Sin rentas registradas"
       actions={(r) => (
-        <ButtonActionDataTable onClick={() => handleViewRentalInfo(r.id)} color="indigo">Ver info</ButtonActionDataTable>
+        <ButtonActionDataTable onClick={() => handleView(r.id)} color="indigo">Ver info</ButtonActionDataTable>
       )}
     />
   );

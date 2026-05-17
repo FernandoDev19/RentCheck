@@ -5,7 +5,6 @@ import { useCallback, useEffect, useState } from "react";
 import type { ListResponse } from "../../../shared/types/list-response.type";
 import { customerService } from "../../../services/customer.service";
 import { catchError } from "../../../shared/errors/catch-error";
-import RentalsByCustomerTable from "../components/rentals-by-customer-table/RentalsByCustomerTable";
 import ViewCustomer from "../components/ViewCustomer";
 import { useCreateRental } from "../../rentals/hooks/useCreateRental";
 
@@ -71,20 +70,6 @@ export const useCustomer = () => {
       confirmButtonText: "Crear Renta",
       showCloseButton: true,
       width: 580,
-      didOpen: () => {
-        document
-          .getElementById("btn-ver-rentas")
-          ?.addEventListener("click", () => {
-            MySwal.close();
-            MySwal.fire({
-              title: `Historial — ${row.name} ${row.lastName}`,
-              html: <RentalsByCustomerTable customerId={row.id} />,
-              showConfirmButton: false,
-              showCloseButton: true,
-              width: 780,
-            });
-          });
-      },
       preConfirm: async () => {
         await handleCreateClick(() => {}, row.identityNumber);
         return true;

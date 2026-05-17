@@ -50,8 +50,10 @@ export const useCreateRental = () => {
     let existingCustomer: Customer | null = null;
     try {
       existingCustomer = await customerService.findByIdentity(idData!);
-    } catch (e) {
-      await catchError(e, MySwal, "Error al buscar cliente");
+    } catch (e: any) {
+      if (e.response?.status !== 404) {
+        await catchError(e, MySwal, "Error al buscar cliente");
+      }
     }
 
     if (
