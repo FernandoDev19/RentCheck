@@ -1,6 +1,6 @@
 import { useState, useEffect } from "react";
 import { useNavigate } from "react-router";
-import { Home, Menu, Settings, User2 } from "lucide-react";
+import { Home, Menu, Settings } from "lucide-react";
 import Sidebar from "./components/Sidebar";
 import NotificationBell from "./components/NotificationBell";
 import { getUser } from "../../../pages/dashboard/helpers/user.helper";
@@ -40,11 +40,10 @@ export default function Header() {
   return (
     <>
       <header
-        className={`sticky top-0 w-full z-20 transition-all duration-300 ${
-          isScrolled
+        className={`sticky top-0 w-full z-20 transition-all duration-300 ${isScrolled
             ? "bg-primary/95 backdrop-blur-xl shadow-lg py-4"
             : "bg-primary shadow-md py-4"
-        } text-primary-foreground`}
+          } text-primary-foreground`}
       >
         <div className="container mx-auto px-4">
           <div className="flex items-center justify-between">
