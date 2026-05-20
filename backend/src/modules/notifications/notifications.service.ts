@@ -22,6 +22,10 @@ export class NotificationsService {
       .take(20);
 
     switch (user.role as RolesEnum) {
+      case RolesEnum.ADMIN:
+        // El admin solo debería ver notificaciones globales (si existen), no las de los clientes.
+        qb.andWhere('n.renterId IS NULL');
+        break;
       case RolesEnum.OWNER:
         qb.andWhere('n.renterId = :renterId', { renterId: user.renterId });
         break;
@@ -62,6 +66,9 @@ export class NotificationsService {
       .where('read = false');
 
     switch (user.role as RolesEnum) {
+      case RolesEnum.ADMIN:
+        qb.andWhere('n.renterId IS NULL');
+        break;
       case RolesEnum.OWNER:
         qb.andWhere('renterId = :renterId', { renterId: user.renterId });
         break;

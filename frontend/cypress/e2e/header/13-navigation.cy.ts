@@ -92,8 +92,12 @@ describe("Navigation & Sidebar", () => {
       cy.contains("Rentadoras").should("be.visible");
       cy.contains("Sedes").should("be.visible");
       cy.contains("Empleados").should("be.visible");
+      cy.contains("Rentas").should("be.visible");
+      cy.contains("Feedbacks pendientes").should("be.visible");
       cy.contains("Clientes").should("be.visible");
-      cy.contains("Vehiculos").should("be.visible");
+      cy.contains("Vehículos").should("be.visible");
+      cy.contains("Usuarios").should("be.visible");
+      cy.contains("Planes").should("be.visible");
     });
 
     it("should navigate to renters via sidebar", () => {
@@ -106,6 +110,16 @@ describe("Navigation & Sidebar", () => {
       cy.url().should("include", "/adm/renters");
     });
 
+    it("should navigate to branches via sidebar", () => {
+      cy.visit("/adm/dashboard");
+
+      cy.get("header button").last().click();
+      cy.wait(300);
+
+      cy.get("nav").contains("Sedes").click();
+      cy.url().should("include", "/adm/branches");
+    });
+
     it("should navigate to employees via sidebar", () => {
       cy.visit("/adm/dashboard");
 
@@ -114,6 +128,66 @@ describe("Navigation & Sidebar", () => {
 
       cy.get("nav").contains("Empleados").click();
       cy.url().should("include", "/adm/employees");
+    });
+
+    it("should navigate to rentals via sidebar", () => {
+      cy.visit("/adm/dashboard");
+
+      cy.get("header button").last().click();
+      cy.wait(300);
+
+      cy.get("nav").contains("Rentas").click();
+      cy.url().should("include", "/adm/rentals");
+    });
+
+    it("should navigate to feedbacks via sidebar", () => {
+      cy.visit("/adm/dashboard");
+
+      cy.get("header button").last().click();
+      cy.wait(300);
+
+      cy.get("nav").contains("Feedbacks pendientes").click();
+      cy.url().should("include", "/adm/feedbacks");
+    });
+
+    it("should navigate to customers via sidebar", () => {
+      cy.visit("/adm/dashboard");
+
+      cy.get("header button").last().click();
+      cy.wait(300);
+
+      cy.get("nav").contains("Clientes").click();
+      cy.url().should("include", "/adm/customers");
+    });
+
+    it("should navigate to vehicles via sidebar", () => {
+      cy.visit("/adm/dashboard");
+
+      cy.get("header button").last().click();
+      cy.wait(300);
+
+      cy.get("nav").contains("Vehículos").click();
+      cy.url().should("include", "/adm/vehicles");
+    });
+
+    it("should navigate to users via sidebar", () => {
+      cy.visit("/adm/dashboard");
+
+      cy.get("header button").last().click();
+      cy.wait(300);
+
+      cy.get("nav").contains("Usuarios").click();
+      cy.url().should("include", "/adm/users");
+    });
+
+    it("should navigate to plans via sidebar", () => {
+      cy.visit("/adm/dashboard");
+
+      cy.get("header button").last().click();
+      cy.wait(300);
+
+      cy.get("nav").contains("Planes").click();
+      cy.url().should("include", "/adm/plans");
     });
 
     it("should logout successfully", () => {
@@ -168,7 +242,7 @@ describe("Navigation & Sidebar", () => {
       cy.contains("Rentas").should("be.visible");
       cy.contains("Feedbacks pendientes").should("be.visible");
       cy.contains("Clientes").should("be.visible");
-      cy.contains("Vehiculos").should("be.visible");
+      cy.contains("Vehículos").should("be.visible");
 
       // Owner should NOT see Rentadoras
       cy.contains("Rentadoras").should("not.exist");
@@ -252,7 +326,7 @@ describe("Navigation & Sidebar", () => {
       cy.contains("Rentas").should("be.visible");
       cy.contains("Feedbacks pendientes").should("be.visible");
       cy.contains("Clientes").should("be.visible");
-      cy.contains("Vehiculos").should("be.visible");
+      cy.contains("Vehículos").should("be.visible");
 
       // Manager should NOT see Sedes or Rentadoras
       cy.contains("Rentadoras").should("not.exist");
@@ -305,7 +379,7 @@ describe("Navigation & Sidebar", () => {
       cy.contains("Rentas").should("be.visible");
       cy.contains("Feedbacks pendientes").should("be.visible");
       cy.contains("Clientes").should("be.visible");
-      cy.contains("Vehiculos").should("be.visible");
+      cy.contains("Vehículos").should("be.visible");
 
       // Employee should NOT see Sedes, Empleados, or Rentadoras
       cy.contains("Rentadoras").should("not.exist");

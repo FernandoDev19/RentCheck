@@ -1,4 +1,5 @@
 import { useState, useEffect, useRef, useCallback } from "react";
+import { useNavigate } from "react-router";
 import { Bell, X, CheckCheck, Clock, AlertTriangle, Car, MessageCircle, Wallet, CalendarClock } from "lucide-react";
 import { notificationService } from "../../../../services/notification.service";
 import {
@@ -6,6 +7,7 @@ import {
   type Notification,
   type NotificationType,
 } from "../../../../shared/types/notification.type";
+import { ROLES } from "../../../../shared/types/role.type";
 
 // ─── Helpers de presentación por tipo ─────────────────────────────────────────
 
@@ -48,11 +50,52 @@ function timeAgo(dateStr: string): string {
   return `hace ${days}d`;
 }
 
+function getNotificationRoute(n: Notification, role: string): string {
+  const rolePrefix = (() => {
+    if (role === ROLES.ADMIN) return "/adm";
+    if (role === ROLES.OWNER) return "/owner";
+    if (role === ROLES.MANAGER) return "/manager";
+    if (role === ROLES.EMPLOYEE) return "/employee";
+    return "";
+  })();
+
+  if (!rolePrefix) return "/";
+
+  const p = n.payload;
+  switch (n.type) {
+    case NOTIFICATION_TYPE.VEHICLE_CONFLICT:
+    case NOTIFICATION_TYPE.VEHICLE_UNAVAILABLE: {
+      const pendingRentalId = p?.pendingRentalId;
+      return pendingRentalId
+        ? `${rolePrefix}/rentals?rentalId=${pendingRentalId}`
+        : `${rolePrefix}/rentals`;
+    }
+    case NOTIFICATION_TYPE.LATE_RENTAL:
+    case NOTIFICATION_TYPE.RENTAL_ACTIVATED: {
+      const rentalId = p?.rentalId;
+      return rentalId
+        ? `${rolePrefix}/rentals?rentalId=${rentalId}`
+        : `${rolePrefix}/rentals`;
+    }
+    case NOTIFICATION_TYPE.FEEDBACK_PENDING:
+      return `${rolePrefix}/feedbacks`;
+    case NOTIFICATION_TYPE.LOW_BALANCE:
+    case NOTIFICATION_TYPE.PLAN_EXPIRING_SOON:
+    case NOTIFICATION_TYPE.PLAN_EXPIRED:
+      return role === ROLES.ADMIN ? `${rolePrefix}/plans` : `${rolePrefix}/dashboard`;
+    case NOTIFICATION_TYPE.BIOMETRY_EXPIRED:
+      return `${rolePrefix}/customers`;
+    default:
+      return `${rolePrefix}/dashboard`;
+  }
+}
+
 // ─── Componente ────────────────────────────────────────────────────────────────
 
 const POLL_INTERVAL_MS = 60_000; // 1 minuto
 
 export default function NotificationBell() {
+  const navigate = useNavigate();
   const [notifications, setNotifications] = useState<Notification[]>([]);
   const [open, setOpen] = useState(false);
   const [loading, setLoading] = useState(false);
@@ -167,7 +210,21 @@ export default function NotificationBell() {
                 return (
                   <li
                     key={n.id}
-                    className="flex items-start gap-3 px-4 py-3 hover:bg-muted/30 transition-colors group"
+                    onClick={() => {
+                      const userRaw = localStorage.getItem("user");
+                      if (userRaw) {
+                        try {
+                          const user = JSON.parse(userRaw);
+                          const route = getNotificationRoute(n, user.role);
+                          navigate(route);
+                        } catch {
+                          // ignore
+                        }
+                      }
+                      void handleMarkAsRead(n.id);
+                      setOpen(false);
+                    }}
+                    className="flex items-start gap-3 px-4 py-3 hover:bg-muted/50 transition-colors group cursor-pointer"
                   >
                     {/* Ícono del tipo */}
                     <span className={`mt-0.5 shrink-0 ${meta.color}`}>
@@ -190,7 +247,10 @@ export default function NotificationBell() {
                     {/* Botón marcar leída */}
                     <button
                       id={`notification-read-${n.id}`}
-                      onClick={() => void handleMarkAsRead(n.id)}
+                      onClick={(e) => {
+                        e.stopPropagation();
+                        void handleMarkAsRead(n.id);
+                      }}
                       className="opacity-0 group-hover:opacity-100 transition-opacity shrink-0 p-1 rounded hover:bg-muted text-muted-foreground hover:text-foreground"
                       aria-label="Marcar como leída"
                       title="Marcar como leída"

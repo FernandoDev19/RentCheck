@@ -10,6 +10,7 @@ export const rentalService = {
     orderBy?: string;
     orderDir?: "asc" | "desc";
     search?: string;
+    rentalId?: string;
   }): Promise<ListResponse<Rental>> => {
     const response = await api.get("/rentals", {
       params: {
@@ -18,6 +19,7 @@ export const rentalService = {
         orderBy: params?.orderBy,
         orderDir: params?.orderDir,
         search: params?.search,
+        rentalId: params?.rentalId,
       },
     });
 

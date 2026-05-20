@@ -49,8 +49,8 @@ describe("Vehicles", () => {
 
             cy.visit("/owner/vehicles");
 
-            cy.contains("Vehículos").should("be.visible");
-            cy.contains("Gestiona el inventario de vehículos").should(
+            cy.get("h1[class='text-xl font-bold text-slate-900 truncate']").should("be.visible").should('contain.text', "Vehículos");
+            cy.contains("Gestiona el inventario de vehículos de tu rentadora").should(
                 "be.visible",
             );
 
@@ -116,10 +116,8 @@ describe("Vehicles", () => {
                     200, 201,
                 ]);
                 createdVehicleId = interception.response!.body.id;
+                cy.contains("Vehículo creado").should("be.visible");
             });
-
-            cy.wait(2000);
-            cy.contains("Vehículo creado").should("be.visible");
         });
 
         it("should search for the created vehicle by plate", () => {
@@ -178,10 +176,8 @@ describe("Vehicles", () => {
 
             cy.wait("@updateVehicle").then(({ response }) => {
                 expect(response!.statusCode).to.be.oneOf([200, 201]);
+                cy.contains("Vehículo editado").should("be.visible");
             });
-
-            cy.wait(2000);
-            cy.contains("Vehículo editado").should("be.visible");
         });
 
         it("should change vehicle status", () => {
@@ -207,10 +203,9 @@ describe("Vehicles", () => {
 
             cy.wait("@updateStatus").then(({ response }) => {
                 expect(response!.statusCode).to.be.oneOf([200, 201]);
+                cy.contains("Estado actualizado").should("be.visible");
             });
 
-            cy.wait(2000);
-            cy.contains("Estado actualizado").should("be.visible");
         });
 
         it("should delete the vehicle", () => {
@@ -237,10 +232,9 @@ describe("Vehicles", () => {
 
             cy.wait("@deleteVehicle").then(({ response }) => {
                 expect(response!.statusCode).to.eq(200);
+                cy.contains("Eliminado").should("be.visible");
             });
 
-            cy.wait(2000);
-            cy.contains("Eliminado").should("be.visible");
         });
     });
 
@@ -257,7 +251,7 @@ describe("Vehicles", () => {
 
             cy.visit("/adm/vehicles");
 
-            cy.contains("Vehículos").should("be.visible");
+            cy.get("h1[class='text-xl font-bold text-slate-900 truncate']").should("be.visible").should('contain.text', "Vehículos");
             cy.get("table").should("be.visible");
 
             cy.wait("@getVehicles").then(({ response }) => {
@@ -311,7 +305,7 @@ describe("Vehicles", () => {
 
             cy.visit("/employee/vehicles");
 
-            cy.contains("Vehículos").should("be.visible");
+            cy.get("h1[class='text-xl font-bold text-slate-900 truncate']").should("be.visible").should('contain.text', "Vehículos");
             cy.get("table").should("be.visible");
 
             cy.wait("@getVehicles").then(({ response }) => {

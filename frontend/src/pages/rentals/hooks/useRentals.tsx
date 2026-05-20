@@ -1,4 +1,5 @@
 import { useCallback, useEffect, useState } from "react";
+import { useLocation, useNavigate } from "react-router";
 import type { ListResponse } from "../../../shared/types/list-response.type";
 import type { Rental } from "../../../shared/types/rental.type";
 import { rentalService } from "../../../services/rental.service";
@@ -33,11 +34,37 @@ export const RENTAL_STATUS_COLORS: Record<
 };
 
 export const useRentals = () => {
+  const location = useLocation();
+  const navigate = useNavigate();
+
+  const [lastUrlSearch, setLastUrlSearch] = useState<string>(() => {
+    const params = new URLSearchParams(location.search);
+    return params.get("search") || "";
+  });
+
+  const [rentalId, setRentalId] = useState<string>(() => {
+    const params = new URLSearchParams(location.search);
+    return params.get("rentalId") || "";
+  });
+
   const [rentals, setRentals] = useState<Rental[]>([]);
   const [totalItems, setTotalItems] = useState<number>(0);
   const [totalPages, setTotalPages] = useState<number>(1);
   const [page, setPage] = useState<number>(1);
-  const [searchTerm, setSearchTerm] = useState<string>("");
+  const [searchTerm, setSearchTerm] = useState<string>(lastUrlSearch);
+
+  useEffect(() => {
+    const params = new URLSearchParams(location.search);
+    const search = params.get("search") || "";
+    const rId = params.get("rentalId") || "";
+    if (search !== lastUrlSearch || rId !== rentalId) {
+      setLastUrlSearch(search);
+      setSearchTerm(search);
+      setRentalId(rId);
+      setPage(1);
+    }
+  }, [location.search, lastUrlSearch, rentalId]);
+
   const [orderBy, setOrderBy] = useState<{
     key: string;
     direction: "asc" | "desc";
@@ -57,6 +84,7 @@ export const useRentals = () => {
         orderBy: orderBy.key,
         orderDir: orderBy.direction,
         search: searchTerm,
+        rentalId: rentalId || undefined,
       });
       setRentals(response.data);
       setTotalItems(response.total);
@@ -64,7 +92,16 @@ export const useRentals = () => {
     } finally {
       setLoading(false);
     }
-  }, [page, limit, orderBy.key, orderBy.direction, searchTerm, setLoading]);
+  }, [page, limit, orderBy.key, orderBy.direction, searchTerm, rentalId, setLoading]);
+
+  const handleClearRentalIdFilter = () => {
+    const params = new URLSearchParams(location.search);
+    params.delete("rentalId");
+    navigate({
+      pathname: location.pathname,
+      search: params.toString(),
+    });
+  };
 
   useEffect(() => {
     const run = async () => {
@@ -319,5 +356,8 @@ export const useRentals = () => {
     loadRentals,
     handleSearchChange,
     handleSortChange,
+    searchTerm,
+    rentalId,
+    handleClearRentalIdFilter,
   };
 };

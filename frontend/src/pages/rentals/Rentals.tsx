@@ -7,7 +7,7 @@ import { useRentals } from "./hooks/useRentals";
 import { useViewRental } from "./hooks/useViewRental";
 import AssignVehicleModal from "./components/AssignVehicleModal";
 import { useState } from "react";
-import { Info } from "lucide-react";
+import { Info, SlidersHorizontal, X } from "lucide-react";
 import type { Rental } from "../../shared/types/rental.type";
 import { getUser } from "../dashboard/helpers/user.helper";
 import { ROLES } from "../../shared/types/role.type";
@@ -25,6 +25,8 @@ export default function Rentals() {
     handleReturn,
     handleDelete,
     loadRentals,
+    rentalId,
+    handleClearRentalIdFilter,
   } = useRentals();
   const { columns } = useRentalColumns(loadRentals);
   const { handleCreateClick } = useCreateRental();
@@ -42,6 +44,30 @@ export default function Rentals() {
         title="Listado de rentas"
         description="Gestiona el historial de todas las rentas"
       />
+      {rentalId && (
+        <div className="mb-6 flex flex-col sm:flex-row items-start sm:items-center justify-between gap-4 p-4 rounded-xl border border-indigo-100 bg-gradient-to-r from-indigo-50 to-purple-50 text-indigo-900 shadow-sm animate-in fade-in slide-in-from-top-1 duration-200">
+          <div className="flex items-center gap-3">
+            <div className="p-2 rounded-lg bg-indigo-500 text-white shrink-0 shadow-md shadow-indigo-500/20">
+              <SlidersHorizontal size={18} />
+            </div>
+            <div>
+              <p className="text-sm font-semibold text-indigo-950">
+                Filtro de notificación activo
+              </p>
+              <p className="text-xs text-indigo-700 font-medium">
+                Mostrando únicamente la renta con ID: <span className="font-mono bg-white/70 px-1.5 py-0.5 rounded border border-indigo-100/50">{rentalId}</span>
+              </p>
+            </div>
+          </div>
+          <button
+            onClick={handleClearRentalIdFilter}
+            className="flex items-center gap-1.5 px-3 py-1.5 rounded-lg bg-white hover:bg-indigo-50 text-indigo-600 hover:text-indigo-700 text-xs font-semibold shadow-sm border border-indigo-100 hover:border-indigo-200 transition-all cursor-pointer group"
+          >
+            Ver todas las rentas
+            <X size={14} className="group-hover:rotate-90 transition-transform duration-200" />
+          </button>
+        </div>
+      )}
       <DataTable
         data={rentals}
         columns={columns}

@@ -176,6 +176,7 @@ export class RentalsService {
     orderDir: string = 'ASC',
     search: string = '',
     user: UserActiveInterface,
+    rentalId?: string,
   ): Promise<ListResponse<Rental>> {
     this.logger.log(`FindAll: ${user.email}`);
 
@@ -260,6 +261,10 @@ export class RentalsService {
         OR customer.name ILIKE :search)`,
         { search: `%${search}%` },
       );
+    }
+
+    if (rentalId) {
+      qb.andWhere('rental.id = :rentalId', { rentalId });
     }
 
     qb.orderBy(`rental.${safeOrderBy}`, safeOrderDir)

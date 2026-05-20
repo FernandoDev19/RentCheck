@@ -43,6 +43,7 @@ export class RentalsController {
     @Query('orderBy') orderBy: string,
     @Query('orderDir') orderDir: string,
     @Query('search') search: string,
+    @Query('rentalId') rentalId: string,
     @ActiveUser() user: UserActiveInterface,
   ) {
     return this.rentalsService.findAll(
@@ -52,6 +53,7 @@ export class RentalsController {
       orderDir,
       search,
       user,
+      rentalId,
     );
   }
 
