@@ -356,6 +356,16 @@ export default function Settings() {
                 confirmButtonColor: "#dc2626",
                 confirmButtonText: "Sí, cerrar sesiones",
                 cancelButtonText: "Cancelar",
+              }).then(async (result) => {
+                if (result.isConfirmed) {
+                  try {
+                    await api.post("/auth/logout");
+                    localStorage.removeItem("user");
+                    window.location.href = "/login";
+                  } catch (error) {
+                    Swal.fire("Error", "No se pudo cerrar la sesión", "error");
+                  }
+                }
               });
             }}
             className="px-4 py-2 rounded-xl text-xs font-semibold text-red-600
