@@ -9,6 +9,7 @@ import PendingFeedbacks from "../../pages/pending-feedbacks/PendingFeedbacks";
 import Employees from "../../pages/employees/Employees";
 import Customers from "../../pages/customers/Customers";
 import Vehicles from "../../pages/vehicles/Vehicles";
+import Settings from "../../pages/settings/Settings";
 
 export default function OwnerRoutes() {
   return (
@@ -17,6 +18,7 @@ export default function OwnerRoutes() {
       <main className="p-4">
         <Routes>
           <Route path="/" element={<Navigate to="/owner/dashboard" replace />} />
+          <Route path="/settings" element={<Settings />} />
           <Route path="/dashboard" element={<Dashboard />} />
           <Route path="/branches" element={<Branches />} />
           <Route path="/rentals" element={<Rentals />} />

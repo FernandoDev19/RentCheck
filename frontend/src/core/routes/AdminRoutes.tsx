@@ -12,6 +12,7 @@ import Rentals from "../../pages/rentals/Rentals";
 import PendingFeedbacks from "../../pages/pending-feedbacks/PendingFeedbacks";
 import Users from "../../pages/users/Users";
 import Plans from "../../pages/plans/Plans";
+import Settings from "../../pages/settings/Settings";
 
 export default function AdminRoutes() {
   return (
@@ -20,6 +21,7 @@ export default function AdminRoutes() {
       <main className="p-4">
         <Routes>
           <Route path="/" element={<Navigate to="/adm/dashboard" replace />} />
+          <Route path="/settings" element={<Settings />} />
           <Route path="/dashboard" element={<Dashboard />} />
           <Route path="/branches" element={<Branches />} />
           <Route path="/branches/:renterId" element={<Branches />} />

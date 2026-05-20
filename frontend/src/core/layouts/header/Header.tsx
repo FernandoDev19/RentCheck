@@ -1,13 +1,26 @@
 import { useState, useEffect } from "react";
 import { useNavigate } from "react-router";
-import { Home, Menu } from "lucide-react";
+import { Home, Menu, Settings, User2 } from "lucide-react";
 import Sidebar from "./components/Sidebar";
 import NotificationBell from "./components/NotificationBell";
+import { getUser } from "../../../pages/dashboard/helpers/user.helper";
+import { ROLES } from "../../../shared/types/role.type";
 
 export default function Header() {
   const [isScrolled, setIsScrolled] = useState(false);
   const [isMobileMenuOpen, setIsMobileMenuOpen] = useState(false);
   const navigate = useNavigate();
+  const user = getUser();
+  const role =
+    user?.role === ROLES.ADMIN
+      ? "adm"
+      : user?.role === ROLES.OWNER
+        ? "owner"
+        : user?.role === ROLES.MANAGER
+          ? "manager"
+          : user?.role === ROLES.EMPLOYEE
+            ? "employee"
+            : "";
 
   useEffect(() => {
     const handleScroll = () => {
@@ -54,6 +67,12 @@ export default function Header() {
             {/* Desktop Actions */}
             <div className="flex items-center space-x-1">
               <NotificationBell />
+              <button
+                onClick={() => navigate(`/${role}/settings`)}
+                className="p-2 rounded-lg hover:bg-primary-foreground/10 transition-colors"
+              >
+                <Settings size={20} />
+              </button>
               <button
                 onClick={() => setIsMobileMenuOpen(!isMobileMenuOpen)}
                 className="p-2 rounded-lg hover:bg-primary-foreground/10 transition-colors"

@@ -1,5 +1,5 @@
 import { Response } from 'express';
-import { Body, Controller, Get, Post, Res, UseGuards } from '@nestjs/common';
+import { Body, Controller, Get, Patch, Post, Put, Res, UseGuards } from '@nestjs/common';
 import { AuthService } from './auth.service';
 import { LoginDto } from './dto/login.dto';
 import { AuthGuard } from '../../core/guards/auth.guard';
@@ -9,13 +9,15 @@ import { RegisterDto } from './dto/register.dto';
 import { Auth } from '../../core/decorators/auth.decorator';
 import { RolesEnum } from '../../shared/enums/roles.enum';
 import { UsersService } from '../users/users.service';
+import { ChangePasswordDto } from './dto/change-password.dto';
+import { UpdateProfileDto } from './dto/update-profile.dto';
 
 @Controller('auth')
 export class AuthController {
   constructor(
     private readonly authService: AuthService,
     private readonly userService: UsersService,
-  ) {}
+  ) { }
 
   @Post('login')
   async login(
@@ -69,5 +71,23 @@ export class AuthController {
       isValid: true,
       user: user,
     };
+  }
+
+  @Patch('change-password')
+  @UseGuards(AuthGuard)
+  changePassword(
+    @Body() dto: ChangePasswordDto,
+    @ActiveUser() user: UserActiveInterface,
+  ) {
+    return this.authService.changePassword(dto, user);
+  }
+
+  @Put('profile')
+  @UseGuards(AuthGuard)
+  updateProfile(
+    @Body() dto: UpdateProfileDto,
+    @ActiveUser() user: UserActiveInterface,
+  ) {
+    return this.authService.updateProfile(dto, user);
   }
 }

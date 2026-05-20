@@ -1,4 +1,4 @@
-import { Injectable, Logger, UnauthorizedException } from '@nestjs/common';
+import { BadRequestException, ConflictException, Injectable, Logger, UnauthorizedException } from '@nestjs/common';
 import { RegisterDto } from './dto/register.dto';
 import * as bcrypt from 'bcryptjs';
 import { JwtService } from '@nestjs/jwt';
@@ -15,6 +15,8 @@ import { UserStatus } from '../users/enums/user-status.enum';
 import { RolesEnum } from '../../shared/enums/roles.enum';
 import { UsersService } from '../users/users.service';
 import { RolesService } from '../roles/roles.service';
+import { ChangePasswordDto } from './dto/change-password.dto';
+import { UpdateProfileDto } from './dto/update-profile.dto';
 
 @Injectable()
 export class AuthService {
@@ -30,7 +32,7 @@ export class AuthService {
     private readonly renterRepository: Repository<Renter>,
     private readonly userService: UsersService,
     private readonly roleService: RolesService,
-  ) {}
+  ) { }
 
   async login({ email, password }: LoginDto): Promise<LoginResponseDto> {
     this.logger.log(`Login: ${email}`);
@@ -165,5 +167,46 @@ export class AuthService {
     this.logger.log(`Register: ${registerDto.email} - Usuario registrado`);
 
     return user;
+  }
+
+  async changePassword(
+    dto: ChangePasswordDto,
+    user: UserActiveInterface,
+  ): Promise<{ message: string }> {
+    const userExist = await this.userService.findOneByEmailWithPassword(user.email);
+
+    const isPasswordValid = await bcrypt.compare(dto.currentPassword, userExist.password);
+    if (!isPasswordValid) {
+      throw new UnauthorizedException('La contraseña actual es incorrecta');
+    }
+
+    const isSamePassword = await bcrypt.compare(dto.newPassword, userExist.password);
+    if (isSamePassword) {
+      throw new BadRequestException('La nueva contraseña no puede ser igual a la actual');
+    }
+
+    const hashed = await bcrypt.hash(dto.newPassword, 10);
+    await this.userService.update(userExist.id, { password: hashed } as any);
+
+    return { message: 'Contraseña actualizada correctamente' };
+  }
+
+  async updateProfile(
+    dto: UpdateProfileDto,
+    user: UserActiveInterface,
+  ): Promise<{ message: string }> {
+    const userExist = await this.userService.findOne(user.sub);
+
+    if (dto.email && dto.email !== userExist.email) {
+      const emailInUse = await this.userService.findOneByEmail(dto.email);
+      if (emailInUse) throw new ConflictException('Este correo ya está en uso');
+    }
+
+    await this.userService.update(userExist.id, {
+      name: dto.name ?? userExist.name,
+      email: dto.email ?? userExist.email,
+    });
+
+    return { message: 'Perfil actualizado correctamente' };
   }
 }

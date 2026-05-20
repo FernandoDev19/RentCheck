@@ -8,6 +8,7 @@ import Rentals from "../../pages/rentals/Rentals";
 import PendingFeedbacks from "../../pages/pending-feedbacks/PendingFeedbacks";
 import Customers from "../../pages/customers/Customers";
 import Vehicles from "../../pages/vehicles/Vehicles";
+import Settings from "../../pages/settings/Settings";
 
 export default function ManagerRoutes() {
   return (
@@ -16,6 +17,7 @@ export default function ManagerRoutes() {
       <main className="p-4">
         <Routes>
           <Route path="/" element={<Navigate to="/manager/dashboard" replace />} />
+          <Route path="/settings" element={<Settings />} />
           <Route path="/dashboard" element={<Dashboard />} />
           <Route path="/employees" element={<Employees />} />
           <Route path="/rentals" element={<Rentals />} />
